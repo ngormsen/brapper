@@ -3,21 +3,17 @@ import {
   AccessType,
   createLink,
   createThought,
+  deleteThought,
   getThoughtByExactName,
-  getThoughtDetails,
-  ROOT_THOUGHT_ID,
   ThoughtKind,
   ThoughtRelation,
   updateThoughtColor,
-  deleteThought,
-  BRAIN_ID,
 } from './Client';
-import useThoughtDetails from './hooks/useThoughtDetails';
 import ThoughtInput from './components/ThoughtInput';
-import { Thought } from './types';
-import { useNavigationStack } from './hooks/useNavigationStack';
 import ThoughtNode from './components/ThoughtNode';
-import { ColorTypeIds } from './types';
+import { useNavigationStack } from './hooks/useNavigationStack';
+import useThoughtDetails from './hooks/useThoughtDetails';
+import { ColorTypeIds, Thought } from './types';
 
 function App() {
   const { currentThoughtId, navigate, goBack, canGoBack } = useNavigationStack();
@@ -38,6 +34,9 @@ function App() {
   const [isSelectMode, setIsSelectMode] = useState(false);
   const [selectedNodes, setSelectedNodes] = useState<Set<string>>(new Set());
 
+  const [isBackActive, setIsBackActive] = useState(false);
+  const [isRefreshActive, setIsRefreshActive] = useState(false);
+
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (['1', '2', '3', '4', '5', '6'].includes(event.key)) {
@@ -49,10 +48,14 @@ function App() {
         setIsSelectMode((prev) => !prev);
         setSelectedNodes(new Set());
       } else if (event.key.toLowerCase() === 'r') {
+        setIsRefreshActive(true);
         handleRefetch();
+        setTimeout(() => setIsRefreshActive(false), 100);
       } else if (event.key.toLowerCase() === 'b') {
         if (canGoBack) {
+          setIsBackActive(true);
           goBack();
+          setTimeout(() => setIsBackActive(false), 100);
         }
       }
     };
@@ -61,7 +64,7 @@ function App() {
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [canGoBack]);
+  }, [canGoBack]); // Include canGoBack in dependencies
 
   const navigateToThought = (thought: Thought) => {
     navigate(thought.id);
@@ -95,7 +98,10 @@ function App() {
       .then((newThought) => {
         setThoughtCandidate(null);
         // Update local state to include the new thought
-        setChildren((prevChildren) => [...prevChildren, { name: thoughtCandidate.name, id: newThought.id }]);
+        setChildren((prevChildren) => [
+          ...prevChildren,
+          { name: thoughtCandidate.name, id: newThought.id },
+        ]);
       })
       .catch((error) => {
         setLocalErrorMessage(error.message);
@@ -110,16 +116,22 @@ function App() {
     handleAddThought(thought, ThoughtRelation.Jump);
   };
 
-  function getColorByIndex(index: number): { backgroundColor: string; name: string; typeId: string } {
+  function getColorByIndex(index: number): {
+    backgroundColor: string;
+    name: string;
+    typeId: string;
+  } {
     const colors = [
-      { backgroundColor: '#FFB3B3', name: 'Red', typeId: ColorTypeIds.Red },     // Soft pastel red
-      { backgroundColor: '#B8E6B8', name: 'Green', typeId: ColorTypeIds.Green },   // Soft pastel green
-      { backgroundColor: '#B3D9FF', name: 'Blue', typeId: ColorTypeIds.Blue },    // Soft pastel blue
-      { backgroundColor: '#FFE6B3', name: 'Yellow', typeId: ColorTypeIds.Yellow },  // Soft pastel yellow
-      { backgroundColor: '#E6B3FF', name: 'Purple', typeId: ColorTypeIds.Purple },  // Soft pastel purple
-      { backgroundColor: '#FFFFFF', name: 'White', typeId: ColorTypeIds.White },   // White
+      { backgroundColor: '#FFB3B3', name: 'Red', typeId: ColorTypeIds.Red }, // Soft pastel red
+      { backgroundColor: '#B8E6B8', name: 'Green', typeId: ColorTypeIds.Green }, // Soft pastel green
+      { backgroundColor: '#B3D9FF', name: 'Blue', typeId: ColorTypeIds.Blue }, // Soft pastel blue
+      { backgroundColor: '#FFE6B3', name: 'Yellow', typeId: ColorTypeIds.Yellow }, // Soft pastel yellow
+      { backgroundColor: '#E6B3FF', name: 'Purple', typeId: ColorTypeIds.Purple }, // Soft pastel purple
+      { backgroundColor: '#FFFFFF', name: 'White', typeId: ColorTypeIds.White }, // White
     ];
-    return colors[index] || { backgroundColor: '#E0E0E0', name: 'Unknown', typeId: '' }; // Fallback light gray
+    return (
+      colors[index] || { backgroundColor: '#E0E0E0', name: 'Unknown', typeId: '' }
+    ); // Fallback light gray
   }
 
   const handleThoughtClick = async (thought: Thought) => {
@@ -135,7 +147,11 @@ function App() {
         return newSelected;
       });
     } else if (selectedColorIndex !== null) {
-      const { backgroundColor: newColor, name: colorName, typeId: colorTypeId } = getColorByIndex(selectedColorIndex);
+      const {
+        backgroundColor: newColor,
+        name: colorName,
+        typeId: colorTypeId,
+      } = getColorByIndex(selectedColorIndex);
       try {
         await updateThoughtColor({
           thoughtId: thought.id,
@@ -150,7 +166,9 @@ function App() {
           // Update child color
           setChildren((prevChildren) =>
             prevChildren.map((child) =>
-              child.id === thought.id ? { ...child, backgroundColor: newColor } : child
+              child.id === thought.id
+                ? { ...child, backgroundColor: newColor }
+                : child
             )
           );
         }
@@ -177,7 +195,7 @@ function App() {
     }
   };
 
-  // Add a function to handle refetching
+  // Function to handle refetching
   const handleRefetch = () => {
     setRefreshKey((prevKey) => prevKey + 1);
   };
@@ -206,10 +224,13 @@ function App() {
           {[...Array(6)].map((_, index) => (
             <div
               key={index}
-              className={`w-8 h-8 rounded-full cursor-pointer ${selectedColorIndex === index ? 'ring-2 ring-black' : ''
-                }`}
+              className={`w-8 h-8 rounded-full cursor-pointer ${
+                selectedColorIndex === index ? 'ring-2 ring-black' : ''
+              }`}
               style={{ backgroundColor: getColorByIndex(index).backgroundColor }}
-              onClick={() => setSelectedColorIndex(prev => prev === index ? null : index)}
+              onClick={() =>
+                setSelectedColorIndex((prev) => (prev === index ? null : index))
+              }
             ></div>
           ))}
         </div>
@@ -217,8 +238,14 @@ function App() {
         {/* Back Button */}
         {canGoBack && (
           <button
-            onClick={() => goBack()}
-            className="absolute top-4 right-4 bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
+            onClick={() => {
+              setIsBackActive(true);
+              goBack();
+              setTimeout(() => setIsBackActive(false), 100);
+            }}
+            className={`absolute top-4 right-4 bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-transform duration-100 ${
+              isBackActive ? 'scale-95 bg-blue-600' : ''
+            }`}
           >
             ← Back
           </button>
@@ -226,8 +253,14 @@ function App() {
 
         {/* Refetch Button */}
         <button
-          onClick={handleRefetch}
-          className="absolute top-16 right-4 bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600"
+          onClick={() => {
+            setIsRefreshActive(true);
+            handleRefetch();
+            setTimeout(() => setIsRefreshActive(false), 100);
+          }}
+          className={`absolute top-16 right-4 bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 transition-transform duration-100 ${
+            isRefreshActive ? 'scale-95 bg-green-600' : ''
+          }`}
         >
           ↻ Refetch
         </button>
