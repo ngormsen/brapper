@@ -35,11 +35,17 @@ function App() {
 
   const [selectedColorIndex, setSelectedColorIndex] = useState<number | null>(null);
 
+  const [isSelectMode, setIsSelectMode] = useState(false);
+  const [selectedNodes, setSelectedNodes] = useState<Set<string>>(new Set());
+
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (['1', '2', '3', '4', '5', '6'].includes(event.key)) {
         const colorIndex = parseInt(event.key) - 1;
         setSelectedColorIndex(prevIndex => prevIndex === colorIndex ? null : colorIndex);
+      } else if (event.key.toLowerCase() === 's') {
+        setIsSelectMode(prev => !prev);
+        setSelectedNodes(new Set());
       }
     };
 
@@ -109,7 +115,18 @@ function App() {
   }
 
   const handleThoughtClick = async (thought: Thought) => {
-    if (selectedColorIndex !== null) {
+    if (isSelectMode) {
+      // Handle selection logic
+      setSelectedNodes((prevSelected) => {
+        const newSelected = new Set(prevSelected);
+        if (newSelected.has(thought.id)) {
+          newSelected.delete(thought.id);
+        } else {
+          newSelected.add(thought.id);
+        }
+        return newSelected;
+      });
+    } else if (selectedColorIndex !== null) {
       const { backgroundColor: newColor, name: colorName, typeId: colorTypeId } = getColorByIndex(selectedColorIndex);
       try {
         await updateThoughtColor({
@@ -218,6 +235,8 @@ function App() {
             onAddJump={onAddJump}
             onDeleteThought={handleDeleteThought}
             isColorMode={selectedColorIndex !== null}
+            isSelectMode={isSelectMode}
+            isSelected={selectedNodes.has(parent.id)}
           />
         )}
 
@@ -232,6 +251,8 @@ function App() {
               onAddJump={onAddJump}
               onDeleteThought={handleDeleteThought}
               isColorMode={selectedColorIndex !== null}
+              isSelectMode={isSelectMode}
+              isSelected={selectedNodes.has(child.id)}
             />
           ))}
         </div>
@@ -248,6 +269,17 @@ function App() {
             {errorMessage || localErrorMessage}
           </div>
         )}
+
+        {/* Select Button */}
+        <button
+          onClick={() => {
+            setIsSelectMode((prev) => !prev);
+            setSelectedNodes(new Set());
+          }}
+          className="absolute bottom-4 left-4 bg-purple-500 text-white px-4 py-2 rounded-md hover:bg-purple-600"
+        >
+          {isSelectMode ? 'Exit Select Mode' : 'Select'}
+        </button>
       </div>
     </div>
   );

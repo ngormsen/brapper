@@ -9,6 +9,8 @@ type ThoughtNodeProps = {
   onAddJump: (thought: Thought) => void;
   onDeleteThought: (thoughtId: string) => void;
   isColorMode: boolean;
+  isSelectMode: boolean;
+  isSelected: boolean;
 };
 
 const ThoughtNode: React.FC<ThoughtNodeProps> = ({
@@ -18,9 +20,15 @@ const ThoughtNode: React.FC<ThoughtNodeProps> = ({
   onAddJump,
   onDeleteThought,
   isColorMode,
+  isSelectMode,
+  isSelected,
 }) => {
   return (
-    <div className="flex items-center rounded-lg relative">
+    <div
+      className={`flex items-center rounded-lg relative ${
+        isSelected ? 'border-4 border-red-500' : ''
+      }`}
+    >
       <button
         className="absolute top-0 right-0 mt-1 mr-1 text-red-500 hover:text-red-700"
         onClick={(e) => {
@@ -48,7 +56,7 @@ const ThoughtNode: React.FC<ThoughtNodeProps> = ({
         style={{
           backgroundColor: thought.backgroundColor || 'transparent',
           color: thought.backgroundColor ? '#000000' : 'inherit',
-          cursor: isColorMode ? 'crosshair' : 'pointer',
+          cursor: isSelectMode ? 'pointer' : isColorMode ? 'crosshair' : 'pointer',
         }}
       >
         {thought.name}
