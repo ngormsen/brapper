@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Thought } from '../types';
 
 type ThoughtInputProps = {
@@ -12,6 +12,14 @@ const ThoughtInput: React.FC<ThoughtInputProps> = ({
   setThoughtCandidate,
   onAddThought,
 }) => {
+  const [isActive, setIsActive] = useState(false);
+
+  const handleAction = () => {
+    setIsActive(true);
+    onAddThought();
+    setTimeout(() => setIsActive(false), 100);
+  };
+
   return (
     <div className="flex items-center justify-center mt-8">
       <input
@@ -25,15 +33,17 @@ const ThoughtInput: React.FC<ThoughtInputProps> = ({
         }
         onKeyDown={(e) => {
           if (e.key === 'Enter') {
-            onAddThought();
+            handleAction();
           }
         }}
         className="border-2 border-black rounded-lg px-8 py-4 focus:outline-none focus:border-blue-500"
         placeholder="Enter thought name"
       />
       <button
-        className="bg-blue-500 text-white mx-2 px-8 py-4 rounded-md"
-        onClick={onAddThought}
+        className={`bg-blue-500 text-white mx-2 px-8 py-4 rounded-md 
+          transition-transform duration-100
+          ${isActive ? 'scale-95 bg-blue-600' : ''}`}
+        onClick={handleAction}
       >
         Add
       </button>

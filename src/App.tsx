@@ -204,6 +204,7 @@ function App() {
             onAddChild={onAddChild}
             onAddJump={onAddJump}
             onDeleteThought={handleDeleteThought}
+            isColorMode={selectedColorIndex !== null}
           />
         )}
 
@@ -217,6 +218,7 @@ function App() {
               onAddChild={onAddChild}
               onAddJump={onAddJump}
               onDeleteThought={handleDeleteThought}
+              isColorMode={selectedColorIndex !== null}
             />
           ))}
         </div>

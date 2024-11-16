@@ -8,6 +8,7 @@ type ThoughtNodeProps = {
   onAddChild: (thought: Thought) => void;
   onAddJump: (thought: Thought) => void;
   onDeleteThought: (thoughtId: string) => void;
+  isColorMode: boolean;
 };
 
 const ThoughtNode: React.FC<ThoughtNodeProps> = ({
@@ -16,6 +17,7 @@ const ThoughtNode: React.FC<ThoughtNodeProps> = ({
   onAddChild,
   onAddJump,
   onDeleteThought,
+  isColorMode,
 }) => {
   return (
     <div className="flex items-center rounded-lg relative">
@@ -46,6 +48,7 @@ const ThoughtNode: React.FC<ThoughtNodeProps> = ({
         style={{
           backgroundColor: thought.backgroundColor || 'transparent',
           color: thought.backgroundColor ? '#000000' : 'inherit',
+          cursor: isColorMode ? 'crosshair' : 'pointer',
         }}
       >
         {thought.name}
