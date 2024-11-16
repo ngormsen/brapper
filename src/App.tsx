@@ -12,16 +12,17 @@ import useThoughtDetails from './hooks/useThoughtDetails';
 import ThoughtNode from './components/ThoughtNode';
 import ThoughtInput from './components/ThoughtInput';
 import { Thought } from './types';
+import { useNavigationStack } from './hooks/useNavigationStack';
 
 function App() {
-  const [currentThoughtId, setCurrentThoughtId] = useState(ROOT_THOUGHT_ID);
+  const { currentThoughtId, navigate, goBack, canGoBack } = useNavigationStack();
   const { parent, children, errorMessage } = useThoughtDetails(currentThoughtId);
   const [thoughtCandidate, setThoughtCandidate] = useState<Thought | null>(null);
 
   const [localErrorMessage, setLocalErrorMessage] = useState<string>('');
 
   const navigateToThought = (thought: Thought) => {
-    setCurrentThoughtId(thought.id);
+    navigate(thought.id);
   };
 
   const handleAddThought = (thought: Thought, thoughtRelation: ThoughtRelation) => {
@@ -69,7 +70,17 @@ function App() {
 
   return (
     <div className="min-h-screen bg-gray-100">
-      <div className="flex flex-col items-center">
+      <div className="flex flex-col items-center relative">
+        {/* Add Back Button */}
+        {canGoBack && (
+          <button
+            onClick={() => goBack()}
+            className="absolute top-4 right-4 bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
+          >
+            ← Back
+          </button>
+        )}
+
         <h1 className="text-4xl font-bold text-center">Hello World</h1>
 
         {/* Parent */}
