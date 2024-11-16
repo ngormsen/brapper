@@ -17,6 +17,7 @@ import ThoughtInput from './components/ThoughtInput';
 import { Thought } from './types';
 import { useNavigationStack } from './hooks/useNavigationStack';
 import ThoughtNode from './components/ThoughtNode';
+import { ColorTypeIds } from './types';
 
 function App() {
   const { currentThoughtId, navigate, goBack, canGoBack } = useNavigationStack();
@@ -95,21 +96,21 @@ function App() {
     handleAddThought(thought, ThoughtRelation.Jump);
   };
 
-  function getColorByIndex(index: number): string {
+  function getColorByIndex(index: number): { backgroundColor: string; name: string; typeId: string } {
     const colors = [
-      '#FFB3B3',  // Soft pastel red
-      '#B8E6B8',  // Soft pastel green
-      '#B3D9FF',  // Soft pastel blue
-      '#FFE6B3',  // Soft pastel yellow
-      '#E6B3FF',  // Soft pastel purple
-      '#FFFFFF',  // White
+      { backgroundColor: '#FFB3B3', name: 'Red', typeId: ColorTypeIds.Red },     // Soft pastel red
+      { backgroundColor: '#B8E6B8', name: 'Green', typeId: ColorTypeIds.Green },   // Soft pastel green
+      { backgroundColor: '#B3D9FF', name: 'Blue', typeId: ColorTypeIds.Blue },    // Soft pastel blue
+      { backgroundColor: '#FFE6B3', name: 'Yellow', typeId: ColorTypeIds.Yellow },  // Soft pastel yellow
+      { backgroundColor: '#E6B3FF', name: 'Purple', typeId: ColorTypeIds.Purple },  // Soft pastel purple
+      { backgroundColor: '#FFFFFF', name: 'White', typeId: ColorTypeIds.White },   // White
     ];
-    return colors[index] || '#E0E0E0'; // Fallback light gray
+    return colors[index] || { backgroundColor: '#E0E0E0', name: 'Unknown', typeId: '' }; // Fallback light gray
   }
 
   const handleThoughtClick = async (thought: Thought) => {
     if (selectedColorIndex !== null) {
-      const newColor = getColorByIndex(selectedColorIndex);
+      const { backgroundColor: newColor, name: colorName, typeId: colorTypeId } = getColorByIndex(selectedColorIndex);
       try {
         await updateThoughtColor({
           thoughtId: thought.id,
@@ -127,6 +128,18 @@ function App() {
               child.id === thought.id ? { ...child, backgroundColor: newColor } : child
             )
           );
+        }
+
+        if (colorTypeId) {
+          // Create a link between the thought and the color type thought using the typeId from types.ts
+          await createLink({
+            thoughtIdA: thought.id,
+            thoughtIdB: colorTypeId,
+            relation: ThoughtRelation.Parent, // Use the appropriate relation
+          });
+        } else {
+          console.warn(`Color type ID not found for color: ${colorName}`);
+          setLocalErrorMessage(`Color type ID not found for color: ${colorName}`);
         }
       } catch (error) {
         console.error('Failed to update thought color:', error);
@@ -170,7 +183,7 @@ function App() {
               key={index}
               className={`w-8 h-8 rounded-full cursor-pointer ${selectedColorIndex === index ? 'ring-2 ring-black' : ''
                 }`}
-              style={{ backgroundColor: getColorByIndex(index) }}
+              style={{ backgroundColor: getColorByIndex(index).backgroundColor }}
               onClick={() => setSelectedColorIndex(prev => prev === index ? null : index)}
             ></div>
           ))}
