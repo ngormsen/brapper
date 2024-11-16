@@ -209,49 +209,64 @@ export const createLink = async (params: CreateLinkParams) => {
 };
 
 interface UpdateThoughtColorParams {
-  thoughtId: string;
-  backgroundColor: string;
+    thoughtId: string;
+    backgroundColor: string;
 }
 
 export const updateThoughtColor = async ({ thoughtId, backgroundColor }: UpdateThoughtColorParams) => {
-  try {
-    const response = await fetch(`${API_BASE_URL}/thoughts/${BRAIN_ID}/${thoughtId}`, {
-      method: 'PATCH',
-      headers: {
-        'Authorization': `Bearer ${API_KEY}`,
-        'Content-Type': 'application/json-patch+json',
-      },
-      body: JSON.stringify([
-        {
-          value: backgroundColor,
-          operationType: 2,
-          path: "/backgroundColor",
-          op: "replace"
+    try {
+        const response = await fetch(`${API_BASE_URL}/thoughts/${BRAIN_ID}/${thoughtId}`, {
+            method: 'PATCH',
+            headers: {
+                'Authorization': `Bearer ${API_KEY}`,
+                'Content-Type': 'application/json-patch+json',
+            },
+            body: JSON.stringify([
+                {
+                    value: backgroundColor,
+                    operationType: 2,
+                    path: "/backgroundColor",
+                    op: "replace"
+                }
+            ]),
+        });
+
+        if (!response.ok) {
+            let errorMessage = response.statusText;
+            try {
+                const errorText = await response.text();
+                if (errorText) {
+                    errorMessage = errorText;
+                }
+            } catch (e) {
+                // If we can't parse the error message, use the status text
+            }
+            throw new Error(`Request failed: ${errorMessage}`);
         }
-      ]),
+
+        // Only try to parse JSON if we have content
+        const text = await response.text();
+        const data = text ? JSON.parse(text) : null;
+        return data;
+    } catch (error: any) {
+        console.error('Error: ', error.message);
+        throw error; // Re-throw the error to be handled by the caller
+    }
+};
+
+export async function deleteThought(thoughtId: string): Promise<void> {
+    const response = await fetch(`${API_BASE_URL}/thoughts/${BRAIN_ID}/${thoughtId}`, {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${API_KEY}`,
+        },
     });
 
     if (!response.ok) {
-      let errorMessage = response.statusText;
-      try {
-        const errorText = await response.text();
-        if (errorText) {
-          errorMessage = errorText;
-        }
-      } catch (e) {
-        // If we can't parse the error message, use the status text
-      }
-      throw new Error(`Request failed: ${errorMessage}`);
+        const errorData = await response.json();
+        throw new Error(errorData?.message || 'Failed to delete thought');
     }
-
-    // Only try to parse JSON if we have content
-    const text = await response.text();
-    const data = text ? JSON.parse(text) : null;
-    return data;
-  } catch (error: any) {
-    console.error('Error: ', error.message);
-    throw error; // Re-throw the error to be handled by the caller
-  }
-};
+}
 
 

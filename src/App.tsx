@@ -9,12 +9,14 @@ import {
   ThoughtKind,
   ThoughtRelation,
   updateThoughtColor,
+  deleteThought,
+  BRAIN_ID,
 } from './Client';
 import useThoughtDetails from './hooks/useThoughtDetails';
-import ThoughtNode from './components/ThoughtNode';
 import ThoughtInput from './components/ThoughtInput';
 import { Thought } from './types';
 import { useNavigationStack } from './hooks/useNavigationStack';
+import ThoughtNode from './components/ThoughtNode';
 
 function App() {
   const { currentThoughtId, navigate, goBack, canGoBack } = useNavigationStack();
@@ -78,7 +80,7 @@ function App() {
       .then((newThought) => {
         setThoughtCandidate(null);
         // Update local state to include the new thought
-        setChildren((prevChildren) => [...prevChildren, {name: thoughtCandidate.name, id: newThought.id}]);
+        setChildren((prevChildren) => [...prevChildren, { name: thoughtCandidate.name, id: newThought.id }]);
       })
       .catch((error) => {
         setLocalErrorMessage(error.message);
@@ -142,6 +144,22 @@ function App() {
     setRefreshKey((prevKey) => prevKey + 1);
   };
 
+  const handleDeleteThought = async (thoughtId: string) => {
+    try {
+      await deleteThought(thoughtId);
+
+      // Remove the deleted thought from local state
+      setChildren((prevChildren) =>
+        prevChildren.filter((child) => child.id !== thoughtId)
+      );
+    } catch (error) {
+      console.error('Failed to delete thought:', error);
+      setLocalErrorMessage(
+        error instanceof Error ? error.message : 'Failed to delete thought'
+      );
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-100">
       <div className="flex flex-col items-center relative">
@@ -150,9 +168,8 @@ function App() {
           {[...Array(6)].map((_, index) => (
             <div
               key={index}
-              className={`w-8 h-8 rounded-full cursor-pointer ${
-                selectedColorIndex === index ? 'ring-2 ring-black' : ''
-              }`}
+              className={`w-8 h-8 rounded-full cursor-pointer ${selectedColorIndex === index ? 'ring-2 ring-black' : ''
+                }`}
               style={{ backgroundColor: getColorByIndex(index) }}
               onClick={() => setSelectedColorIndex(prev => prev === index ? null : index)}
             ></div>
@@ -186,6 +203,7 @@ function App() {
             onNavigate={handleThoughtClick}
             onAddChild={onAddChild}
             onAddJump={onAddJump}
+            onDeleteThought={handleDeleteThought}
           />
         )}
 
@@ -198,6 +216,7 @@ function App() {
               onNavigate={handleThoughtClick}
               onAddChild={onAddChild}
               onAddJump={onAddJump}
+              onDeleteThought={handleDeleteThought}
             />
           ))}
         </div>
