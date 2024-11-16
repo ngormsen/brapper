@@ -19,7 +19,13 @@ import { useNavigationStack } from './hooks/useNavigationStack';
 function App() {
   const { currentThoughtId, navigate, goBack, canGoBack } = useNavigationStack();
   const [refreshKey, setRefreshKey] = useState(0);
-  const { parent, children, errorMessage } = useThoughtDetails(currentThoughtId, refreshKey);
+  const {
+    parent,
+    children,
+    errorMessage,
+    setParent,
+    setChildren,
+  } = useThoughtDetails(currentThoughtId, refreshKey);
   const [thoughtCandidate, setThoughtCandidate] = useState<Thought | null>(null);
 
   const [localErrorMessage, setLocalErrorMessage] = useState<string>('');
@@ -108,11 +114,23 @@ function App() {
           backgroundColor: newColor,
         });
 
-        // Increment refreshKey to re-fetch thought details
-        setRefreshKey((prevKey) => prevKey + 1);
+        // Update the thought's color in local state
+        if (parent && thought.id === parent.id) {
+          // Update parent color
+          setParent({ ...parent, backgroundColor: newColor });
+        } else {
+          // Update child color
+          setChildren((prevChildren) =>
+            prevChildren.map((child) =>
+              child.id === thought.id ? { ...child, backgroundColor: newColor } : child
+            )
+          );
+        }
       } catch (error) {
         console.error('Failed to update thought color:', error);
-        setLocalErrorMessage(error instanceof Error ? error.message : 'Failed to update thought color');
+        setLocalErrorMessage(
+          error instanceof Error ? error.message : 'Failed to update thought color'
+        );
       }
     } else {
       navigateToThought(thought);

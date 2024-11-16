@@ -26,7 +26,7 @@ function useThoughtDetails(currentThoughtId: string, refreshKey: number) {
       });
   }, [currentThoughtId, refreshKey]);
 
-  return { parent, children, errorMessage };
+  return { parent, children, errorMessage, setParent, setChildren };
 }
 
 export default useThoughtDetails; 
