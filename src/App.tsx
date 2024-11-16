@@ -41,6 +41,14 @@ function App() {
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
+      const activeElement = document.activeElement as HTMLElement;
+      if (
+        activeElement &&
+        (activeElement.tagName === 'INPUT' || activeElement.tagName === 'TEXTAREA')
+      ) {
+        return;
+      }
+
       if (['1', '2', '3', '4', '5', '6'].includes(event.key)) {
         const colorIndex = parseInt(event.key) - 1;
         setSelectedColorIndex((prevIndex) =>
@@ -66,7 +74,7 @@ function App() {
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [canGoBack]); // Include canGoBack in dependencies
+  }, [canGoBack]);
 
   const navigateToThought = (thought: Thought) => {
     navigate(thought.id);
