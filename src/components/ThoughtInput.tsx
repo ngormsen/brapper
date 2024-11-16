@@ -20,6 +20,14 @@ const ThoughtInput: React.FC<ThoughtInputProps> = ({
     setTimeout(() => setIsActive(false), 100);
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      handleAction();
+    } else if (e.key === 'Escape') {
+      e.currentTarget.blur();
+    }
+  };
+
   return (
     <div className="flex items-center justify-center mt-8">
       <input
@@ -31,11 +39,7 @@ const ThoughtInput: React.FC<ThoughtInputProps> = ({
             name: e.target.value,
           })
         }
-        onKeyDown={(e) => {
-          if (e.key === 'Enter') {
-            handleAction();
-          }
-        }}
+        onKeyDown={handleKeyDown}
         className="border-2 border-black rounded-lg px-8 py-4 focus:outline-none focus:border-blue-500"
         placeholder="Enter thought name"
       />
