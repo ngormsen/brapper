@@ -1,12 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   AccessType,
   createLink,
   createThought,
   getThoughtByExactName,
+  getThoughtDetails,
   ROOT_THOUGHT_ID,
   ThoughtKind,
   ThoughtRelation,
+  updateThoughtColor,
 } from './Client';
 import useThoughtDetails from './hooks/useThoughtDetails';
 import ThoughtNode from './components/ThoughtNode';
@@ -16,10 +18,26 @@ import { useNavigationStack } from './hooks/useNavigationStack';
 
 function App() {
   const { currentThoughtId, navigate, goBack, canGoBack } = useNavigationStack();
-  const { parent, children, errorMessage } = useThoughtDetails(currentThoughtId);
+  const [refreshKey, setRefreshKey] = useState(0);
+  const { parent, children, errorMessage } = useThoughtDetails(currentThoughtId, refreshKey);
   const [thoughtCandidate, setThoughtCandidate] = useState<Thought | null>(null);
 
   const [localErrorMessage, setLocalErrorMessage] = useState<string>('');
+
+  const [selectedColorIndex, setSelectedColorIndex] = useState<number | null>(null);
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (['1', '2', '3', '4', '5'].includes(event.key)) {
+        setSelectedColorIndex(parseInt(event.key) - 1);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
 
   const navigateToThought = (thought: Thought) => {
     navigate(thought.id);
@@ -68,9 +86,47 @@ function App() {
     handleAddThought(thought, ThoughtRelation.Jump);
   };
 
+  function getColorByIndex(index: number): string {
+    const colors = ['#FF0000', '#00FF00', '#0000FF', '#FFFF00', '#800080'];
+    return colors[index] || '#808080';
+  }
+
+  const handleThoughtClick = async (thought: Thought) => {
+    if (selectedColorIndex !== null) {
+      const newColor = getColorByIndex(selectedColorIndex);
+      try {
+        await updateThoughtColor({
+          thoughtId: thought.id,
+          backgroundColor: newColor,
+        });
+
+        // Increment refreshKey to re-fetch thought details
+        setRefreshKey((prevKey) => prevKey + 1);
+      } catch (error) {
+        setLocalErrorMessage('Failed to update thought color');
+      }
+    } else {
+      navigateToThought(thought);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-100">
       <div className="flex flex-col items-center relative">
+        {/* Color Legend */}
+        <div className="absolute top-4 left-4 flex space-x-2">
+          {[...Array(5)].map((_, index) => (
+            <div
+              key={index}
+              className={`w-8 h-8 rounded-full cursor-pointer ${
+                selectedColorIndex === index ? 'ring-2 ring-black' : ''
+              }`}
+              style={{ backgroundColor: getColorByIndex(index) }}
+              onClick={() => setSelectedColorIndex(index)}
+            ></div>
+          ))}
+        </div>
+
         {/* Add Back Button */}
         {canGoBack && (
           <button
@@ -87,7 +143,7 @@ function App() {
         {parent && (
           <ThoughtNode
             thought={parent}
-            onNavigate={navigateToThought}
+            onNavigate={handleThoughtClick}
             onAddChild={onAddChild}
             onAddJump={onAddJump}
           />
@@ -99,7 +155,7 @@ function App() {
             <ThoughtNode
               key={child.id}
               thought={child}
-              onNavigate={navigateToThought}
+              onNavigate={handleThoughtClick}
               onAddChild={onAddChild}
               onAddJump={onAddJump}
             />

@@ -1,14 +1,14 @@
-import { useEffect, useState } from 'react';
-import { getThoughtDetails, ROOT_THOUGHT_ID } from '../Client';
+import { useState, useEffect } from 'react';
+import { getThoughtDetails } from '../Client';
 import { Thought } from '../types';
 
-function useThoughtDetails(thoughtId: string) {
+function useThoughtDetails(currentThoughtId: string, refreshKey: number) {
   const [parent, setParent] = useState<Thought | null>(null);
   const [children, setChildren] = useState<Thought[]>([]);
   const [errorMessage, setErrorMessage] = useState<string>('');
 
   useEffect(() => {
-    getThoughtDetails(thoughtId)
+    getThoughtDetails(currentThoughtId)
       .then((thought) => {
         setParent({
           id: thought.activeThought.id,
@@ -16,10 +16,10 @@ function useThoughtDetails(thoughtId: string) {
         });
         setChildren(thought.children);
       })
-      .catch(() => {
+      .catch((error) => {
         setErrorMessage('Failed to fetch thought details');
       });
-  }, [thoughtId]);
+  }, [currentThoughtId, refreshKey]);
 
   return { parent, children, errorMessage };
 }

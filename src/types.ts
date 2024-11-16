@@ -1,5 +1,6 @@
-export type Thought = {
-  id?: string;
+export interface Thought {
+  id: string;
   name: string;
+  backgroundColor?: string;
   children?: Thought[];
-}; 
+} 

@@ -172,4 +172,62 @@ export const createLink = async (params: CreateLinkParams) => {
     }
 };
 
+interface UpdateThoughtColorParams {
+  thoughtId: string;
+  backgroundColor: string;
+}
+
+export const updateThoughtColor = async ({ thoughtId, backgroundColor }: UpdateThoughtColorParams) => {
+  try {
+    // Fetch the current thought to check if 'backgroundColor' exists
+    const thoughtResponse = await fetch(`${API_BASE_URL}/thoughts/${BRAIN_ID}/${thoughtId}`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!thoughtResponse.ok) {
+      throw new Error('Failed to fetch thought: ' + thoughtResponse.statusText);
+    }
+
+    const thoughtData = await thoughtResponse.json();
+    const propertyExists = thoughtData.backgroundColor !== undefined && thoughtData.backgroundColor !== null;
+
+    // Set operationType and op based on existence of 'backgroundColor'
+    const operationType = propertyExists ? 2 : 0; // 2 = replace, 0 = add
+    const op = propertyExists ? 'replace' : 'add';
+
+    // Proceed to update the backgroundColor
+    const response = await fetch(`${API_BASE_URL}/thoughts/${BRAIN_ID}/${thoughtId}`, {
+      method: 'PATCH',
+      headers: {
+        'Authorization': `Bearer ${API_KEY}`,
+        'Content-Type': 'application/json-patch+json',
+      },
+      body: JSON.stringify([
+        {
+          value: backgroundColor,
+          operationType: operationType,
+          path: "/backgroundColor",
+          op: op
+        }
+      ]),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Error response: ', errorText);
+      throw new Error('Request failed: ' + response.statusText);
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error: any) {
+    console.error('Error: ', error.message);
+    throw new Error('An error occurred while updating the thought color.');
+  }
+};
+
 
