@@ -42,10 +42,18 @@ function App() {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (['1', '2', '3', '4', '5', '6'].includes(event.key)) {
         const colorIndex = parseInt(event.key) - 1;
-        setSelectedColorIndex(prevIndex => prevIndex === colorIndex ? null : colorIndex);
+        setSelectedColorIndex((prevIndex) =>
+          prevIndex === colorIndex ? null : colorIndex
+        );
       } else if (event.key.toLowerCase() === 's') {
-        setIsSelectMode(prev => !prev);
+        setIsSelectMode((prev) => !prev);
         setSelectedNodes(new Set());
+      } else if (event.key.toLowerCase() === 'r') {
+        handleRefetch();
+      } else if (event.key.toLowerCase() === 'b') {
+        if (canGoBack) {
+          goBack();
+        }
       }
     };
 
@@ -53,7 +61,7 @@ function App() {
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, []);
+  }, [canGoBack]);
 
   const navigateToThought = (thought: Thought) => {
     navigate(thought.id);
