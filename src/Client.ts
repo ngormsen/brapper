@@ -179,27 +179,6 @@ interface UpdateThoughtColorParams {
 
 export const updateThoughtColor = async ({ thoughtId, backgroundColor }: UpdateThoughtColorParams) => {
   try {
-    // Fetch the current thought to check if 'backgroundColor' exists
-    const thoughtResponse = await fetch(`${API_BASE_URL}/thoughts/${BRAIN_ID}/${thoughtId}`, {
-      method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-    });
-
-    if (!thoughtResponse.ok) {
-      throw new Error('Failed to fetch thought: ' + thoughtResponse.statusText);
-    }
-
-    const thoughtData = await thoughtResponse.json();
-    const propertyExists = thoughtData.backgroundColor !== undefined && thoughtData.backgroundColor !== null;
-
-    // Set operationType and op based on existence of 'backgroundColor'
-    const operationType = propertyExists ? 2 : 0; // 2 = replace, 0 = add
-    const op = propertyExists ? 'replace' : 'add';
-
-    // Proceed to update the backgroundColor
     const response = await fetch(`${API_BASE_URL}/thoughts/${BRAIN_ID}/${thoughtId}`, {
       method: 'PATCH',
       headers: {
@@ -209,24 +188,33 @@ export const updateThoughtColor = async ({ thoughtId, backgroundColor }: UpdateT
       body: JSON.stringify([
         {
           value: backgroundColor,
-          operationType: operationType,
+          operationType: 2,
           path: "/backgroundColor",
-          op: op
+          op: "replace"
         }
       ]),
     });
 
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Error response: ', errorText);
-      throw new Error('Request failed: ' + response.statusText);
+      let errorMessage = response.statusText;
+      try {
+        const errorText = await response.text();
+        if (errorText) {
+          errorMessage = errorText;
+        }
+      } catch (e) {
+        // If we can't parse the error message, use the status text
+      }
+      throw new Error(`Request failed: ${errorMessage}`);
     }
 
-    const data = await response.json();
+    // Only try to parse JSON if we have content
+    const text = await response.text();
+    const data = text ? JSON.parse(text) : null;
     return data;
   } catch (error: any) {
     console.error('Error: ', error.message);
-    throw new Error('An error occurred while updating the thought color.');
+    throw error; // Re-throw the error to be handled by the caller
   }
 };
 

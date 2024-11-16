@@ -103,7 +103,8 @@ function App() {
         // Increment refreshKey to re-fetch thought details
         setRefreshKey((prevKey) => prevKey + 1);
       } catch (error) {
-        setLocalErrorMessage('Failed to update thought color');
+        console.error('Failed to update thought color:', error);
+        setLocalErrorMessage(error instanceof Error ? error.message : 'Failed to update thought color');
       }
     } else {
       navigateToThought(thought);
