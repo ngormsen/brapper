@@ -43,42 +43,61 @@ export const getBrains = async () => {
 }
 
 export const getThoughtDetails = async (thoughtId: string, includeSiblings: boolean = false) => {
-    const response = await fetch(
-        `${API_BASE_URL}/thoughts/${BRAIN_ID}/${thoughtId}/graph?includeSiblings=${includeSiblings}`, {
-        method: 'GET',
-        headers: {
-            'Authorization': `Bearer ${API_KEY}`,
-            'Content-Type': 'application/json',
-        },
-    });
+    try {
+        const response = await fetch(
+            `${API_BASE_URL}/thoughts/${BRAIN_ID}/${thoughtId}/graph?includeSiblings=${includeSiblings}`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${API_KEY}`,
+                'Content-Type': 'application/json',
+            },
+        });
 
-    if (!response.ok) {
-        throw new Error('Request failed: ' + response.statusText);
+        if (response.status === 404) {
+            return null;
+        }
+
+        if (!response.ok) {
+            throw new Error('Request failed: ' + response.statusText);
+        }
+
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        if (error instanceof Error && error.message.includes('Request failed')) {
+            throw error;
+        }
+        console.warn('Failed to fetch thought details:', thoughtId);
+        return null;
     }
-
-    const data = await response.json();
-    return data;
-}
+};
 
 export const getThoughtByExactName = async (nameExact: string) => {
-    const response = await fetch(`${API_BASE_URL}/thoughts/${BRAIN_ID}?nameExact=${encodeURIComponent(nameExact)}`, {
-        method: 'GET',
-        headers: {
-            'Authorization': `Bearer ${API_KEY}`,
-            'Content-Type': 'application/json',
-        },
-    });
+    try {
+        const response = await fetch(`${API_BASE_URL}/thoughts/${BRAIN_ID}?nameExact=${encodeURIComponent(nameExact)}`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${API_KEY}`,
+                'Content-Type': 'application/json',
+            },
+        });
 
-    if (response.status === 404) {
-        throw new Error("Thought not found");
+        if (response.status === 404) {
+            return null;
+        }
+
+        if (!response.ok) {
+            throw new Error('Request failed: ' + response.statusText);
+        }
+
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        if (error instanceof Error && error.message.includes('Request failed')) {
+            throw error;
+        }
+        throw new Error('Failed to check for existing thought');
     }
-
-    if (!response.ok) {
-        throw new Error('Request failed: ' + response.statusText);
-    }
-
-    const data = await response.json();
-    return data;
 }
 
 export interface CreateThoughtParams {
@@ -125,17 +144,34 @@ export const createThought = async (params: CreateThoughtParams) => {
 
 
 export const getThought = async (thoughtId: string) => {
-    const response = await fetch(`${API_BASE_URL}/thoughts/${BRAIN_ID}/${thoughtId}`, {
-        method: 'GET',
-    });
+    try {
+        const response = await fetch(`${API_BASE_URL}/thoughts/${BRAIN_ID}/${thoughtId}`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${API_KEY}`,
+                'Content-Type': 'application/json',
+            },
+        });
 
-    if (!response.ok) {
-        throw new Error('Request failed: ' + response.statusText);
+        if (response.status === 404) {
+            return null;
+        }
+
+        if (!response.ok) {
+            throw new Error('Request failed: ' + response.statusText);
+        }
+
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        if (error instanceof Error && error.message.includes('Request failed')) {
+            throw error;
+        }
+        // For network or other errors
+        console.warn('Failed to fetch thought:', thoughtId);
+        return null;
     }
-
-    const data = await response.json();
-    return data;
-}
+};
 
 export interface CreateLinkParams {
     thoughtIdA: string;

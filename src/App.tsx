@@ -51,20 +51,21 @@ function App() {
   };
 
   const handleAddThought = (thought: Thought, thoughtRelation: ThoughtRelation) => {
-    if (!thoughtCandidate) {
+    if (!thoughtCandidate || !thought) {
       return;
     }
 
     getThoughtByExactName(thoughtCandidate.name)
       .then((existingThought) => {
-        return createLink({
-          thoughtIdA: thought.id,
-          thoughtIdB: existingThought.id,
-          relation: thoughtRelation,
-        }).then(() => existingThought);
-      })
-      .catch((error) => {
-        if (error.message === 'Thought not found') {
+        if (existingThought) {
+          // If thought exists, create link
+          return createLink({
+            thoughtIdA: thought.id,
+            thoughtIdB: existingThought.id,
+            relation: thoughtRelation,
+          }).then(() => existingThought);
+        } else {
+          // If thought doesn't exist, create new thought
           return createThought({
             name: thoughtCandidate.name,
             sourceThoughtId: thought.id,
@@ -72,13 +73,12 @@ function App() {
             relation: thoughtRelation,
             acType: AccessType.Private,
           });
-        } else {
-          throw new Error('An error occurred while creating the thought');
         }
       })
       .then((newThought) => {
         setThoughtCandidate(null);
         // Update local state to include the new thought
+        setChildren((prevChildren) => [...prevChildren, {name: thoughtCandidate.name, id: newThought.id}]);
       })
       .catch((error) => {
         setLocalErrorMessage(error.message);
@@ -137,6 +137,11 @@ function App() {
     }
   };
 
+  // Add a function to handle refetching
+  const handleRefetch = () => {
+    setRefreshKey((prevKey) => prevKey + 1);
+  };
+
   return (
     <div className="min-h-screen bg-gray-100">
       <div className="flex flex-col items-center relative">
@@ -154,7 +159,7 @@ function App() {
           ))}
         </div>
 
-        {/* Add Back Button */}
+        {/* Back Button */}
         {canGoBack && (
           <button
             onClick={() => goBack()}
@@ -163,6 +168,14 @@ function App() {
             ← Back
           </button>
         )}
+
+        {/* Refetch Button */}
+        <button
+          onClick={handleRefetch}
+          className="absolute top-16 right-4 bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600"
+        >
+          ↻ Refetch
+        </button>
 
         <h1 className="text-4xl font-bold text-center">Hello World</h1>
 
