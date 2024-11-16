@@ -8,6 +8,8 @@ import {
   ThoughtKind,
   ThoughtRelation,
   updateThoughtColor,
+  getLinkBetweenNodes,
+  removeLink,
 } from './Client';
 import ThoughtInput from './components/ThoughtInput';
 import ThoughtNode from './components/ThoughtNode';
@@ -216,6 +218,70 @@ function App() {
     }
   };
 
+  // Update the handleRefactor function
+  const handleRefactor = async () => {
+    if (!thoughtCandidate || selectedNodes.size === 0) {
+      setLocalErrorMessage('Please enter a name and select nodes to refactor.');
+      return;
+    }
+
+    try {
+      // Create a new thought (node) with the name from the input field
+      const newThought = await createThought({
+        name: thoughtCandidate.name,
+        kind: ThoughtKind.Normal,
+        acType: AccessType.Private,
+      });
+
+      // Prepare promises for link operations
+      const linkPromises: Promise<any>[] = [];
+
+      // For each selected child node
+      for (const childId of Array.from(selectedNodes)) {
+        // Get the existing link between the current parent and the child
+        const existingLink = await getLinkBetweenNodes(childId, currentThoughtId);
+        if (existingLink) {
+          // Remove the existing link
+          linkPromises.push(removeLink(existingLink.id));
+        }
+
+        // Create a new parent link from the child to the new thought
+        linkPromises.push(
+          createLink({
+            thoughtIdA: childId,
+            thoughtIdB: newThought.id,
+            relation: ThoughtRelation.Parent,
+          })
+        );
+      }
+
+      // Create a parent connection between the current parent and the new thought
+      linkPromises.push(
+        createLink({
+          thoughtIdA: newThought.id,
+          thoughtIdB: currentThoughtId,
+          relation: ThoughtRelation.Parent,
+        })
+      );
+
+      // Execute all link operations
+      await Promise.all(linkPromises);
+
+      // Clear the thought candidate and selected nodes
+      setThoughtCandidate(null);
+      setSelectedNodes(new Set());
+      setIsSelectMode(false);
+
+      // Refresh the data
+      handleRefetch();
+    } catch (error) {
+      console.error('Refactor failed:', error);
+      setLocalErrorMessage(
+        error instanceof Error ? error.message : 'Failed to refactor thoughts'
+      );
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-100">
       <div className="flex flex-col items-center relative">
@@ -311,16 +377,27 @@ function App() {
           </div>
         )}
 
-        {/* Select Button */}
-        <button
-          onClick={() => {
-            setIsSelectMode((prev) => !prev);
-            setSelectedNodes(new Set());
-          }}
-          className="absolute bottom-4 left-4 bg-purple-500 text-white px-4 py-2 rounded-md hover:bg-purple-600"
-        >
-          {isSelectMode ? 'Exit Select Mode' : 'Select'}
-        </button>
+        {/* Select and Refactor Buttons */}
+        <div className="absolute bottom-4 left-4 flex space-x-4">
+          <button
+            onClick={() => {
+              setIsSelectMode((prev) => !prev);
+              setSelectedNodes(new Set());
+            }}
+            className="bg-purple-500 text-white px-4 py-2 rounded-md hover:bg-purple-600"
+          >
+            {isSelectMode ? 'Exit Select Mode' : 'Select'}
+          </button>
+
+          {isSelectMode && (
+            <button
+              onClick={handleRefactor}
+              className="bg-orange-500 text-white px-4 py-2 rounded-md hover:bg-orange-600"
+            >
+              Refactor
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );

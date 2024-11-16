@@ -269,4 +269,49 @@ export async function deleteThought(thoughtId: string): Promise<void> {
     }
 }
 
+export const getLinkBetweenNodes = async (thoughtIdA: string, thoughtIdB: string) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/links/${BRAIN_ID}/${thoughtIdA}/${thoughtIdB}`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (response.status === 404) {
+      return null; // Link not found
+    }
+
+    if (!response.ok) {
+      throw new Error(`Request failed: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    return data; // Returns the link object
+  } catch (error: any) {
+    console.error('Error fetching link:', error.message);
+    throw new Error('Failed to fetch link between nodes.');
+  }
+};
+
+export const removeLink = async (linkId: string) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/links/${BRAIN_ID}/${linkId}`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Request failed: ${response.statusText}`);
+    }
+  } catch (error: any) {
+    console.error('Error deleting link:', error.message);
+    throw new Error('Failed to delete link.');
+  }
+};
+
 
