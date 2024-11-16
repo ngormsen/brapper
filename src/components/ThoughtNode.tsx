@@ -26,7 +26,7 @@ const ThoughtNode: React.FC<ThoughtNodeProps> = ({ thought, onNavigate, onAddChi
 
         {/* Main box */}
         <div
-          className="border-2 border-black rounded-lg px-8 py-4 hover:bg-gray-200 transition-colors"
+          className="border-2 border-black rounded-lg px-8 py-4 hover:bg-gray-200 active:bg-gray-300 active:scale-95 transition-all"
           onClick={() => onNavigate(thought)}
           style={{
             backgroundColor: thought.backgroundColor || 'transparent',

@@ -28,8 +28,9 @@ function App() {
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (['1', '2', '3', '4', '5'].includes(event.key)) {
-        setSelectedColorIndex(parseInt(event.key) - 1);
+      if (['1', '2', '3', '4', '5', '6'].includes(event.key)) {
+        const colorIndex = parseInt(event.key) - 1;
+        setSelectedColorIndex(prevIndex => prevIndex === colorIndex ? null : colorIndex);
       }
     };
 
@@ -87,8 +88,15 @@ function App() {
   };
 
   function getColorByIndex(index: number): string {
-    const colors = ['#FF0000', '#00FF00', '#0000FF', '#FFFF00', '#800080'];
-    return colors[index] || '#808080';
+    const colors = [
+      '#FFB3B3',  // Soft pastel red
+      '#B8E6B8',  // Soft pastel green
+      '#B3D9FF',  // Soft pastel blue
+      '#FFE6B3',  // Soft pastel yellow
+      '#E6B3FF',  // Soft pastel purple
+      '#FFFFFF',  // White
+    ];
+    return colors[index] || '#E0E0E0'; // Fallback light gray
   }
 
   const handleThoughtClick = async (thought: Thought) => {
@@ -115,15 +123,15 @@ function App() {
     <div className="min-h-screen bg-gray-100">
       <div className="flex flex-col items-center relative">
         {/* Color Legend */}
-        <div className="absolute top-4 left-4 flex space-x-2">
-          {[...Array(5)].map((_, index) => (
+        <div className="absolute top-4 left-4 grid grid-cols-3 gap-2 border-2 border-black rounded-lg p-2 bg-gray-200">
+          {[...Array(6)].map((_, index) => (
             <div
               key={index}
               className={`w-8 h-8 rounded-full cursor-pointer ${
                 selectedColorIndex === index ? 'ring-2 ring-black' : ''
               }`}
               style={{ backgroundColor: getColorByIndex(index) }}
-              onClick={() => setSelectedColorIndex(index)}
+              onClick={() => setSelectedColorIndex(prev => prev === index ? null : index)}
             ></div>
           ))}
         </div>

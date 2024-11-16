@@ -14,7 +14,12 @@ function useThoughtDetails(currentThoughtId: string, refreshKey: number) {
           id: thought.activeThought.id,
           name: thought.activeThought.name,
         });
-        setChildren(thought.children);
+        const sortedChildren = [...thought.children].sort((a, b) => {
+          if (!a.backgroundColor) return 1;
+          if (!b.backgroundColor) return -1;
+          return a.backgroundColor.localeCompare(b.backgroundColor);
+        });
+        setChildren(sortedChildren);
       })
       .catch((error) => {
         setErrorMessage('Failed to fetch thought details');
