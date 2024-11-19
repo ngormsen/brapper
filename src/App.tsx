@@ -39,6 +39,9 @@ function App() {
   const [isBackActive, setIsBackActive] = useState(false);
   const [isRefreshActive, setIsRefreshActive] = useState(false);
 
+  const [textAreaValue, setTextAreaValue] = useState('');
+  const [tiles, setTiles] = useState<string[]>([]);
+
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       const activeElement = document.activeElement as HTMLElement;
@@ -80,12 +83,17 @@ function App() {
     navigate(thought.id);
   };
 
-  const handleAddThought = (thought: Thought, thoughtRelation: ThoughtRelation) => {
-    if (!thoughtCandidate || !thought) {
+  const handleAddThought = (
+    thought: Thought,
+    thoughtRelation: ThoughtRelation,
+    customThoughtCandidate?: Thought
+  ) => {
+    const candidate = customThoughtCandidate || thoughtCandidate;
+    if (!candidate || !thought) {
       return;
     }
 
-    getThoughtByExactName(thoughtCandidate.name)
+    getThoughtByExactName(candidate.name)
       .then((existingThought) => {
         if (existingThought) {
           // If thought exists, create link
@@ -97,7 +105,7 @@ function App() {
         } else {
           // If thought doesn't exist, create new thought
           return createThought({
-            name: thoughtCandidate.name,
+            name: candidate.name,
             sourceThoughtId: thought.id,
             kind: ThoughtKind.Normal,
             relation: thoughtRelation,
@@ -110,7 +118,7 @@ function App() {
         // Update local state to include the new thought
         setChildren((prevChildren) => [
           ...prevChildren,
-          { name: thoughtCandidate.name, id: newThought.id },
+          { name: candidate.name, id: newThought.id },
         ]);
       })
       .catch((error) => {
@@ -290,6 +298,25 @@ function App() {
     }
   };
 
+  const handleConvert = () => {
+    if (!textAreaValue) {
+      return;
+    }
+    const inputText = textAreaValue;
+    const splittedTexts = inputText
+      .split('---')
+      .map((text) => text.trim())
+      .filter((text) => text);
+    setTiles(splittedTexts);
+  };
+
+  const handleAddTileThought = (tileText: string) => {
+    const newThoughtCandidate = { name: tileText, id: '', backgroundColor: undefined };
+    handleAddThought(parent, ThoughtRelation.Child, newThoughtCandidate);
+    // Optionally remove the tile after adding
+    setTiles((prevTiles) => prevTiles.filter((tile) => tile !== tileText));
+  };
+
   return (
     <div className="min-h-screen bg-gray-100">
       <div className="flex flex-col items-center relative">
@@ -298,9 +325,8 @@ function App() {
           {[...Array(6)].map((_, index) => (
             <div
               key={index}
-              className={`w-8 h-8 rounded-full cursor-pointer ${
-                selectedColorIndex === index ? 'ring-2 ring-black' : ''
-              }`}
+              className={`w-8 h-8 rounded-full cursor-pointer ${selectedColorIndex === index ? 'ring-2 ring-black' : ''
+                }`}
               style={{ backgroundColor: getColorByIndex(index).backgroundColor }}
               onClick={() =>
                 setSelectedColorIndex((prev) => (prev === index ? null : index))
@@ -317,9 +343,8 @@ function App() {
               goBack();
               setTimeout(() => setIsBackActive(false), 100);
             }}
-            className={`absolute top-4 right-4 bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-transform duration-100 ${
-              isBackActive ? 'scale-95 bg-blue-600' : ''
-            }`}
+            className={`absolute top-4 right-4 bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-transform duration-100 ${isBackActive ? 'scale-95 bg-blue-600' : ''
+              }`}
           >
             ← Back
           </button>
@@ -332,9 +357,8 @@ function App() {
             handleRefetch();
             setTimeout(() => setIsRefreshActive(false), 100);
           }}
-          className={`absolute top-16 right-4 bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 transition-transform duration-100 ${
-            isRefreshActive ? 'scale-95 bg-green-600' : ''
-          }`}
+          className={`absolute top-16 right-4 bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 transition-transform duration-100 ${isRefreshActive ? 'scale-95 bg-green-600' : ''
+            }`}
         >
           ↻ Refetch
         </button>
@@ -379,6 +403,36 @@ function App() {
           onAddThought={() => handleAddThought(parent, ThoughtRelation.Child)}
         />
 
+
+        {/* Tiles Display */}
+        <div className="flex flex-wrap items-center justify-center gap-4 mt-4">
+          {tiles.map((tile, index) => (
+            <div
+              key={index}
+              className="bg-white border-2 border-black rounded-lg p-4 cursor-pointer hover:bg-gray-200 max-w-xs overflow-hidden"
+              onClick={() => handleAddTileThought(tile)}
+            >
+              <div className="whitespace-pre-wrap break-words">
+                {tile.length > 100 ? `${tile.substring(0, 97)}...` : tile}
+              </div>
+            </div>
+          ))}
+        </div>
+        {/* Convert Button */}
+        <button
+          onClick={handleConvert}
+          className="bg-blue-500 text-white px-4 py-2 mt-4 rounded-md hover:bg-blue-600"
+        >
+          Convert
+        </button>
+
+        <textarea
+          value={textAreaValue}
+          onChange={(e) =>
+            setTextAreaValue(e.target.value)
+          }
+          className="border-2 border-black rounded-lg w-1/2 h-1/2 px-3 py-4 mt-8 focus:outline-none focus:border-blue-500"></textarea>
+
         {(errorMessage || localErrorMessage) && (
           <div className="text-red-500 text-center mt-8">
             {errorMessage || localErrorMessage}
@@ -407,7 +461,7 @@ function App() {
           )}
         </div>
       </div>
-    </div>
+    </div >
   );
 }
 
