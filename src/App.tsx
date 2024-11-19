@@ -10,6 +10,7 @@ import {
   updateThoughtColor,
   getLinkBetweenNodes,
   removeLink,
+  // searchThoughts,
 } from './Client';
 import ThoughtInput from './components/ThoughtInput';
 import ThoughtNode from './components/ThoughtNode';
@@ -41,6 +42,8 @@ function App() {
 
   const [textAreaValue, setTextAreaValue] = useState('');
   const [tiles, setTiles] = useState<string[]>([]);
+
+  const [selectedSearchThoughtId, setSelectedSearchThoughtId] = useState<string | null>(null);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -401,6 +404,10 @@ function App() {
           thoughtCandidate={thoughtCandidate}
           setThoughtCandidate={setThoughtCandidate}
           onAddThought={() => handleAddThought(parent, ThoughtRelation.Child)}
+          onSearchResultSelect={(thoughtId: string) => {
+            setSelectedSearchThoughtId(thoughtId);
+            // You can perform additional actions with the selected thought ID here
+          }}
         />
 
 

@@ -314,4 +314,35 @@ export const removeLink = async (linkId: string) => {
   }
 };
 
+export const searchThoughts = async (
+  queryText: string,
+  maxResults: number = 2,
+  onlySearchThoughtNames: boolean = true
+) => {
+  try {
+    const url = new URL(`${API_BASE_URL}/search/${BRAIN_ID}`);
+    url.searchParams.append('queryText', queryText);
+    url.searchParams.append('maxResults', maxResults.toString());
+    url.searchParams.append('onlySearchThoughtNames', onlySearchThoughtNames.toString());
+
+    const response = await fetch(url.toString(), {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error('Request failed: ' + response.statusText);
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error: any) {
+    console.error('Error fetching search results:', error.message);
+    throw new Error('Failed to fetch search results.');
+  }
+};
+
 
