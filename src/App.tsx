@@ -86,6 +86,14 @@ function App() {
       } else if (event.key.toLowerCase() === 'f') {
         event.preventDefault();
         document.getElementById('searchInput')?.focus();
+      } else if (event.key.toLowerCase() === 'q' && isSelectMode) {
+        document.getElementById('refactorButton')?.click();
+      } else if (event.key.toLowerCase() === 'w' && isSelectMode) {
+        document.getElementById('addToParentButton')?.click();
+      } else if (event.key.toLowerCase() === 'e' && isSelectMode) {
+        document.getElementById('addToNewParentButton')?.click();
+      } else if (event.key.toLowerCase() === 'n') {
+        document.getElementById('rootNodeButton')?.click();
       }
     };
 
@@ -512,13 +520,15 @@ function App() {
           <SearchInput onSearchResultClick={handleSearchResultClick} />
         </div>
 
-        {/* RootNode button (existing) */}
+        {/* RootNode button */}
         <button
+          id="rootNodeButton"
           onClick={() => {
             navigate(ROOT_THOUGHT_ID);
           }}
           className={`absolute top-4 right-32 bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600 transition-transform duration-100`}
         >
+          <p className="absolute -top-1 -left-1 text-sm bg-gray-700 text-white px-1 rounded-md">N</p>
           RootNode
         </button>
 
@@ -626,6 +636,7 @@ function App() {
               <div className="relative">
                 <p className="absolute -top-1 -left-1 text-sm bg-gray-700 text-white px-1 rounded-md">Q</p>
                 <button
+                  id="refactorButton"
                   onClick={handleRefactor}
                   className="bg-orange-500 text-white px-4 py-2 rounded-md hover:bg-orange-600"
                 >
@@ -635,6 +646,7 @@ function App() {
               <div className="relative">
                 <p className="absolute -top-1 -left-1 text-sm bg-gray-700 text-white px-1 rounded-md">W</p>
                 <button
+                  id="addToParentButton"
                   onClick={handleAddToParent}
                   className="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600"
                 >
@@ -644,6 +656,7 @@ function App() {
               <div className="relative">
                 <p className="absolute -top-1 -left-1 text-sm bg-gray-700 text-white px-1 rounded-md">E</p>
                 <button
+                  id="addToNewParentButton"
                   onClick={handleAddToNewParent}
                   className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
                 >
