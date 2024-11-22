@@ -67,18 +67,19 @@ function App() {
           prevIndex === colorIndex ? null : colorIndex
         );
       } else if (event.key.toLowerCase() === 's') {
-        setIsSelectMode((prev) => !prev);
-        setSelectedNodes(new Set());
+        document.getElementById('selectButton')?.click();
       } else if (event.key.toLowerCase() === 'r') {
-        setIsRefreshActive(true);
-        handleRefetch();
-        setTimeout(() => setIsRefreshActive(false), 100);
+        document.getElementById('refreshButton')?.click();
       } else if (event.key.toLowerCase() === 'b') {
         if (canGoBack) {
-          setIsBackActive(true);
-          goBack();
-          setTimeout(() => setIsBackActive(false), 100);
+          document.getElementById('backButton')?.click();
         }
+      } else if (event.key.toLowerCase() === 'g') {
+        event.preventDefault();
+        document.getElementById('thoughtInput')?.focus();
+      } else if (event.key.toLowerCase() === 'f') {
+        event.preventDefault();
+        document.getElementById('searchInput')?.focus();
       }
     };
 
@@ -490,13 +491,13 @@ function App() {
         {/* Back Button */}
         {canGoBack && (
           <button
+            id="backButton"
             onClick={() => {
               setIsBackActive(true);
               goBack();
               setTimeout(() => setIsBackActive(false), 100);
             }}
-            className={`absolute top-4 right-4 bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-transform duration-100 ${isBackActive ? 'scale-95 bg-blue-600' : ''
-              }`}
+            className={`absolute top-4 right-4 bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-transform duration-100 ${isBackActive ? 'scale-95 bg-blue-600' : ''}`}
           >
             ← Back
           </button>
@@ -504,13 +505,13 @@ function App() {
 
         {/* Refetch Button */}
         <button
+          id="refreshButton"
           onClick={() => {
             setIsRefreshActive(true);
             handleRefetch();
             setTimeout(() => setIsRefreshActive(false), 100);
           }}
-          className={`absolute top-16 right-4 bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 transition-transform duration-100 ${isRefreshActive ? 'scale-95 bg-green-600' : ''
-            }`}
+          className={`absolute top-16 right-4 bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 transition-transform duration-100 ${isRefreshActive ? 'scale-95 bg-green-600' : ''}`}
         >
           ↻ Refetch
         </button>
@@ -519,6 +520,7 @@ function App() {
         <div className="absolute top-4 right-64 w-64">
           <div className="relative">
             <input
+              id="searchInput"
               type="text"
               value={searchQuery}
               onChange={(e) => handleSearch(e.target.value)}
@@ -644,6 +646,7 @@ function App() {
         {/* Select, Refactor, and Add to Parent Buttons */}
         <div className="absolute bottom-4 left-4 flex flex-col-reverse space-y-4">
           <button
+            id="selectButton"
             onClick={() => {
               setIsSelectMode((prev) => !prev);
               setSelectedNodes(new Set());

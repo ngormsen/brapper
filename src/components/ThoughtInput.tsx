@@ -83,6 +83,7 @@ const ThoughtInput: React.FC<ThoughtInputProps> = ({
     <div className="flex flex-col items-center justify-center mt-8 relative w-full max-w-md">
       <div className="flex items-center w-full">
         <input
+          id="thoughtInput"
           type="text"
           value={thoughtCandidate?.name || ''}
           onChange={handleInputChange}
