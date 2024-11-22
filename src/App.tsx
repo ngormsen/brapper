@@ -10,6 +10,7 @@ import {
   updateThoughtColor,
   getLinkBetweenNodes,
   removeLink,
+  ROOT_THOUGHT_ID,
   // searchThoughts,
 } from './Client';
 import ThoughtInput from './components/ThoughtInput';
@@ -474,6 +475,15 @@ function App() {
             }`}
         >
           ↻ Refetch
+        </button>
+        
+        <button
+          onClick={() => {
+            navigate(ROOT_THOUGHT_ID);
+          }}
+          className={`absolute top-4 right-32 bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600 transition-transform duration-100`}
+        >
+          RootNode
         </button>
 
         <h1 className="text-4xl font-bold text-center">Hello World</h1>
