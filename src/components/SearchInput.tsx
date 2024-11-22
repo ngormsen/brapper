@@ -69,6 +69,7 @@ const SearchInput: React.FC<SearchInputProps> = ({ onSearchResultClick }) => {
 
   return (
     <div className="relative">
+      <p className="absolute -top-1 -left-2 text-sm bg-gray-700 text-white px-1 rounded-md z-10">F</p>
       <input
         id="searchInput"
         type="text"

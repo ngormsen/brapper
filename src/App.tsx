@@ -475,17 +475,20 @@ function App() {
 
         {/* Back Button */}
         {canGoBack && (
-          <button
-            id="backButton"
-            onClick={() => {
-              setIsBackActive(true);
-              goBack();
-              setTimeout(() => setIsBackActive(false), 100);
-            }}
-            className={`absolute top-4 right-4 bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-transform duration-100 ${isBackActive ? 'scale-95 bg-blue-600' : ''}`}
-          >
-            ← Back
-          </button>
+          <div className="absolute top-4 right-4 ">
+            <p className="absolute -top-1 -left-1 text-sm bg-gray-700 text-white px-1 rounded-md">B</p>
+            <button
+              id="backButton"
+              onClick={() => {
+                setIsBackActive(true);
+                goBack();
+                setTimeout(() => setIsBackActive(false), 100);
+              }}
+              className={`bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-transform duration-100 ${isBackActive ? 'scale-95 bg-blue-600' : ''}`}
+            >
+              ← Back
+            </button>
+          </div>
         )}
 
         {/* Refetch Button */}
@@ -519,7 +522,8 @@ function App() {
           RootNode
         </button>
 
-        <h1 className="text-4xl font-bold text-center">Hello World</h1>
+
+        <div className="mt-16"></div>
 
         {/* Parent */}
         {parent && (
@@ -603,37 +607,49 @@ function App() {
 
         {/* Select, Refactor, and Add to Parent Buttons */}
         <div className="absolute bottom-4 left-4 flex flex-col-reverse space-y-4">
-          <button
-            id="selectButton"
-            onClick={() => {
-              setIsSelectMode((prev) => !prev);
-              setSelectedNodes(new Set());
-            }}
-            className="bg-purple-500 text-white px-4 py-2 mt-6 rounded-md hover:bg-purple-600"
-          >
-            {isSelectMode ? 'Exit Select Mode' : 'Select'}
-          </button>
+          <div className="relative">
+            <p className="absolute top-3 -left-1 text-sm bg-gray-700 text-white px-1 rounded-md">S</p>
+            <button
+              id="selectButton"
+              onClick={() => {
+                setIsSelectMode((prev) => !prev);
+                setSelectedNodes(new Set());
+              }}
+              className="bg-purple-500 text-white px-4 py-2 mt-6 rounded-md hover:bg-purple-600"
+            >
+              {isSelectMode ? 'Exit Select Mode' : 'Select'}
+            </button>
+          </div>
 
           {isSelectMode && (
             <>
-              <button
-                onClick={handleRefactor}
-                className="bg-orange-500 text-white px-4 py-2 rounded-md hover:bg-orange-600"
-              >
-                Refactor
-              </button>
-              <button
-                onClick={handleAddToParent}
-                className="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600"
-              >
-                Add to Parent
-              </button>
-              <button
-                onClick={handleAddToNewParent}
-                className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
-              >
-                Add to New Parent
-              </button>
+              <div className="relative">
+                <p className="absolute -top-1 -left-1 text-sm bg-gray-700 text-white px-1 rounded-md">Q</p>
+                <button
+                  onClick={handleRefactor}
+                  className="bg-orange-500 text-white px-4 py-2 rounded-md hover:bg-orange-600"
+                >
+                  Refactor
+                </button>
+              </div>
+              <div className="relative">
+                <p className="absolute -top-1 -left-1 text-sm bg-gray-700 text-white px-1 rounded-md">W</p>
+                <button
+                  onClick={handleAddToParent}
+                  className="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600"
+                >
+                  Add to Parent
+                </button>
+              </div>
+              <div className="relative">
+                <p className="absolute -top-1 -left-1 text-sm bg-gray-700 text-white px-1 rounded-md">E</p>
+                <button
+                  onClick={handleAddToNewParent}
+                  className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
+                >
+                  Add to New Parent
+                </button>
+              </div>
             </>
           )}
         </div>

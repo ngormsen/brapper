@@ -89,15 +89,18 @@ const ThoughtInput: React.FC<ThoughtInputProps> = ({
   return (
     <div className="flex flex-col items-center justify-center mt-8 relative w-full max-w-md">
       <div className="flex items-center w-full relative">
-        <input
-          id="thoughtInput"
-          type="text"
-          value={thoughtCandidate?.name || ''}
-          onChange={handleInputChange}
-          onKeyDown={handleKeyDown}
-          className={`border-2 border-black rounded-lg px-8 py-4 focus:outline-none focus:border-blue-500 w-full ${selectedSearchThoughtId ? 'border-purple-500' : ''}`}
-          placeholder="Enter thought name"
-        />
+        <div className="relative w-full">
+          <p className="absolute -top-1 -left-2 text-sm bg-gray-700 text-white px-1 rounded-md z-10">G</p>
+          <input
+            id="thoughtInput"
+            type="text"
+            value={thoughtCandidate?.name || ''}
+            onChange={handleInputChange}
+            onKeyDown={handleKeyDown}
+            className={`border-2 border-black rounded-lg px-8 py-4 focus:outline-none focus:border-blue-500 w-full ${selectedSearchThoughtId ? 'border-purple-500' : ''}`}
+            placeholder="Enter thought name"
+          />
+        </div>
         {isSearching && (
           <div className="absolute right-[100px] top-1/2 -translate-y-1/2">
             <div className="animate-spin h-5 w-5 border-2 border-blue-500 rounded-full border-t-transparent"></div>
