@@ -583,7 +583,7 @@ function App() {
 
 
         {/* Tiles Display */}
-        <div className="flex flex-wrap items-center justify-center gap-4 mt-4">
+        <div className="flex flex-wrap items-center justify-start gap-4 m-4">
           {tiles.map((tile, index) => (
             <div
               key={index}
