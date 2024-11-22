@@ -56,6 +56,7 @@ function App() {
         event.preventDefault();
         (document.activeElement as HTMLElement)?.blur();
         setSelectedSearchThoughtId(null);
+        setSelectedColorIndex(null);
         return;
       }
 
