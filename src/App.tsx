@@ -11,16 +11,14 @@ import {
   getLinkBetweenNodes,
   removeLink,
   ROOT_THOUGHT_ID,
-  searchThoughts,
   getThought,
-  SearchResult,
 } from './Client';
 import ThoughtInput from './components/ThoughtInput';
 import ThoughtNode from './components/ThoughtNode';
 import { useNavigationStack } from './hooks/useNavigationStack';
 import useThoughtDetails from './hooks/useThoughtDetails';
 import { ColorTypeIds, Thought } from './types';
-import { debounce } from 'lodash';
+import SearchInput from './components/SearchInput';
 
 function App() {
   const { currentThoughtId, navigate, goBack, canGoBack } = useNavigationStack();
@@ -48,32 +46,6 @@ function App() {
   const [tiles, setTiles] = useState<string[]>([]);
 
   const [selectedSearchThoughtId, setSelectedSearchThoughtId] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
-  const [isSearching, setIsSearching] = useState(false);
-
-  // Create a memoized debounced search function
-  const debouncedSearch = React.useMemo(
-    () =>
-      debounce(async (query: string) => {
-        if (!query.trim()) {
-          setSearchResults([]);
-          return;
-        }
-
-        setIsSearching(true);
-        try {
-          const results = await searchThoughts(query, 5, true);
-          setSearchResults(results);
-        } catch (error) {
-          console.error('Search failed:', error);
-          setLocalErrorMessage(error instanceof Error ? error.message : 'Search failed');
-        } finally {
-          setIsSearching(false);
-        }
-      }, 300), // 300ms delay
-    [] // Empty dependencies since we don't want to recreate this function
-  );
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -84,7 +56,6 @@ function App() {
         event.preventDefault();
         (document.activeElement as HTMLElement)?.blur();
         setSelectedSearchThoughtId(null);
-        setSearchResults([]);
         return;
       }
 
@@ -472,26 +443,11 @@ function App() {
     setTiles((prevTiles) => prevTiles.filter((tile) => tile !== tileText));
   };
 
-  // Update the handleSearch function to use the debounced version
-  const handleSearch = (query: string) => {
-    setSearchQuery(query);
-    debouncedSearch(query);
-  };
-
-  // Clean up the debounced function on component unmount
-  React.useEffect(() => {
-    return () => {
-      debouncedSearch.cancel();
-    };
-  }, [debouncedSearch]);
-
   const handleSearchResultClick = async (thoughtId: string) => {
     try {
       const thought = await getThought(thoughtId);
       if (thought) {
         navigate(thought.id);
-        setSearchQuery('');
-        setSearchResults([]);
       }
     } catch (error) {
       console.error('Navigation failed:', error);
@@ -547,37 +503,7 @@ function App() {
         
         {/* Search Input and Results */}
         <div className="absolute top-4 right-64 w-64">
-          <div className="relative">
-            <input
-              id="searchInput"
-              type="text"
-              value={searchQuery}
-              onChange={(e) => handleSearch(e.target.value)}
-              placeholder="Search thoughts..."
-              className="w-full px-4 py-2 border-2 border-gray-300 rounded-md focus:outline-none focus:border-blue-500"
-            />
-            {isSearching && (
-              <div className="absolute right-3 top-2.5">
-                <div className="animate-spin h-5 w-5 border-2 border-blue-500 rounded-full border-t-transparent"></div>
-              </div>
-            )}
-            {searchResults.length > 0 && (
-              <div className="absolute z-50 w-full mt-1 bg-white border-2 border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
-                {searchResults.map((result, index) => (
-                  <div
-                    key={index}
-                    onClick={() => handleSearchResultClick(result.sourceThought.id)}
-                    className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
-                    style={{
-                      backgroundColor: result.sourceThought.backgroundColor || 'transparent',
-                    }}
-                  >
-                    {result.name}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+          <SearchInput onSearchResultClick={handleSearchResultClick} />
         </div>
 
         {/* RootNode button (existing) */}
