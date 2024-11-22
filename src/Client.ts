@@ -334,11 +334,34 @@ export const removeLink = async (linkId: string) => {
   }
 };
 
+export interface SearchResult {
+  sourceThought: {
+    id: string;
+    brainId: string;
+    creationDateTime: string;
+    modificationDateTime: string;
+    name: string;
+    cleanedUpName: string;
+    typeId: string;
+    acType: number;
+    kind: number;
+    backgroundColor: string;
+  };
+  searchResultType: number;
+  isFromOtherBrain: boolean;
+  name: string;
+  attachmentId: string;
+  brainName: string;
+  brainId: string;
+  entityType: number;
+  sourceType: number;
+}
+
 export const searchThoughts = async (
   queryText: string,
   maxResults: number = 2,
   onlySearchThoughtNames: boolean = true
-) => {
+): Promise<SearchResult[]> => {
   try {
     const url = new URL(`${API_BASE_URL}/search/${BRAIN_ID}`);
     url.searchParams.append('queryText', queryText);
