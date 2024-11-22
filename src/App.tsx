@@ -50,7 +50,7 @@ function App() {
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       const activeElement = document.activeElement as HTMLElement;
-      
+
       // Handle Escape key regardless of active element
       if (event.key === 'Escape') {
         event.preventDefault();
@@ -489,18 +489,21 @@ function App() {
         )}
 
         {/* Refetch Button */}
-        <button
-          id="refreshButton"
-          onClick={() => {
-            setIsRefreshActive(true);
-            handleRefetch();
-            setTimeout(() => setIsRefreshActive(false), 100);
-          }}
-          className={`absolute top-16 right-4 bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 transition-transform duration-100 ${isRefreshActive ? 'scale-95 bg-green-600' : ''}`}
-        >
-          ↻ Refetch
-        </button>
-        
+        <div className="absolute top-16 right-4">
+          <p className="absolute -top-1 -left-1 text-sm bg-gray-700 text-white px-1 rounded-md">R</p>
+          <button
+            id="refreshButton"
+            onClick={() => {
+              setIsRefreshActive(true);
+              handleRefetch();
+              setTimeout(() => setIsRefreshActive(false), 100);
+            }}
+            className={`bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 transition-transform duration-100 ${isRefreshActive ? 'scale-95 bg-green-600' : ''}`}
+          >
+            ↻
+            Refetch
+          </button>
+        </div>
         {/* Search Input and Results */}
         <div className="absolute top-4 right-64 w-64">
           <SearchInput onSearchResultClick={handleSearchResultClick} />
