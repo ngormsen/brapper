@@ -134,7 +134,7 @@ function App() {
             sourceThoughtId: thought.id,
             kind: ThoughtKind.Normal,
             relation: thoughtRelation,
-            acType: AccessType.Private,
+            acType: AccessType.Public,
           });
         }
       })
@@ -271,7 +271,7 @@ function App() {
       const newThought = await createThought({
         name: thoughtCandidate.name,
         kind: ThoughtKind.Normal,
-        acType: AccessType.Private,
+        acType: AccessType.Public,
       });
 
       // Prepare promises for link operations
@@ -340,7 +340,7 @@ function App() {
         const newParent = await createThought({
           name: thoughtCandidate.name,
           kind: ThoughtKind.Normal,
-          acType: AccessType.Private,
+          acType: AccessType.Public,
         });
         parentId = newParent.id;
       }
@@ -373,6 +373,7 @@ function App() {
   };
 
   const handleAddToNewParent = async () => {
+    console.log('handleAddToNewParent');
     if (!thoughtCandidate || selectedNodes.size === 0) {
       setLocalErrorMessage('Please enter a parent name and select nodes to add.');
       return;
@@ -389,7 +390,7 @@ function App() {
         const newParent = await createThought({
           name: thoughtCandidate.name,
           kind: ThoughtKind.Normal,
-          acType: AccessType.Private,
+          acType: AccessType.Public,
         });
         parentId = newParent.id;
       }
