@@ -19,6 +19,7 @@ import { useNavigationStack } from './hooks/useNavigationStack';
 import useThoughtDetails from './hooks/useThoughtDetails';
 import { ColorTypeIds, Thought } from './types';
 import SearchInput from './components/SearchInput';
+import SelectionControls from './components/SelectionControls';
 
 function App() {
   const { currentThoughtId, navigate, goBack, canGoBack } = useNavigationStack();
@@ -596,10 +597,22 @@ function App() {
             </div>
           ))}
         </div>
+
+        <SelectionControls
+          isSelectMode={isSelectMode}
+          onSelectModeToggle={() => {
+            setIsSelectMode((prev) => !prev);
+            setSelectedNodes(new Set());
+          }}
+          onRefactor={handleRefactor}
+          onAddToParent={handleAddToParent}
+          onAddToNewParent={handleAddToNewParent}
+        />
+
         {/* Convert Button */}
         <button
           onClick={handleConvert}
-          className="bg-blue-500 text-white px-4 py-2 mt-4 rounded-md hover:bg-blue-600"
+          className="bg-blue-500 text-white px-4 py-2 my-4 rounded-md hover:bg-blue-600"
         >
           Convert
         </button>
@@ -609,7 +622,7 @@ function App() {
           onChange={(e) =>
             setTextAreaValue(e.target.value)
           }
-          className="border-2 border-black rounded-lg w-1/2 h-1/2 px-3 py-4 mt-8 focus:outline-none focus:border-blue-500"></textarea>
+          className="border-2 border-black rounded-lg w-1/2 h-1/2 px-3 py-4 mb-4 focus:outline-none focus:border-blue-500"></textarea>
 
         {(errorMessage || localErrorMessage) && (
           <div className="text-red-500 text-center mt-8">
@@ -617,57 +630,7 @@ function App() {
           </div>
         )}
 
-        {/* Select, Refactor, and Add to Parent Buttons */}
-        <div className="absolute bottom-4 left-4 flex flex-col-reverse space-y-4">
-          <div className="relative">
-            <p className="absolute top-3 -left-1 text-sm bg-gray-700 text-white px-1 rounded-md">S</p>
-            <button
-              id="selectButton"
-              onClick={() => {
-                setIsSelectMode((prev) => !prev);
-                setSelectedNodes(new Set());
-              }}
-              className="bg-purple-500 text-white px-4 py-2 mt-6 rounded-md hover:bg-purple-600"
-            >
-              {isSelectMode ? 'Exit Select Mode' : 'Select'}
-            </button>
-          </div>
 
-          {isSelectMode && (
-            <>
-              <div className="relative">
-                <p className="absolute -top-1 -left-1 text-sm bg-gray-700 text-white px-1 rounded-md">Q</p>
-                <button
-                  id="refactorButton"
-                  onClick={handleRefactor}
-                  className="bg-orange-500 text-white px-4 py-2 rounded-md hover:bg-orange-600"
-                >
-                  Refactor
-                </button>
-              </div>
-              <div className="relative">
-                <p className="absolute -top-1 -left-1 text-sm bg-gray-700 text-white px-1 rounded-md">W</p>
-                <button
-                  id="addToParentButton"
-                  onClick={handleAddToParent}
-                  className="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600"
-                >
-                  Add to Parent
-                </button>
-              </div>
-              <div className="relative">
-                <p className="absolute -top-1 -left-1 text-sm bg-gray-700 text-white px-1 rounded-md">E</p>
-                <button
-                  id="addToNewParentButton"
-                  onClick={handleAddToNewParent}
-                  className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
-                >
-                  Add to New Parent
-                </button>
-              </div>
-            </>
-          )}
-        </div>
       </div>
     </div >
   );
