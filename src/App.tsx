@@ -20,6 +20,7 @@ import useThoughtDetails from './hooks/useThoughtDetails';
 import { ColorTypeIds, Thought } from './types';
 import SearchInput from './components/SearchInput';
 import SelectionControls from './components/SelectionControls';
+import CandidateThoughtNode from './components/CandidateThoughtNode';
 
 function App() {
   const { currentThoughtId, navigate, goBack, canGoBack } = useNavigationStack();
@@ -47,6 +48,10 @@ function App() {
   const [tiles, setTiles] = useState<string[]>([]);
 
   const [selectedSearchThoughtId, setSelectedSearchThoughtId] = useState<string | null>(null);
+
+  const [tileColors, setTileColors] = useState<{ [key: string]: string }>({});
+
+  const [selectedTiles, setSelectedTiles] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -466,6 +471,28 @@ function App() {
     }
   };
 
+  const handleTileClick = (tileText: string) => {
+    if (isSelectMode) {
+      setSelectedTiles(prev => {
+        const newSelected = new Set(prev);
+        if (newSelected.has(tileText)) {
+          newSelected.delete(tileText);
+        } else {
+          newSelected.add(tileText);
+        }
+        return newSelected;
+      });
+    } else if (selectedColorIndex !== null) {
+      const { backgroundColor } = getColorByIndex(selectedColorIndex);
+      setTileColors(prev => ({
+        ...prev,
+        [tileText]: backgroundColor
+      }));
+    } else {
+      handleAddTileThought(tileText);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-100">
       <div className="flex flex-col items-center relative">
@@ -586,15 +613,15 @@ function App() {
         {/* Tiles Display */}
         <div className="flex flex-wrap items-center justify-start gap-4 m-4">
           {tiles.map((tile, index) => (
-            <div
+            <CandidateThoughtNode
               key={index}
-              className="bg-white border-2 border-black rounded-lg p-4 cursor-pointer hover:bg-gray-200 max-w-xs overflow-hidden"
-              onClick={() => handleAddTileThought(tile)}
-            >
-              <div className="whitespace-pre-wrap break-words">
-                {tile.length > 100 ? `${tile.substring(0, 97)}...` : tile}
-              </div>
-            </div>
+              text={tile}
+              onClick={() => handleTileClick(tile)}
+              backgroundColor={tileColors[tile]}
+              isColorMode={selectedColorIndex !== null}
+              isSelectMode={isSelectMode}
+              isSelected={selectedTiles.has(tile)}
+            />
           ))}
         </div>
 
