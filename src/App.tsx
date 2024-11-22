@@ -301,6 +301,55 @@ function App() {
     }
   };
 
+  const handleAddToParent = async () => {
+    if (!thoughtCandidate || selectedNodes.size === 0) {
+      setLocalErrorMessage('Please enter a parent name and select nodes to add.');
+      return;
+    }
+
+    try {
+      let parentId: string;
+
+      // If we have a selected search result (existing thought)
+      if (selectedSearchThoughtId) {
+        parentId = selectedSearchThoughtId;
+      } else {
+        // Create a new thought as parent if none selected
+        const newParent = await createThought({
+          name: thoughtCandidate.name,
+          kind: ThoughtKind.Normal,
+          acType: AccessType.Private,
+        });
+        parentId = newParent.id;
+      }
+
+      // Create links between selected nodes and the parent
+      const linkPromises = Array.from(selectedNodes).map(childId =>
+        createLink({
+          thoughtIdA: childId,
+          thoughtIdB: parentId,
+          relation: ThoughtRelation.Parent,
+        })
+      );
+
+      await Promise.all(linkPromises);
+
+      // Clear states
+      setThoughtCandidate(null);
+      setSelectedNodes(new Set());
+      setIsSelectMode(false);
+      setSelectedSearchThoughtId(null);
+
+      // Refresh the data
+      handleRefetch();
+    } catch (error) {
+      console.error('Add to parent failed:', error);
+      setLocalErrorMessage(
+        error instanceof Error ? error.message : 'Failed to add thoughts to parent'
+      );
+    }
+  };
+
   const handleConvert = () => {
     if (!textAreaValue) {
       return;
@@ -446,7 +495,7 @@ function App() {
           </div>
         )}
 
-        {/* Select and Refactor Buttons */}
+        {/* Select, Refactor, and Add to Parent Buttons */}
         <div className="absolute bottom-4 left-4 flex space-x-4">
           <button
             onClick={() => {
@@ -459,12 +508,20 @@ function App() {
           </button>
 
           {isSelectMode && (
-            <button
-              onClick={handleRefactor}
-              className="bg-orange-500 text-white px-4 py-2 rounded-md hover:bg-orange-600"
-            >
-              Refactor
-            </button>
+            <>
+              <button
+                onClick={handleRefactor}
+                className="bg-orange-500 text-white px-4 py-2 rounded-md hover:bg-orange-600"
+              >
+                Refactor
+              </button>
+              <button
+                onClick={handleAddToParent}
+                className="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600"
+              >
+                Add to Parent
+              </button>
+            </>
           )}
         </div>
       </div>
