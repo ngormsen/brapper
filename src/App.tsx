@@ -20,6 +20,7 @@ import ThoughtNode from './components/ThoughtNode';
 import { useNavigationStack } from './hooks/useNavigationStack';
 import useThoughtDetails from './hooks/useThoughtDetails';
 import { ColorTypeIds, Thought } from './types';
+import { debounce } from 'lodash';
 
 function App() {
   const { currentThoughtId, navigate, goBack, canGoBack } = useNavigationStack();
@@ -51,9 +52,43 @@ function App() {
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
 
+  // Create a memoized debounced search function
+  const debouncedSearch = React.useMemo(
+    () =>
+      debounce(async (query: string) => {
+        if (!query.trim()) {
+          setSearchResults([]);
+          return;
+        }
+
+        setIsSearching(true);
+        try {
+          const results = await searchThoughts(query, 5, true);
+          setSearchResults(results);
+        } catch (error) {
+          console.error('Search failed:', error);
+          setLocalErrorMessage(error instanceof Error ? error.message : 'Search failed');
+        } finally {
+          setIsSearching(false);
+        }
+      }, 300), // 300ms delay
+    [] // Empty dependencies since we don't want to recreate this function
+  );
+
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       const activeElement = document.activeElement as HTMLElement;
+      
+      // Handle Escape key regardless of active element
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        (document.activeElement as HTMLElement)?.blur();
+        setSelectedSearchThoughtId(null);
+        setSearchResults([]);
+        return;
+      }
+
+      // Skip other shortcuts if we're in an input/textarea
       if (
         activeElement &&
         (activeElement.tagName === 'INPUT' || activeElement.tagName === 'TEXTAREA')
@@ -437,24 +472,18 @@ function App() {
     setTiles((prevTiles) => prevTiles.filter((tile) => tile !== tileText));
   };
 
-  const handleSearch = async (query: string) => {
+  // Update the handleSearch function to use the debounced version
+  const handleSearch = (query: string) => {
     setSearchQuery(query);
-    if (!query.trim()) {
-      setSearchResults([]);
-      return;
-    }
-
-    setIsSearching(true);
-    try {
-      const results = await searchThoughts(query, 5, true);
-      setSearchResults(results);
-    } catch (error) {
-      console.error('Search failed:', error);
-      setLocalErrorMessage(error instanceof Error ? error.message : 'Search failed');
-    } finally {
-      setIsSearching(false);
-    }
+    debouncedSearch(query);
   };
+
+  // Clean up the debounced function on component unmount
+  React.useEffect(() => {
+    return () => {
+      debouncedSearch.cancel();
+    };
+  }, [debouncedSearch]);
 
   const handleSearchResultClick = async (thoughtId: string) => {
     try {
