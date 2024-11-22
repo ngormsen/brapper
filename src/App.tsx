@@ -350,6 +350,67 @@ function App() {
     }
   };
 
+  const handleAddToNewParent = async () => {
+    if (!thoughtCandidate || selectedNodes.size === 0) {
+      setLocalErrorMessage('Please enter a parent name and select nodes to add.');
+      return;
+    }
+
+    try {
+      let parentId: string;
+
+      // If we have a selected search result (existing thought)
+      if (selectedSearchThoughtId) {
+        parentId = selectedSearchThoughtId;
+      } else {
+        // Create a new thought as parent if none selected
+        const newParent = await createThought({
+          name: thoughtCandidate.name,
+          kind: ThoughtKind.Normal,
+          acType: AccessType.Private,
+        });
+        parentId = newParent.id;
+      }
+
+      // First, remove existing parent links and create new ones
+      const linkOperations = await Promise.all(
+        Array.from(selectedNodes).map(async (childId) => {
+          // Get and remove existing link
+          const existingLink = await getLinkBetweenNodes(childId, currentThoughtId);
+          if (existingLink) {
+            await removeLink(existingLink.id);
+          }
+
+          // Create new parent link
+          return createLink({
+            thoughtIdA: childId,
+            thoughtIdB: parentId,
+            relation: ThoughtRelation.Parent,
+          });
+        })
+      );
+
+      // Clear states
+      setThoughtCandidate(null);
+      setSelectedNodes(new Set());
+      setIsSelectMode(false);
+      setSelectedSearchThoughtId(null);
+
+      // Update local state to remove the moved nodes
+      setChildren((prevChildren) =>
+        prevChildren.filter((child) => !selectedNodes.has(child.id))
+      );
+
+      // Refresh the data
+      handleRefetch();
+    } catch (error) {
+      console.error('Add to new parent failed:', error);
+      setLocalErrorMessage(
+        error instanceof Error ? error.message : 'Failed to add thoughts to new parent'
+      );
+    }
+  };
+
   const handleConvert = () => {
     if (!textAreaValue) {
       return;
@@ -457,6 +518,8 @@ function App() {
             setSelectedSearchThoughtId(thoughtId);
             // You can perform additional actions with the selected thought ID here
           }}
+          selectedSearchThoughtId={selectedSearchThoughtId}
+          setSelectedSearchThoughtId={setSelectedSearchThoughtId}
         />
 
 
@@ -496,13 +559,13 @@ function App() {
         )}
 
         {/* Select, Refactor, and Add to Parent Buttons */}
-        <div className="absolute bottom-4 left-4 flex space-x-4">
+        <div className="absolute bottom-4 left-4 flex flex-col-reverse space-y-4">
           <button
             onClick={() => {
               setIsSelectMode((prev) => !prev);
               setSelectedNodes(new Set());
             }}
-            className="bg-purple-500 text-white px-4 py-2 rounded-md hover:bg-purple-600"
+            className="bg-purple-500 text-white px-4 py-2 mt-6 rounded-md hover:bg-purple-600"
           >
             {isSelectMode ? 'Exit Select Mode' : 'Select'}
           </button>
@@ -520,6 +583,12 @@ function App() {
                 className="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600"
               >
                 Add to Parent
+              </button>
+              <button
+                onClick={handleAddToNewParent}
+                className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
+              >
+                Add to New Parent
               </button>
             </>
           )}

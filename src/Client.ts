@@ -18,6 +18,26 @@ export enum AccessType {
     Private = 1
 }
 
+
+export interface Link {
+    id: string;
+    brainId: string;
+    creationDateTime: string;
+    modificationDateTime: string;
+    name: string | null;
+    cleanedUpName: string | null;
+    typeId: string | null;
+    kind: number;
+    color: string | null;
+    thickness: number | null;
+    thoughtIdA: string;
+    thoughtIdB: string;
+    relation: number;
+    direction: number;
+    meaning: number;
+  }
+  
+
 export const API_KEY = "e521ea99e1b5b574c3eab5a13208ebe0b929712da46abbcb150df362a5f7faab"
 export const BRAIN_ID = "b0f66acd-1357-4175-9ab7-74b620b637d2"
 export const API_BASE_URL = "https://api.bra.in"
@@ -269,7 +289,7 @@ export async function deleteThought(thoughtId: string): Promise<void> {
     }
 }
 
-export const getLinkBetweenNodes = async (thoughtIdA: string, thoughtIdB: string) => {
+export const getLinkBetweenNodes = async (thoughtIdA: string, thoughtIdB: string): Promise<Link | null> => {
   try {
     const response = await fetch(`${API_BASE_URL}/links/${BRAIN_ID}/${thoughtIdA}/${thoughtIdB}`, {
       method: 'GET',
@@ -288,7 +308,7 @@ export const getLinkBetweenNodes = async (thoughtIdA: string, thoughtIdB: string
     }
 
     const data = await response.json();
-    return data; // Returns the link object
+    return data as Link; // Returns the link object with proper typing
   } catch (error: any) {
     console.error('Error fetching link:', error.message);
     throw new Error('Failed to fetch link between nodes.');
@@ -344,5 +364,3 @@ export const searchThoughts = async (
     throw new Error('Failed to fetch search results.');
   }
 };
-
-

@@ -7,6 +7,8 @@ type ThoughtInputProps = {
   setThoughtCandidate: React.Dispatch<React.SetStateAction<Thought | null>>;
   onAddThought: () => void;
   onSearchResultSelect: (thoughtId: string) => void;
+  selectedSearchThoughtId: string | null;
+  setSelectedSearchThoughtId: React.Dispatch<React.SetStateAction<string | null>>;
 };
 
 const ThoughtInput: React.FC<ThoughtInputProps> = ({
@@ -14,6 +16,8 @@ const ThoughtInput: React.FC<ThoughtInputProps> = ({
   setThoughtCandidate,
   onAddThought,
   onSearchResultSelect,
+  selectedSearchThoughtId,
+  setSelectedSearchThoughtId,
 }) => {
   const [isActive, setIsActive] = useState(false);
   const [searchResults, setSearchResults] = useState<Thought[]>([]);
@@ -38,6 +42,7 @@ const ThoughtInput: React.FC<ThoughtInputProps> = ({
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
+    setSelectedSearchThoughtId(null);
     setThoughtCandidate({
       ...thoughtCandidate,
       name: value,
@@ -82,7 +87,7 @@ const ThoughtInput: React.FC<ThoughtInputProps> = ({
           value={thoughtCandidate?.name || ''}
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}
-          className="border-2 border-black rounded-lg px-8 py-4 focus:outline-none focus:border-blue-500 w-full"
+          className={`border-2 border-black rounded-lg px-8 py-4 focus:outline-none focus:border-blue-500 w-full ${selectedSearchThoughtId ? 'border-purple-500' : ''}`}
           placeholder="Enter thought name"
         />
         <button
