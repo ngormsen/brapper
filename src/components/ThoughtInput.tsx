@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Thought } from '../types';
 import { searchThoughts } from '../Client';
+import { debounce } from 'lodash';
 
 type ThoughtInputProps = {
   thoughtCandidate: Thought | null;
@@ -22,7 +23,7 @@ const ThoughtInput: React.FC<ThoughtInputProps> = ({
   const [isActive, setIsActive] = useState(false);
   const [searchResults, setSearchResults] = useState<Thought[]>([]);
   const [showDropdown, setShowDropdown] = useState(false);
-  const [debounceTimeout, setDebounceTimeout] = useState<number | null>(null);
+  const [isSearching, setIsSearching] = useState(false);
 
   const handleAction = () => {
     setIsActive(true);
@@ -40,6 +41,35 @@ const ThoughtInput: React.FC<ThoughtInputProps> = ({
     }
   };
 
+  const debouncedSearch = useCallback(
+    debounce(async (value: string) => {
+      if (value.trim() !== '') {
+        setIsSearching(true);
+        try {
+          const results = await searchThoughts(value);
+          setSearchResults(results.map((result: any) => result.sourceThought));
+          setShowDropdown(true);
+        } catch (error) {
+          console.error('Search failed:', error);
+          setSearchResults([]);
+          setShowDropdown(false);
+        } finally {
+          setIsSearching(false);
+        }
+      } else {
+        setSearchResults([]);
+        setShowDropdown(false);
+      }
+    }, 300),
+    []
+  );
+
+  useEffect(() => {
+    return () => {
+      debouncedSearch.cancel();
+    };
+  }, [debouncedSearch]);
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setSelectedSearchThoughtId(null);
@@ -47,30 +77,7 @@ const ThoughtInput: React.FC<ThoughtInputProps> = ({
       ...thoughtCandidate,
       name: value,
     });
-
-    if (debounceTimeout) {
-      clearTimeout(debounceTimeout);
-    }
-
-    const timeout = window.setTimeout(() => {
-      if (value.trim() !== '') {
-        searchThoughts(value)
-          .then((results) => {
-            setSearchResults(results.map((result: any) => result.sourceThought));
-            setShowDropdown(true);
-          })
-          .catch((error) => {
-            console.error('Search failed:', error);
-            setSearchResults([]);
-            setShowDropdown(false);
-          });
-      } else {
-        setSearchResults([]);
-        setShowDropdown(false);
-      }
-    }, 300);
-
-    setDebounceTimeout(timeout);
+    debouncedSearch(value);
   };
 
   const handleSearchResultClick = (thought: Thought) => {
@@ -81,7 +88,7 @@ const ThoughtInput: React.FC<ThoughtInputProps> = ({
 
   return (
     <div className="flex flex-col items-center justify-center mt-8 relative w-full max-w-md">
-      <div className="flex items-center w-full">
+      <div className="flex items-center w-full relative">
         <input
           id="thoughtInput"
           type="text"
@@ -91,6 +98,11 @@ const ThoughtInput: React.FC<ThoughtInputProps> = ({
           className={`border-2 border-black rounded-lg px-8 py-4 focus:outline-none focus:border-blue-500 w-full ${selectedSearchThoughtId ? 'border-purple-500' : ''}`}
           placeholder="Enter thought name"
         />
+        {isSearching && (
+          <div className="absolute right-[100px] top-1/2 -translate-y-1/2">
+            <div className="animate-spin h-5 w-5 border-2 border-blue-500 rounded-full border-t-transparent"></div>
+          </div>
+        )}
         <button
           className={`bg-blue-500 text-white mx-2 px-8 py-4 rounded-md 
               transition-transform duration-100
