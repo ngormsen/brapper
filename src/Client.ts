@@ -387,3 +387,532 @@ export const searchThoughts = async (
     throw new Error('Failed to fetch search results.');
   }
 };
+
+// Notes API Methods
+export interface NotesDto {
+    content: string;
+}
+
+export const getNoteMarkdown = async (thoughtId: string): Promise<NotesDto> => {
+    const response = await fetch(`${API_BASE_URL}/notes/${BRAIN_ID}/${thoughtId}`, {
+        method: 'GET',
+        headers: {
+            'Authorization': `Bearer ${API_KEY}`,
+            'Content-Type': 'application/json',
+        },
+    });
+
+    if (!response.ok) {
+        throw new Error('Request failed: ' + response.statusText);
+    }
+
+    return response.json();
+};
+
+export const getNoteHtml = async (thoughtId: string): Promise<NotesDto> => {
+    const response = await fetch(`${API_BASE_URL}/notes/${BRAIN_ID}/${thoughtId}/html`, {
+        method: 'GET',
+        headers: {
+            'Authorization': `Bearer ${API_KEY}`,
+            'Content-Type': 'application/json',
+        },
+    });
+
+    if (!response.ok) {
+        throw new Error('Request failed: ' + response.statusText);
+    }
+
+    return response.json();
+};
+
+export const getNoteText = async (thoughtId: string): Promise<NotesDto> => {
+    const response = await fetch(`${API_BASE_URL}/notes/${BRAIN_ID}/${thoughtId}/text`, {
+        method: 'GET',
+        headers: {
+            'Authorization': `Bearer ${API_KEY}`,
+            'Content-Type': 'application/json',
+        },
+    });
+
+    if (!response.ok) {
+        throw new Error('Request failed: ' + response.statusText);
+    }
+
+    return response.json();
+};
+
+export interface NotesUpdateModel {
+    content: string;
+}
+
+export const createOrUpdateNote = async (thoughtId: string, content: string): Promise<void> => {
+    const response = await fetch(`${API_BASE_URL}/notes/${BRAIN_ID}/${thoughtId}/update`, {
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer ${API_KEY}`,
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ content }),
+    });
+
+    if (!response.ok) {
+        throw new Error('Request failed: ' + response.statusText);
+    }
+};
+
+export const appendToNote = async (thoughtId: string, content: string): Promise<void> => {
+    const response = await fetch(`${API_BASE_URL}/notes/${BRAIN_ID}/${thoughtId}/append`, {
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer ${API_KEY}`,
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ content }),
+    });
+
+    if (!response.ok) {
+        throw new Error('Request failed: ' + response.statusText);
+    }
+};
+
+// Attachments API Methods
+export interface AttachmentDto {
+    id: string;
+    brainId: string;
+    creationDateTime: string;
+    modificationDateTime: string;
+    name: string;
+    location: string;
+    size: number;
+    contentType: string;
+}
+
+export const getAttachmentDetails = async (attachmentId: string): Promise<AttachmentDto> => {
+    const response = await fetch(`${API_BASE_URL}/attachments/${BRAIN_ID}/${attachmentId}/metadata`, {
+        method: 'GET',
+        headers: {
+            'Authorization': `Bearer ${API_KEY}`,
+            'Content-Type': 'application/json',
+        },
+    });
+
+    if (!response.ok) {
+        throw new Error('Request failed: ' + response.statusText);
+    }
+
+    return response.json();
+};
+
+export const getAttachmentContent = async (attachmentId: string): Promise<Blob> => {
+    const response = await fetch(`${API_BASE_URL}/attachments/${BRAIN_ID}/${attachmentId}/file-content`, {
+        method: 'GET',
+        headers: {
+            'Authorization': `Bearer ${API_KEY}`,
+        },
+    });
+
+    if (!response.ok) {
+        throw new Error('Request failed: ' + response.statusText);
+    }
+
+    return response.blob();
+};
+
+export const deleteAttachment = async (attachmentId: string): Promise<void> => {
+    const response = await fetch(`${API_BASE_URL}/attachments/${BRAIN_ID}/${attachmentId}`, {
+        method: 'DELETE',
+        headers: {
+            'Authorization': `Bearer ${API_KEY}`,
+        },
+    });
+
+    if (!response.ok) {
+        throw new Error('Request failed: ' + response.statusText);
+    }
+};
+
+export const addFileAttachment = async (thoughtId: string, file: File): Promise<void> => {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const response = await fetch(`${API_BASE_URL}/attachments/${BRAIN_ID}/${thoughtId}/file`, {
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer ${API_KEY}`,
+        },
+        body: formData,
+    });
+
+    if (!response.ok) {
+        throw new Error('Request failed: ' + response.statusText);
+    }
+};
+
+export const addUrlAttachment = async (thoughtId: string, url: string, name?: string): Promise<void> => {
+    const queryParams = new URLSearchParams({ url });
+    if (name) {
+        queryParams.append('name', name);
+    }
+
+    const response = await fetch(`${API_BASE_URL}/attachments/${BRAIN_ID}/${thoughtId}/url?${queryParams}`, {
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer ${API_KEY}`,
+        },
+    });
+
+    if (!response.ok) {
+        throw new Error('Request failed: ' + response.statusText);
+    }
+};
+
+// Brain Access API Methods
+export interface BrainAccessorDto {
+    accessorId: string;
+    name: string;
+    isOrganizationUser: boolean;
+    isPending: boolean;
+    accessType: number;
+}
+
+export const getBrainAccessors = async (): Promise<BrainAccessorDto[]> => {
+    const response = await fetch(`${API_BASE_URL}/brain-access/${BRAIN_ID}`, {
+        method: 'GET',
+        headers: {
+            'Authorization': `Bearer ${API_KEY}`,
+            'Content-Type': 'application/json',
+        },
+    });
+
+    if (!response.ok) {
+        throw new Error('Request failed: ' + response.statusText);
+    }
+
+    return response.json();
+};
+
+export interface SetBrainAccessParams {
+    emailAddress?: string;
+    userId?: string;
+    accessType: number;
+}
+
+export const setBrainAccessLevel = async (params: SetBrainAccessParams): Promise<void> => {
+    const queryParams = new URLSearchParams();
+    if (params.emailAddress) {
+        queryParams.append('emailAddress', params.emailAddress);
+    }
+    if (params.userId) {
+        queryParams.append('userId', params.userId);
+    }
+    queryParams.append('accessType', params.accessType.toString());
+
+    const response = await fetch(`${API_BASE_URL}/brain-access/${BRAIN_ID}?${queryParams}`, {
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer ${API_KEY}`,
+        },
+    });
+
+    if (!response.ok) {
+        throw new Error('Request failed: ' + response.statusText);
+    }
+};
+
+export interface RemoveBrainAccessParams {
+    emailAddress?: string;
+    userId?: string;
+}
+
+export const removeBrainAccess = async (params: RemoveBrainAccessParams): Promise<void> => {
+    const queryParams = new URLSearchParams();
+    if (params.emailAddress) {
+        queryParams.append('emailAddress', params.emailAddress);
+    }
+    if (params.userId) {
+        queryParams.append('userId', params.userId);
+    }
+
+    const response = await fetch(`${API_BASE_URL}/brain-access/${BRAIN_ID}?${queryParams}`, {
+        method: 'DELETE',
+        headers: {
+            'Authorization': `Bearer ${API_KEY}`,
+        },
+    });
+
+    if (!response.ok) {
+        throw new Error('Request failed: ' + response.statusText);
+    }
+};
+
+// Search API Methods
+export interface SearchResultDto {
+    thoughtId: string;
+    brainId: string;
+    name: string;
+    score: number;
+    kind: number;
+}
+
+export interface SearchParams {
+    queryText: string;
+    maxResults?: number;
+    onlySearchThoughtNames?: boolean;
+}
+
+export const searchBrain = async (params: SearchParams): Promise<SearchResultDto[]> => {
+    const queryParams = new URLSearchParams({
+        queryText: params.queryText,
+        maxResults: (params.maxResults || 30).toString(),
+    });
+    
+    if (params.onlySearchThoughtNames !== undefined) {
+        queryParams.append('onlySearchThoughtNames', params.onlySearchThoughtNames.toString());
+    }
+
+    const response = await fetch(`${API_BASE_URL}/search/${BRAIN_ID}?${queryParams}`, {
+        method: 'GET',
+        headers: {
+            'Authorization': `Bearer ${API_KEY}`,
+            'Content-Type': 'application/json',
+        },
+    });
+
+    if (!response.ok) {
+        throw new Error('Request failed: ' + response.statusText);
+    }
+
+    return response.json();
+};
+
+export interface SearchPublicParams extends SearchParams {
+    excludeBrainIds?: string[];
+}
+
+export const searchPublicBrains = async (params: SearchPublicParams): Promise<SearchResultDto[]> => {
+    const queryParams = new URLSearchParams({
+        queryText: params.queryText,
+        maxResults: (params.maxResults || 30).toString(),
+    });
+    
+    if (params.onlySearchThoughtNames !== undefined) {
+        queryParams.append('onlySearchThoughtNames', params.onlySearchThoughtNames.toString());
+    }
+    
+    if (params.excludeBrainIds) {
+        params.excludeBrainIds.forEach(id => queryParams.append('excludeBrainIds', id));
+    }
+
+    const response = await fetch(`${API_BASE_URL}/search/public?${queryParams}`, {
+        method: 'GET',
+        headers: {
+            'Authorization': `Bearer ${API_KEY}`,
+            'Content-Type': 'application/json',
+        },
+    });
+
+    if (!response.ok) {
+        throw new Error('Request failed: ' + response.statusText);
+    }
+
+    return response.json();
+};
+
+export const searchAccessibleBrains = async (params: SearchParams): Promise<SearchResultDto[]> => {
+    const queryParams = new URLSearchParams({
+        queryText: params.queryText,
+        maxResults: (params.maxResults || 30).toString(),
+    });
+    
+    if (params.onlySearchThoughtNames !== undefined) {
+        queryParams.append('onlySearchThoughtNames', params.onlySearchThoughtNames.toString());
+    }
+
+    const response = await fetch(`${API_BASE_URL}/search/accessible?${queryParams}`, {
+        method: 'GET',
+        headers: {
+            'Authorization': `Bearer ${API_KEY}`,
+            'Content-Type': 'application/json',
+        },
+    });
+
+    if (!response.ok) {
+        throw new Error('Request failed: ' + response.statusText);
+    }
+
+    return response.json();
+};
+
+// Statistics API Methods
+export interface StatisticsDto {
+    thoughtsCount: number;
+    linksCount: number;
+    attachmentsCount: number;
+    internalFilesSize: number;
+    iconsFilesSize: number;
+}
+
+export const getBrainStats = async (): Promise<StatisticsDto> => {
+    const response = await fetch(`${API_BASE_URL}/brains/${BRAIN_ID}/statistics`, {
+        method: 'GET',
+        headers: {
+            'Authorization': `Bearer ${API_KEY}`,
+            'Content-Type': 'application/json',
+        },
+    });
+
+    if (!response.ok) {
+        throw new Error('Request failed: ' + response.statusText);
+    }
+
+    return response.json();
+};
+
+// Thought Types API Methods
+export const getTypes = async (): Promise<ThoughtDto[]> => {
+    const response = await fetch(`${API_BASE_URL}/thoughts/${BRAIN_ID}/types`, {
+        method: 'GET',
+        headers: {
+            'Authorization': `Bearer ${API_KEY}`,
+            'Content-Type': 'application/json',
+        },
+    });
+
+    if (!response.ok) {
+        throw new Error('Request failed: ' + response.statusText);
+    }
+
+    return response.json();
+};
+
+// Thought Pinning API Methods
+export const pinThought = async (thoughtId: string): Promise<void> => {
+    const response = await fetch(`${API_BASE_URL}/thoughts/${BRAIN_ID}/${thoughtId}/pin`, {
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer ${API_KEY}`,
+        },
+    });
+
+    if (!response.ok) {
+        throw new Error('Request failed: ' + response.statusText);
+    }
+};
+
+export const unpinThought = async (thoughtId: string): Promise<void> => {
+    const response = await fetch(`${API_BASE_URL}/thoughts/${BRAIN_ID}/${thoughtId}/pin`, {
+        method: 'DELETE',
+        headers: {
+            'Authorization': `Bearer ${API_KEY}`,
+        },
+    });
+
+    if (!response.ok) {
+        throw new Error('Request failed: ' + response.statusText);
+    }
+};
+
+export const getPinnedThoughts = async (): Promise<ThoughtDto[]> => {
+    const response = await fetch(`${API_BASE_URL}/thoughts/${BRAIN_ID}/pins`, {
+        method: 'GET',
+        headers: {
+            'Authorization': `Bearer ${API_KEY}`,
+            'Content-Type': 'application/json',
+        },
+    });
+
+    if (!response.ok) {
+        throw new Error('Request failed: ' + response.statusText);
+    }
+
+    return response.json();
+};
+
+// Modification Logs API Methods
+export interface ModificationLogDto {
+    id: string;
+    brainId: string;
+    modType: number;
+    sourceId: string;
+    sourceType: number;
+    extraAId: string | null;
+    extraAType: number;
+    extraBId: string | null;
+    extraBType: number;
+    modificationDateTime: string;
+}
+
+export interface GetModificationsParams {
+    maxLogs: number;
+    startTime?: string;
+    endTime?: string;
+}
+
+export const getBrainModifications = async (params: GetModificationsParams): Promise<ModificationLogDto[]> => {
+    const queryParams = new URLSearchParams({
+        maxLogs: params.maxLogs.toString(),
+    });
+    
+    if (params.startTime) {
+        queryParams.append('startTime', params.startTime);
+    }
+    if (params.endTime) {
+        queryParams.append('endTime', params.endTime);
+    }
+
+    const response = await fetch(`${API_BASE_URL}/brains/${BRAIN_ID}/modifications?${queryParams}`, {
+        method: 'GET',
+        headers: {
+            'Authorization': `Bearer ${API_KEY}`,
+            'Content-Type': 'application/json',
+        },
+    });
+
+    if (!response.ok) {
+        throw new Error('Request failed: ' + response.statusText);
+    }
+
+    return response.json();
+};
+
+export interface GetThoughtModificationsParams {
+    maxLogs: number;
+    includeRelatedLogs: boolean;
+}
+
+export const getThoughtModifications = async (thoughtId: string, params: GetThoughtModificationsParams): Promise<ModificationLogDto[]> => {
+    const queryParams = new URLSearchParams({
+        maxLogs: params.maxLogs.toString(),
+        includeRelatedLogs: params.includeRelatedLogs.toString(),
+    });
+
+    const response = await fetch(`${API_BASE_URL}/thoughts/${BRAIN_ID}/${thoughtId}/modifications?${queryParams}`, {
+        method: 'GET',
+        headers: {
+            'Authorization': `Bearer ${API_KEY}`,
+            'Content-Type': 'application/json',
+        },
+    });
+
+    if (!response.ok) {
+        throw new Error('Request failed: ' + response.statusText);
+    }
+
+    return response.json();
+};
+
+export interface ThoughtDto {
+    id: string;
+    brainId: string;
+    typeId: string | null;
+    creationDateTime: string;
+    modificationDateTime: string;
+    forgottenDateTime: string | null;
+    linksModificationDateTime: string;
+    name: string;
+    label: string | null;
+    foregroundColor: string | null;
+    backgroundColor: string | null;
+    acType: number;
+    kind: number;
+}

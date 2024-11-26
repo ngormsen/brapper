@@ -46,7 +46,7 @@ function App() {
   const [isRefreshActive, setIsRefreshActive] = useState(false);
 
   const [textAreaValue, setTextAreaValue] = useState('');
-  const [tiles, setTiles] = useState<string[]>([]);
+  const [tiles, setTiles] = useState<Array<{ text: string; content?: string }>>([]);
 
   const [selectedSearchThoughtId, setSelectedSearchThoughtId] = useState<string | null>(null);
 
@@ -465,18 +465,27 @@ function App() {
       return;
     }
     const inputText = textAreaValue;
-    const splittedTexts = inputText
+    const sections = inputText
       .split('---')
       .map((text) => text.trim())
       .filter((text) => text);
-    setTiles(splittedTexts);
+  
+    const processedTiles = sections.map(section => {
+      const lines = section.split('\n').filter(line => line.trim());
+      return {
+        text: lines[0],
+        content: lines.length > 1 ? lines.slice(1).join('\n') : undefined
+      };
+    });
+  
+    setTiles(processedTiles);
   };
 
   const handleAddTileThought = (tileText: string) => {
     const newThoughtCandidate = { name: tileText, id: '', backgroundColor: undefined };
     handleAddThought(parent, ThoughtRelation.Child, newThoughtCandidate);
     // Optionally remove the tile after adding
-    setTiles((prevTiles) => prevTiles.filter((tile) => tile !== tileText));
+    setTiles((prevTiles) => prevTiles.filter((tile) => tile.text !== tileText));
   };
 
   const handleSearchResultClick = async (thoughtId: string) => {
@@ -635,12 +644,13 @@ function App() {
           {tiles.map((tile, index) => (
             <CandidateThoughtNode
               key={index}
-              text={tile}
-              onClick={() => handleTileClick(tile)}
-              backgroundColor={tileColors[tile]}
+              text={tile.text}
+              content={tile.content}
+              onClick={() => handleTileClick(tile.text)}
+              backgroundColor={tileColors[tile.text]}
               isColorMode={selectedColorIndex !== null}
               isSelectMode={isSelectMode}
-              isSelected={selectedTiles.has(tile)}
+              isSelected={selectedTiles.has(tile.text)}
             />
           ))}
         </div>
