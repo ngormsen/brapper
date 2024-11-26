@@ -12,6 +12,7 @@ import {
   removeLink,
   ROOT_THOUGHT_ID,
   getThought,
+  searchThoughts,
 } from './Client';
 import ThoughtInput from './components/ThoughtInput';
 import ThoughtNode from './components/ThoughtNode';
@@ -114,7 +115,7 @@ function App() {
     navigate(thought.id);
   };
 
-  const handleAddThought = (
+  const handleAddThought = async (
     thought: Thought,
     thoughtRelation: ThoughtRelation,
     customThoughtCandidate?: Thought
@@ -124,37 +125,56 @@ function App() {
       return;
     }
 
-    getThoughtByExactName(candidate.name)
-      .then((existingThought) => {
-        if (existingThought) {
-          // If thought exists, create link
-          return createLink({
-            thoughtIdA: thought.id,
-            thoughtIdB: existingThought.id,
-            relation: thoughtRelation,
-          }).then(() => existingThought);
-        } else {
-          // If thought doesn't exist, create new thought
-          return createThought({
-            name: candidate.name,
-            sourceThoughtId: thought.id,
-            kind: ThoughtKind.Normal,
-            relation: thoughtRelation,
-            acType: AccessType.Public,
-          });
-        }
-      })
-      .then((newThought) => {
-        setThoughtCandidate(null);
-        // Update local state to include the new thought
-        setChildren((prevChildren) => [
-          ...prevChildren,
-          { name: candidate.name, id: newThought.id },
-        ]);
-      })
-      .catch((error) => {
-        setLocalErrorMessage(error.message);
-      });
+    await createThought({
+      name: candidate.name,
+      sourceThoughtId: thought.id,
+      kind: ThoughtKind.Normal,
+      relation: thoughtRelation,
+      acType: AccessType.Public,
+    })
+    .then((newThought) => {
+      setThoughtCandidate(null);
+      // Update local state to include the new thought
+      setChildren((prevChildren) => [
+        ...prevChildren,
+        { name: candidate.name, id: newThought.id },
+      ]);
+    })
+    .catch((error) => {
+      setLocalErrorMessage(error.message);
+    });
+
+    // await searchThoughts(candidate.name, 1)
+    //   .then((thoughts) => {
+    //     if (thoughts.length > 0 && thoughts[0].sourceThought.name !== candidate.name) {
+    //       // If thought exists, create link
+    //       return createLink({
+    //         thoughtIdA: thought.id,
+    //         thoughtIdB: thoughts[0].sourceThought.id,
+    //         relation: thoughtRelation,
+    //       }).then(() => thoughts[0].sourceThought);
+    //     } else {
+    //       // If thought doesn't exist, create new thought
+    //       return createThought({
+    //         name: candidate.name,
+    //         sourceThoughtId: thought.id,
+    //         kind: ThoughtKind.Normal,
+    //         relation: thoughtRelation,
+    //         acType: AccessType.Public,
+    //       });
+    //     }
+    //   })
+    //   .then((newThought) => {
+    //     setThoughtCandidate(null);
+    //     // Update local state to include the new thought
+    //     setChildren((prevChildren) => [
+    //       ...prevChildren,
+    //       { name: candidate.name, id: newThought.id },
+    //     ]);
+    //   })
+    //   .catch((error) => {
+    //     setLocalErrorMessage(error.message);
+    //   });
   };
 
   const onAddChild = (thought: Thought) => {

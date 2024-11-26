@@ -22,7 +22,7 @@ const SearchInput: React.FC<SearchInputProps> = ({ onSearchResultClick }) => {
 
       setIsSearching(true);
       try {
-        const results = await searchThoughts(query, 5, true);
+        const results = await searchThoughts(query, 1, true);
         setSearchResults(results);
       } catch (error) {
         console.error('Search failed:', error);

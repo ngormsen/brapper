@@ -359,7 +359,7 @@ export interface SearchResult {
 
 export const searchThoughts = async (
   queryText: string,
-  maxResults: number = 2,
+  maxResults: number = 1,
   onlySearchThoughtNames: boolean = true
 ): Promise<SearchResult[]> => {
   try {

@@ -46,7 +46,7 @@ const ThoughtInput: React.FC<ThoughtInputProps> = ({
       if (value.trim() !== '') {
         setIsSearching(true);
         try {
-          const results = await searchThoughts(value);
+          const results = await searchThoughts(value, 1, true);
           setSearchResults(results.map((result: any) => result.sourceThought));
           setShowDropdown(true);
         } catch (error) {
@@ -116,7 +116,7 @@ const ThoughtInput: React.FC<ThoughtInputProps> = ({
         </button>
       </div>
       {showDropdown && searchResults.length > 0 && (
-        <ul className="absolute top-full left-0 w-full bg-white border-2 border-black rounded-lg mt-1 max-h-60 overflow-y-auto z-10">
+        <ul className=" absolute top-full left-0 w-full bg-white border-2 border-black rounded-lg mt-1 max-h-60 overflow-y-auto z-10">
           {searchResults.map((thought) => (
             <li
               key={thought.id}
