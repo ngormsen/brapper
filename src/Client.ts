@@ -128,10 +128,10 @@ export interface CreateThoughtParams {
     sourceThoughtId?: string;
     relation?: ThoughtRelation;
     acType?: AccessType;
+    content?: string;
 }
 
 export const createThought = async (params: CreateThoughtParams) => {
-
     try {
         const response = await fetch(`${API_BASE_URL}/thoughts/${BRAIN_ID}`, {
             method: 'POST',
@@ -155,6 +155,11 @@ export const createThought = async (params: CreateThoughtParams) => {
         }
 
         const data = await response.json();
+        if (params.content && data.id) {
+            console.log("creating note", data.id, params.content);
+            await createOrUpdateNote(data.id, params.content);
+        }
+
         return data;
     } catch (error: any) {
         console.error('Error: ', error.message);
@@ -452,7 +457,7 @@ export const createOrUpdateNote = async (thoughtId: string, content: string): Pr
             'Authorization': `Bearer ${API_KEY}`,
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ content }),
+        body: JSON.stringify({ "markdown": content }),
     });
 
     if (!response.ok) {

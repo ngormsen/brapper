@@ -11,6 +11,7 @@ export interface Thought {
   name: string;
   backgroundColor?: string;
   foregroundColor?: string;
+  content?: string;
 }
 
 // Create a type for the color entries

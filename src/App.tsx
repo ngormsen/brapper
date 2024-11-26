@@ -131,6 +131,7 @@ function App() {
       kind: ThoughtKind.Normal,
       relation: thoughtRelation,
       acType: AccessType.Public,
+      content: candidate.content,
     })
     .then((newThought) => {
       setThoughtCandidate(null);
@@ -481,8 +482,8 @@ function App() {
     setTiles(processedTiles);
   };
 
-  const handleAddTileThought = (tileText: string) => {
-    const newThoughtCandidate = { name: tileText, id: '', backgroundColor: undefined };
+  const handleAddTileThought = (tileText: string, tileContent?: string) => {
+    const newThoughtCandidate = { name: tileText, id: '', backgroundColor: undefined, content: tileContent };
     handleAddThought(parent, ThoughtRelation.Child, newThoughtCandidate);
     // Optionally remove the tile after adding
     setTiles((prevTiles) => prevTiles.filter((tile) => tile.text !== tileText));
@@ -500,14 +501,14 @@ function App() {
     }
   };
 
-  const handleTileClick = (tileText: string) => {
+  const handleTileClick = (tile: { text: string, content?: string }) => {
     if (isSelectMode) {
       setSelectedTiles(prev => {
         const newSelected = new Set(prev);
-        if (newSelected.has(tileText)) {
-          newSelected.delete(tileText);
+        if (newSelected.has(tile.text)) {
+          newSelected.delete(tile.text);
         } else {
-          newSelected.add(tileText);
+          newSelected.add(tile.text);
         }
         return newSelected;
       });
@@ -515,10 +516,10 @@ function App() {
       const { backgroundColor } = getColorByIndex(selectedColorIndex);
       setTileColors(prev => ({
         ...prev,
-        [tileText]: backgroundColor
+        [tile.text]: backgroundColor
       }));
     } else {
-      handleAddTileThought(tileText);
+      handleAddTileThought(tile.text, tile.content);
     }
   };
 
@@ -646,7 +647,7 @@ function App() {
               key={index}
               text={tile.text}
               content={tile.content}
-              onClick={() => handleTileClick(tile.text)}
+              onClick={() => handleTileClick(tile)}
               backgroundColor={tileColors[tile.text]}
               isColorMode={selectedColorIndex !== null}
               isSelectMode={isSelectMode}
