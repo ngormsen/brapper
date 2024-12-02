@@ -21,23 +21,20 @@ interface ColorLegendProps {
 
 const ColorLegend: React.FC<ColorLegendProps> = ({ selectedColor, setSelectedColor }) => {
     return (
-        <div className="bg-white rounded-lg shadow p-4 mb-4">
-            <h2 className="text-lg font-semibold mb-2">Color Legend (Press 1-9)</h2>
-            <div className="flex flex-wrap gap-2">
-                {(Object.entries(colors) as Array<[string, { classes: string, name: string }]>).map(([numStr, color]) => {
-                    const num = Number(numStr) as ColorNumber;
-                    return (
-                        <div
-                            key={num}
-                            className={`${color.classes} px-3 py-2 rounded border cursor-pointer ${selectedColor === num ? 'ring-2 ring-blue-500' : ''
-                                }`}
-                            onClick={() => setSelectedColor(prev => prev === num ? null : num)}
-                        >
-                            {num}
-                        </div>
-                    );
-                })}
-            </div>
+        <div className="flex flex-wrap gap-2">
+            {(Object.entries(colors) as Array<[string, { classes: string, name: string }]>).map(([numStr, color]) => {
+                const num = Number(numStr) as ColorNumber;
+                return (
+                    <div
+                        key={num}
+                        className={`${color.classes} px-3 py-2 rounded border cursor-pointer ${selectedColor === num ? 'ring-2 ring-blue-500' : ''
+                            }`}
+                        onClick={() => setSelectedColor(prev => prev === num ? null : num)}
+                    >
+                        {num}
+                    </div>
+                );
+            })}
         </div>
     );
 };

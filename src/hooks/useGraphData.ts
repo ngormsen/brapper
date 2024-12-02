@@ -122,6 +122,8 @@ export const useGraphData = () => {
         updateNodeColor,
         getGraphData,
         sessionNodes,
-        sessionLinks
+        sessionLinks,
+        setSessionNodes,
+        setSessionLinks
     };
 }; 

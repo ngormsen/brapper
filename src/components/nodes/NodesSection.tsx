@@ -12,6 +12,7 @@ interface NodesSectionProps {
     setSelectedColor: (color: ColorNumber | null) => void;
     onNodeClick: (nodeId: string) => void;
     onAddNode: (text: string) => void;
+    onReset: () => void;
 }
 
 export const NodesSection: React.FC<NodesSectionProps> = ({
@@ -21,6 +22,7 @@ export const NodesSection: React.FC<NodesSectionProps> = ({
     setSelectedColor,
     onNodeClick,
     onAddNode,
+    onReset,
 }) => {
     return (
         <div className="md:w-1/2 space-y-4">
@@ -32,7 +34,15 @@ export const NodesSection: React.FC<NodesSectionProps> = ({
             </div>
 
             <div className="bg-white rounded-lg shadow p-6">
-                <h2 className="text-xl font-semibold mb-4">Nodes</h2>
+                <div className="flex justify-between items-center mb-4">
+                    <h2 className="text-xl font-semibold">Nodes</h2>
+                    <button
+                        onClick={onReset}
+                        className="px-3 py-1 text-sm text-red-600 hover:text-red-700 border border-red-600 hover:border-red-700 rounded transition-colors"
+                    >
+                        Reset
+                    </button>
+                </div>
                 <div className="flex flex-wrap gap-2">
                     {nodes
                         .sort((a, b) => {

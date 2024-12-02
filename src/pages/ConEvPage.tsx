@@ -6,7 +6,7 @@ import { useGraphData } from '../hooks/useGraphData';
 
 const ConEvPage: React.FC = () => {
     const [selectedColor, setSelectedColor] = useState<ColorNumber | null>(null);
-    const { nodes, links, sessionNodes, sessionLinks, addNode, updateNodeColor, getGraphData } = useGraphData();
+    const { nodes, links, sessionNodes, sessionLinks, setSessionNodes, setSessionLinks, addNode, updateNodeColor, getGraphData } = useGraphData();
 
     // Memoize the graph data
     const graphData = React.useMemo(() => getGraphData(), [nodes, links, sessionNodes, sessionLinks]);
@@ -33,6 +33,11 @@ const ConEvPage: React.FC = () => {
         addNode(text);
     };
 
+    const handleReset = () => {
+        setSessionNodes([]);
+        setSessionLinks([]);
+    };
+
     return (
         <div className="p-6">
             <h1 className="text-2xl font-bold mb-4">ConEv Page</h1>
@@ -47,6 +52,7 @@ const ConEvPage: React.FC = () => {
                     setSelectedColor={setSelectedColor}
                     onNodeClick={handleNodeClick}
                     onAddNode={handleNodeAdd}
+                    onReset={handleReset}
                 />
             </div>
         </div>
