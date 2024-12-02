@@ -1,11 +1,19 @@
 import { createClient } from '@supabase/supabase-js'
 import { Link, Node } from '../types/graph'
 
-// Initialize Supabase client
-const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-)
+console.log('supabase', process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
+
+// const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+// const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+const supabaseUrl = "https://qvpvnkgypvwwattunflc.supabase.co"
+const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF2cHZua2d5cHZ3d2F0dHVuZmxjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzMxNDQ5MjYsImV4cCI6MjA0ODcyMDkyNn0.8BK4z6zlMjE8ouDozJbVCr_1nWXJgpL2Nshi4o9ioCg"
+
+if (!supabaseUrl || !supabaseKey) {
+    throw new Error('Missing Supabase environment variables')
+}
+
+const supabase = createClient(supabaseUrl, supabaseKey)
 
 // Types for database responses
 interface DbNode extends Node {

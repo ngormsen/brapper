@@ -2,22 +2,26 @@ import { useState, useCallback, useEffect } from 'react';
 import { Node, Link, GraphData } from '../types/graph';
 import { ColorNumber } from '../components/ColorLegend';
 import { colors } from '../components/ColorLegend';
+import { graphDatabase } from '../services/graphDatabase';
 
 export const useGraphData = () => {
     const [nodes, setNodes] = useState<Node[]>([]);
     const [links, setLinks] = useState<Link[]>([]);
 
     useEffect(() => {
-        console.log('nodes', nodes);
-        console.log('links', links);
-    }, [nodes, links]);
-
-    const addNode = (text: string) => {
-        const newNode: Node = {
-            id: crypto.randomUUID(),
-            text,
+        const loadGraph = async () => {
+            const { nodes: dbNodes, links: dbLinks } = await graphDatabase.getFullGraph();
+            setNodes(dbNodes);
+            setLinks(dbLinks);
         };
-        setNodes(prev => [...prev, newNode]);
+        loadGraph();
+    }, []);
+
+    const addNode = async (text: string) => {
+        const newNode = await graphDatabase.createNode({ text });
+        if (newNode) {
+            setNodes(prev => [...prev, newNode]);
+        }
     };
 
     const createLinkId = (node1Id: string, node2Id: string): string => {
@@ -29,54 +33,64 @@ export const useGraphData = () => {
         return links.some(link => createLinkId(link.sourceId, link.targetId) === linkId);
     };
 
-    const removeColorLinks = (nodeId: string, color: ColorNumber) => {
-        setLinks(prev => prev.filter(link => {
+    const removeColorLinks = async (nodeId: string, color: ColorNumber) => {
+        const linksToRemove = links.filter(link => {
             const isColorLink = nodes.some(node => 
                 (node.id === link.sourceId || node.id === link.targetId) &&
                 node.color === color
             );
             const involvesNode = link.sourceId === nodeId || link.targetId === nodeId;
-            return !(isColorLink && involvesNode);
-        }));
+            return isColorLink && involvesNode;
+        });
+
+        for (const link of linksToRemove) {
+            await graphDatabase.deleteLink(link.id);
+        }
+        setLinks(prev => prev.filter(link => !linksToRemove.includes(link)));
     };
 
-    const createColorLinks = (nodeId: string, color: ColorNumber) => {
+    const createColorLinks = async (nodeId: string, color: ColorNumber) => {
         const sameColorNodes = nodes.filter(n => 
             n.id !== nodeId && 
             n.color === color
         );
 
-        const newLinks = sameColorNodes.map(targetNode => ({
-            id: crypto.randomUUID(),
-            sourceId: nodeId,
-            targetId: targetNode.id,
-            type: 'relates' as const
-        })).filter(newLink => !linkExists(newLink.sourceId, newLink.targetId));
+        const newLinks = [];
+        for (const targetNode of sameColorNodes) {
+            if (!linkExists(nodeId, targetNode.id)) {
+                const newLink = await graphDatabase.createLink({
+                    sourceId: nodeId,
+                    targetId: targetNode.id,
+                });
+                if (newLink) {
+                    newLinks.push(newLink);
+                }
+            }
+        }
 
         setLinks(prev => [...prev, ...newLinks]);
     };
 
-    const updateNodeColor = (nodeId: string, selectedColor: ColorNumber) => {
-        setNodes(prev => {
-            const node = prev.find(n => n.id === nodeId);
-            const oldColor = node?.color;
+    const updateNodeColor = async (nodeId: string, selectedColor: ColorNumber) => {
+        const node = nodes.find(n => n.id === nodeId);
+        if (!node) return;
 
-            const newNodes = prev.map(node =>
-                node.id === nodeId ? { ...node, color: selectedColor } : node
-            );
+        const oldColor = node.color;
+        const updatedNode = await graphDatabase.updateNode({ ...node, color: selectedColor });
+        
+        if (updatedNode) {
+            setNodes(prev => prev.map(node =>
+                node.id === nodeId ? updatedNode : node
+            ));
 
-            setTimeout(() => {
-                if (oldColor !== undefined && oldColor !== selectedColor) {
-                    removeColorLinks(nodeId, oldColor);
-                }
+            if (oldColor !== undefined && oldColor !== selectedColor) {
+                await removeColorLinks(nodeId, oldColor);
+            }
 
-                if (selectedColor !== 6) {
-                    createColorLinks(nodeId, selectedColor);
-                }
-            }, 0);
-
-            return newNodes;
-        });
+            if (selectedColor !== 6) {
+                await createColorLinks(nodeId, selectedColor);
+            }
+        }
     };
 
     const getGraphData = useCallback((): GraphData => {
