@@ -1,14 +1,15 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { BulkNodeInput } from '../components/nodes/BulkNodeInput';
 import { NodeDisplay } from '../components/nodes/NodeDisplay';
 import { SingleNodeInput } from '../components/nodes/SingleNodeInput';
 import ColorLegend, { ColorNumber, colors } from '../components/ColorLegend';
+import ForceGraph2D from 'react-force-graph-2d';
 
 interface Node {
     id: string;
     text: string;
     type: 'concept' | 'evidence' | 'question';
-    color?: ColorNumber;  // Now using the exported ColorNumber type
+    color?: ColorNumber;
 }
 
 interface Link {
@@ -18,10 +19,40 @@ interface Link {
     type: 'supports' | 'contradicts' | 'relates';
 }
 
+// Graph data interface
+interface GraphData {
+    nodes: Array<{
+        id: string;
+        text: string;
+        color?: string;
+    }>;
+    links: Array<{
+        source: string;
+        target: string;
+        type: string;
+    }>;
+}
+
 const ConEvPage: React.FC = () => {
     const [nodes, setNodes] = useState<Node[]>([]);
     const [links, setLinks] = useState<Link[]>([]);
     const [selectedColor, setSelectedColor] = useState<number | null>(null);
+
+    // Convert nodes and links to graph data format
+    const graphData = useCallback((): GraphData => {
+        return {
+            nodes: nodes.map(node => ({
+                id: node.id,
+                text: node.text,
+                color: node.color ? colors[node.color].classes : undefined
+            })),
+            links: links.map(link => ({
+                source: link.sourceId,
+                target: link.targetId,
+                type: link.type
+            }))
+        };
+    }, [nodes, links]);
 
     useEffect(() => {
         const handleKeyPress = (event: KeyboardEvent) => {
@@ -68,6 +99,18 @@ const ConEvPage: React.FC = () => {
     return (
         <div className="p-6">
             <h1 className="text-2xl font-bold mb-4">ConEv Page</h1>
+
+            {/* Force Graph */}
+            <div className="bg-white rounded-lg shadow p-4 mb-4" style={{ height: '400px' }}>
+                <ForceGraph2D
+                    graphData={graphData()}
+                    nodeLabel={node => (node as any).text}
+                    nodeColor={node => (node as any).color || '#999'}
+                    linkColor={() => '#999'}
+                    width={800}
+                    height={350}
+                />
+            </div>
 
             <ColorLegend
                 selectedColor={selectedColor}
