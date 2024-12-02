@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { Node, Link, GraphData } from '../types/graph';
 import { ColorNumber } from '../components/ColorLegend';
 import { colors } from '../components/ColorLegend';
@@ -6,6 +6,11 @@ import { colors } from '../components/ColorLegend';
 export const useGraphData = () => {
     const [nodes, setNodes] = useState<Node[]>([]);
     const [links, setLinks] = useState<Link[]>([]);
+
+    useEffect(() => {
+        console.log('nodes', nodes);
+        console.log('links', links);
+    }, [nodes, links]);
 
     const addNode = (text: string, type: Node['type']) => {
         const newNode: Node = {
@@ -80,7 +85,7 @@ export const useGraphData = () => {
             nodes: nodes.map(node => ({
                 id: node.id,
                 text: node.text,
-                color: node.color ? colors[node.color].classes : undefined
+                color: node.color
             })),
             links: links.map(link => ({
                 source: link.sourceId,

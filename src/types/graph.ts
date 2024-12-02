@@ -18,7 +18,7 @@ export interface GraphData {
     nodes: Array<{
         id: string;
         text: string;
-        color?: string;
+        color?: ColorNumber;
     }>;
     links: Array<{
         source: string;
