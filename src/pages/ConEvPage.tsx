@@ -100,48 +100,56 @@ const ConEvPage: React.FC = () => {
         <div className="p-6">
             <h1 className="text-2xl font-bold mb-4">ConEv Page</h1>
 
-            {/* Force Graph */}
-            <div className="bg-white rounded-lg shadow p-4 mb-4" style={{ height: '400px' }}>
-                <ForceGraph2D
-                    graphData={graphData()}
-                    nodeLabel={node => (node as any).text}
-                    nodeColor={node => (node as any).color || '#999'}
-                    linkColor={() => '#999'}
-                    width={800}
-                    height={350}
-                />
-            </div>
-
-            <ColorLegend
-                selectedColor={selectedColor}
-                setSelectedColor={setSelectedColor}
-            />
-
-            <div className="bg-white mt-4 rounded-lg shadow p-6 mb-4">
-                <h2 className="text-xl font-semibold mb-4">Nodes</h2>
-                <div className="flex flex-wrap gap-2">
-                    {nodes.map((node) => (
-                        <div
-                            key={node.id}
-                            onClick={() => handleNodeClick(node.id)}
-                            className="cursor-pointer"
-                        >
-                            <NodeDisplay
-                                node={node}
-                                links={links.filter(link => link.sourceId === node.id || link.targetId === node.id)}
-                                colorClass={node.color ? colors[node.color].classes : undefined}
-                            />
-                        </div>
-                    ))}
+            {/* Main content area with responsive layout */}
+            <div className="md:flex md:gap-4">
+                {/* Force Graph */}
+                <div className="bg-white rounded-lg shadow p-4 mb-4 md:mb-0 md:w-1/2">
+                    <ForceGraph2D
+                        graphData={graphData()}
+                        nodeLabel={node => (node as any).text}
+                        nodeColor={node => (node as any).color || '#999'}
+                        linkColor={() => '#999'}
+                        width={400}
+                        height={600}
+                    />
                 </div>
-            </div>
 
-            <div className="bg-white mt-4 rounded-lg shadow p-6 mb-4">
-                <SingleNodeInput onAddNode={handleSingleNodeAdd} />
-            </div>
+                {/* Nodes and Input Section */}
+                <div className="md:w-1/2 space-y-4">
+                    <div className="bg-white rounded-lg shadow p-4">
+                        <ColorLegend
+                            selectedColor={selectedColor}
+                            setSelectedColor={setSelectedColor}
+                        />
+                    </div>
 
-            <div className="bg-white rounded-lg shadow p-6 mb-4">
-                <BulkNodeInput onAddNode={handleBulkNodeAdd} />
+                    <div className="bg-white rounded-lg shadow p-6">
+                        <h2 className="text-xl font-semibold mb-4">Nodes</h2>
+                        <div className="flex flex-wrap gap-2">
+                            {nodes.map((node) => (
+                                <div
+                                    key={node.id}
+                                    onClick={() => handleNodeClick(node.id)}
+                                    className="cursor-pointer"
+                                >
+                                    <NodeDisplay
+                                        node={node}
+                                        links={links.filter(link => link.sourceId === node.id || link.targetId === node.id)}
+                                        colorClass={node.color ? colors[node.color].classes : undefined}
+                                    />
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    <div className="bg-white rounded-lg shadow p-6">
+                        <SingleNodeInput onAddNode={handleSingleNodeAdd} />
+                    </div>
+
+                    <div className="bg-white rounded-lg shadow p-6">
+                        <BulkNodeInput onAddNode={handleBulkNodeAdd} />
+                    </div>
+                </div>
             </div>
         </div>
     );
