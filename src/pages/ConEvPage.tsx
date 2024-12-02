@@ -6,10 +6,10 @@ import { useGraphData } from '../hooks/useGraphData';
 
 const ConEvPage: React.FC = () => {
     const [selectedColor, setSelectedColor] = useState<ColorNumber | null>(null);
-    const { nodes, links, addNode, updateNodeColor, getGraphData } = useGraphData();
+    const { nodes, links, sessionNodes, sessionLinks, addNode, updateNodeColor, getGraphData } = useGraphData();
 
     // Memoize the graph data
-    const graphData = React.useMemo(() => getGraphData(), [nodes, links]);
+    const graphData = React.useMemo(() => getGraphData(), [nodes, links, sessionNodes, sessionLinks]);
 
     useEffect(() => {
         const handleKeyPress = (event: KeyboardEvent) => {
@@ -41,8 +41,8 @@ const ConEvPage: React.FC = () => {
                 <GraphView graphData={graphData} />
                 
                 <NodesSection
-                    nodes={nodes}
-                    links={links}
+                    nodes={sessionNodes}
+                    links={sessionLinks}
                     selectedColor={selectedColor}
                     setSelectedColor={setSelectedColor}
                     onNodeClick={handleNodeClick}

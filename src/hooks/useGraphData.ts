@@ -7,6 +7,8 @@ import { graphDatabase } from '../services/graphDatabase';
 export const useGraphData = () => {
     const [nodes, setNodes] = useState<Node[]>([]);
     const [links, setLinks] = useState<Link[]>([]);
+    const [sessionNodes, setSessionNodes] = useState<Node[]>([]);
+    const [sessionLinks, setSessionLinks] = useState<Link[]>([]);
 
     useEffect(() => {
         const loadGraph = async () => {
@@ -21,6 +23,7 @@ export const useGraphData = () => {
         const newNode = await graphDatabase.createNode({ text });
         if (newNode) {
             setNodes(prev => [...prev, newNode]);
+            setSessionNodes(prev => [...prev, newNode]);
         }
     };
 
@@ -34,7 +37,7 @@ export const useGraphData = () => {
     };
 
     const removeColorLinks = async (nodeId: string, color: ColorNumber) => {
-        const linksToRemove = links.filter(link => {
+        const linksToRemove = sessionLinks.filter(link => {
             const isColorLink = nodes.some(node => 
                 (node.id === link.sourceId || node.id === link.targetId) &&
                 node.color === color
@@ -47,10 +50,11 @@ export const useGraphData = () => {
             await graphDatabase.deleteLink(link.id);
         }
         setLinks(prev => prev.filter(link => !linksToRemove.includes(link)));
+        setSessionLinks(prev => prev.filter(link => !linksToRemove.includes(link)));
     };
 
     const createColorLinks = async (nodeId: string, color: ColorNumber) => {
-        const sameColorNodes = nodes.filter(n => 
+        const sameColorNodes = sessionNodes.filter(n => 
             n.id !== nodeId && 
             n.color === color
         );
@@ -69,10 +73,11 @@ export const useGraphData = () => {
         }
 
         setLinks(prev => [...prev, ...newLinks]);
+        setSessionLinks(prev => [...prev, ...newLinks]);
     };
 
     const updateNodeColor = async (nodeId: string, selectedColor: ColorNumber) => {
-        const node = nodes.find(n => n.id === nodeId);
+        const node = sessionNodes.find(n => n.id === nodeId);
         if (!node) return;
 
         const oldColor = node.color;
@@ -80,6 +85,9 @@ export const useGraphData = () => {
         
         if (updatedNode) {
             setNodes(prev => prev.map(node =>
+                node.id === nodeId ? updatedNode : node
+            ));
+            setSessionNodes(prev => prev.map(node =>
                 node.id === nodeId ? updatedNode : node
             ));
 
@@ -112,6 +120,8 @@ export const useGraphData = () => {
         links,
         addNode,
         updateNodeColor,
-        getGraphData
+        getGraphData,
+        sessionNodes,
+        sessionLinks
     };
 }; 
