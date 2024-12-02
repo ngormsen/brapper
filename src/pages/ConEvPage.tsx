@@ -159,14 +159,14 @@ const ConEvPage: React.FC = () => {
 
                 // Update links in a separate effect to ensure we have the latest node state
                 setTimeout(() => {
-                    // If there was a previous color, remove its links
-                    if (oldColor !== undefined) {
+                    // If there was a previous color and it's different from the new color, remove its links
+                    if (oldColor !== undefined && oldColor !== selectedColor) {
                         removeColorLinks(nodeId, oldColor);
                     }
 
-                    // If new color is set (not null/undefined) and not white (1),
+                    // If new color is set (not null/undefined) and not white (5),
                     // create new links
-                    if (selectedColor !== 1) {
+                    if (selectedColor !== 6) {
                         createColorLinks(nodeId, selectedColor as ColorNumber);
                     }
                 }, 0);

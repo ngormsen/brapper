@@ -20,16 +20,12 @@ interface NodeDisplayProps {
     colorClass?: string;
 }
 
-const typeColors = {
-    concept: 'bg-blue-100 border-blue-300',
-    evidence: 'bg-green-100 border-green-300',
-    question: 'bg-yellow-100 border-yellow-300'
-};
+
 
 export const NodeDisplay: React.FC<NodeDisplayProps> = ({ node, links, maxLength = 50, colorClass }) => {
     const isLongText = node.text.length > maxLength;
     const displayText = isLongText ? `${node.text.slice(0, maxLength)}...` : node.text;
-    const baseColorClass = colorClass || typeColors[node.type];
+    const baseColorClass = colorClass || 'bg-white';
 
     return (
         <div className={`${baseColorClass} px-4 py-2 rounded-lg shadow-sm hover:shadow-md transition-shadow group relative border`}>
