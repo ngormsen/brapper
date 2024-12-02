@@ -8,15 +8,15 @@ import { Node, Link } from '../types/graph';
 const ConEvPage: React.FC = () => {
     const [selectedColor, setSelectedColor] = useState<ColorNumber | null>(null);
     const [isDeleteMode, setIsDeleteMode] = useState(false);
-    const { 
-        nodes, 
-        links, 
-        sessionNodes, 
-        sessionLinks, 
-        setSessionNodes, 
-        setSessionLinks, 
-        addNode, 
-        updateNodeColor, 
+    const {
+        nodes,
+        links,
+        sessionNodes,
+        sessionLinks,
+        setSessionNodes,
+        setSessionLinks,
+        addNode,
+        updateNodeColor,
         getGraphData,
         deleteNode,
         deleteLink
@@ -30,6 +30,10 @@ const ConEvPage: React.FC = () => {
             const num = parseInt(event.key) as ColorNumber;
             if (num >= 1 && num <= 9) {
                 setSelectedColor(prev => prev === num ? null : num as ColorNumber);
+            }
+
+            if (event.key.toLowerCase() === 'd') {
+                setIsDeleteMode(prev => !prev);
             }
         };
 
@@ -79,21 +83,21 @@ const ConEvPage: React.FC = () => {
                 <h1 className="text-2xl font-bold">ConEv Page</h1>
                 <button
                     onClick={() => setIsDeleteMode(!isDeleteMode)}
-                    className={`px-4 py-2 rounded-lg transition-colors ${
-                        isDeleteMode 
-                            ? 'bg-red-600 text-white hover:bg-red-700' 
-                            : 'bg-gray-200 hover:bg-gray-300'
-                    }`}
+                    className={`px-4 py-2 rounded-lg transition-colors ${isDeleteMode
+                        ? 'bg-red-600 text-white hover:bg-red-700'
+                        : 'bg-gray-200 hover:bg-gray-300'
+                        }`}
                 >
                     {isDeleteMode ? 'Exit Delete Mode' : 'Delete Mode'}
                 </button>
             </div>
 
             <div className="md:flex md:gap-4">
-                <GraphView 
-                    graphData={graphData} 
+                <GraphView
+                    graphData={graphData}
                     onNodeClick={handleGraphNodeClick}
                     onLinkClick={handleLinkClick}
+                    isDeleteMode={isDeleteMode}
                 />
 
                 <NodesSection
