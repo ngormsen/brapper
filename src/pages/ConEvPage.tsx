@@ -53,7 +53,7 @@ const ConEvPage: React.FC = () => {
         addNode(text);
     };
 
-    const handleSessionReset = () => {
+    const handleSessionClear = () => {
         setSessionNodes([]);
         setSessionLinks([]);
     };
@@ -107,7 +107,7 @@ const ConEvPage: React.FC = () => {
                     setSelectedColor={setSelectedColor}
                     onNodeClick={handleNodeClick}
                     onAddNode={handleNodeAdd}
-                    onReset={handleSessionReset}
+                    onClear={handleSessionClear}
                     isDeleteMode={isDeleteMode}
                 />
             </div>

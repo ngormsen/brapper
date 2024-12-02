@@ -12,7 +12,7 @@ interface NodesSectionProps {
     setSelectedColor: (color: ColorNumber | null) => void;
     onNodeClick: (nodeId: string) => void;
     onAddNode: (text: string) => void;
-    onReset: () => void;
+    onClear: () => void;
     isDeleteMode: boolean;
 }
 
@@ -23,7 +23,7 @@ export const NodesSection: React.FC<NodesSectionProps> = ({
     setSelectedColor,
     onNodeClick,
     onAddNode,
-    onReset,
+    onClear,
     isDeleteMode,
 }) => {
     return (
@@ -35,14 +35,14 @@ export const NodesSection: React.FC<NodesSectionProps> = ({
                 />
             </div>
 
-            <div className="bg-white rounded-lg shadow p-6">
+            <div className={`bg-white rounded-lg shadow p-6 ${isDeleteMode ? 'border-red-500 border-4' : ''}`}>
                 <div className="flex justify-between items-center mb-4">
                     <h2 className="text-xl font-semibold">Nodes</h2>
                     <button
-                        onClick={onReset}
+                        onClick={onClear}
                         className="px-3 py-1 text-sm text-red-600 hover:text-red-700 border border-red-600 hover:border-red-700 rounded transition-colors"
                     >
-                        Reset
+                        Clear
                     </button>
                 </div>
                 <div className="flex flex-wrap gap-2">

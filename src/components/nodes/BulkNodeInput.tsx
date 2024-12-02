@@ -6,7 +6,7 @@ export const BulkNodeInput: React.FC<NodeInputProps> = ({ onAddNode }) => {
 
     const handleSubmit = (e: React.MouseEvent) => {
         const nodes = input
-            .split('\n')
+            .split('---')
             .map(text => text.trim())
             .filter(text => text.length > 0);
 
