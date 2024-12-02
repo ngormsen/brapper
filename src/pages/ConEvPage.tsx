@@ -36,7 +36,7 @@ interface GraphData {
 const ConEvPage: React.FC = () => {
     const [nodes, setNodes] = useState<Node[]>([]);
     const [links, setLinks] = useState<Link[]>([]);
-    const [selectedColor, setSelectedColor] = useState<number | null>(null);
+    const [selectedColor, setSelectedColor] = useState<ColorNumber | null>(null);
 
     const graphContainerRef = useRef<HTMLDivElement | null>(null);
     const [graphWidth, setGraphWidth] = useState(400);
@@ -73,9 +73,9 @@ const ConEvPage: React.FC = () => {
 
     useEffect(() => {
         const handleKeyPress = (event: KeyboardEvent) => {
-            const num = parseInt(event.key);
+            const num = parseInt(event.key) as ColorNumber;
             if (num >= 1 && num <= 9) {
-                setSelectedColor(prev => prev === num ? null : num);
+                setSelectedColor(prev => prev === num ? null : num as ColorNumber);
             }
         };
 
@@ -105,11 +105,74 @@ const ConEvPage: React.FC = () => {
         setLinks(prev => [...prev, newLink]);
     };
 
+    // Helper function to create a unique link ID for a pair of nodes
+    const createLinkId = (node1Id: string, node2Id: string): string => {
+        // Sort IDs to ensure consistent link IDs regardless of source/target order
+        return [node1Id, node2Id].sort().join('-');
+    };
+
+    // Helper function to check if a link exists between two nodes
+    const linkExists = (node1Id: string, node2Id: string): boolean => {
+        const linkId = createLinkId(node1Id, node2Id);
+        return links.some(link => createLinkId(link.sourceId, link.targetId) === linkId);
+    };
+
+    // Helper function to remove links for a node with a specific color
+    const removeColorLinks = (nodeId: string, color: ColorNumber) => {
+        setLinks(prev => prev.filter(link => {
+            const isColorLink = nodes.some(node => 
+                (node.id === link.sourceId || node.id === link.targetId) &&
+                node.color === color
+            );
+            const involvesNode = link.sourceId === nodeId || link.targetId === nodeId;
+            return !(isColorLink && involvesNode);
+        }));
+    };
+
+    // Helper function to create links between nodes of the same color
+    const createColorLinks = (nodeId: string, color: ColorNumber) => {
+        const sameColorNodes = nodes.filter(n => 
+            n.id !== nodeId && 
+            n.color === color
+        );
+
+        const newLinks = sameColorNodes.map(targetNode => ({
+            id: crypto.randomUUID(),
+            sourceId: nodeId,
+            targetId: targetNode.id,
+            type: 'relates' as const
+        })).filter(newLink => !linkExists(newLink.sourceId, newLink.targetId));
+
+        setLinks(prev => [...prev, ...newLinks]);
+    };
+
     const handleNodeClick = (nodeId: string) => {
         if (selectedColor !== null) {
-            setNodes(prev => prev.map(node =>
-                node.id === nodeId ? { ...node, color: selectedColor as ColorNumber } : node
-            ));
+            setNodes(prev => {
+                const node = prev.find(n => n.id === nodeId);
+                const oldColor = node?.color;
+
+                // Create new nodes array with updated color
+                const newNodes = prev.map(node =>
+                    node.id === nodeId ? { ...node, color: selectedColor as ColorNumber } : node
+                );
+
+                // Update links in a separate effect to ensure we have the latest node state
+                setTimeout(() => {
+                    // If there was a previous color, remove its links
+                    if (oldColor !== undefined) {
+                        removeColorLinks(nodeId, oldColor);
+                    }
+
+                    // If new color is set (not null/undefined) and not white (1),
+                    // create new links
+                    if (selectedColor !== 1) {
+                        createColorLinks(nodeId, selectedColor as ColorNumber);
+                    }
+                }, 0);
+
+                return newNodes;
+            });
         }
     };
 

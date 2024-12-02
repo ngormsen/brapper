@@ -6,7 +6,7 @@ const colors = {
     3: { classes: 'bg-green-100 border-green-300', name: 'Green' },
     4: { classes: 'bg-yellow-100 border-yellow-300', name: 'Yellow' },
     5: { classes: 'bg-purple-100 border-purple-300', name: 'Purple' },
-    6: { classes: 'bg-white border-gray-300', name: 'None' },
+    6: { classes: 'bg-white border-gray-300', name: 'White' },
     7: { classes: 'bg-orange-100 border-orange-300', name: 'Orange' },
     8: { classes: 'bg-teal-100 border-teal-300', name: 'Teal' },
     9: { classes: 'bg-gray-100 border-gray-300', name: 'Indigo' },
