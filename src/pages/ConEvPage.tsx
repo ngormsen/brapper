@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { BulkNodeInput } from '../components/nodes/BulkNodeInput';
 import { NodeDisplay } from '../components/nodes/NodeDisplay';
 import { SingleNodeInput } from '../components/nodes/SingleNodeInput';
@@ -37,6 +37,23 @@ const ConEvPage: React.FC = () => {
     const [nodes, setNodes] = useState<Node[]>([]);
     const [links, setLinks] = useState<Link[]>([]);
     const [selectedColor, setSelectedColor] = useState<number | null>(null);
+
+    const graphContainerRef = useRef<HTMLDivElement | null>(null);
+    const [graphWidth, setGraphWidth] = useState(400);
+
+    useEffect(() => {
+        const updateWidth = () => {
+            if (graphContainerRef.current) {
+                const parentWidth = graphContainerRef.current.parentElement?.offsetWidth || 800;
+                const isMediumScreen = window.innerWidth >= 768; // md breakpoint
+                setGraphWidth(isMediumScreen ? parentWidth / 2 - 32 : parentWidth - 32); // 32px accounts for padding
+            }
+        };
+
+        updateWidth();
+        window.addEventListener('resize', updateWidth);
+        return () => window.removeEventListener('resize', updateWidth);
+    }, []);
 
     // Convert nodes and links to graph data format
     const graphData = useCallback((): GraphData => {
@@ -103,13 +120,13 @@ const ConEvPage: React.FC = () => {
             {/* Main content area with responsive layout */}
             <div className="md:flex md:gap-4">
                 {/* Force Graph */}
-                <div className="bg-white rounded-lg shadow p-4 mb-4 md:mb-0 md:w-1/2">
+                <div ref={graphContainerRef} className="bg-white rounded-lg shadow p-4 mb-4 md:mb-0 md:w-1/2">
                     <ForceGraph2D
                         graphData={graphData()}
                         nodeLabel={node => (node as any).text}
                         nodeColor={node => (node as any).color || '#999'}
                         linkColor={() => '#999'}
-                        width={400}
+                        width={graphWidth}
                         height={600}
                     />
                 </div>
