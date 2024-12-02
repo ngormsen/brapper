@@ -1,10 +1,10 @@
 import React, { KeyboardEvent, useState } from 'react';
 import type { NodeInputProps } from './types';
+
 export const BulkNodeInput: React.FC<NodeInputProps> = ({ onAddNode }) => {
     const [input, setInput] = useState('');
 
-    const handleSubmit = (e: KeyboardEvent<HTMLTextAreaElement> | React.MouseEvent) => {
-        if ('key' in e && e.key !== 'Enter') return;
+    const handleSubmit = (e: React.MouseEvent) => {
         const nodes = input
             .split('\n')
             .map(text => text.trim())
@@ -19,7 +19,6 @@ export const BulkNodeInput: React.FC<NodeInputProps> = ({ onAddNode }) => {
             <textarea
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                onKeyDown={handleSubmit}
                 placeholder="Add multiple nodes (one per line)"
                 className="w-full h-32 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 mb-2"
             />

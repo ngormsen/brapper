@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { SingleNodeInput } from '../components/nodes/SingleNodeInput';
+import React, { useEffect, useState } from 'react';
 import { BulkNodeInput } from '../components/nodes/BulkNodeInput';
 import { NodeDisplay } from '../components/nodes/NodeDisplay';
+import { SingleNodeInput } from '../components/nodes/SingleNodeInput';
 
 interface Node {
     id: string;
@@ -18,30 +18,18 @@ interface Link {
 }
 
 const colors = {
-    1: 'bg-white border-gray-300',
-    2: 'bg-blue-100 border-blue-300',
-    3: 'bg-green-100 border-green-300',
-    4: 'bg-yellow-100 border-yellow-300',
-    5: 'bg-purple-100 border-purple-300',
-    6: 'bg-pink-100 border-pink-300',
-    7: 'bg-orange-100 border-orange-300',
-    8: 'bg-teal-100 border-teal-300',
-    9: 'bg-indigo-100 border-indigo-300',
+    1: { classes: 'bg-pink-100 border-pink-300', name: 'Pink' },
+    2: { classes: 'bg-blue-100 border-blue-300', name: 'Blue' },
+    3: { classes: 'bg-green-100 border-green-300', name: 'Green' },
+    4: { classes: 'bg-yellow-100 border-yellow-300', name: 'Yellow' },
+    5: { classes: 'bg-purple-100 border-purple-300', name: 'Purple' },
+    6: { classes: 'bg-white border-gray-300', name: 'None' },
+    7: { classes: 'bg-orange-100 border-orange-300', name: 'Orange' },
+    8: { classes: 'bg-teal-100 border-teal-300', name: 'Teal' },
+    9: { classes: 'bg-gray-100 border-gray-300', name: 'Indigo' },
 } as const;
 
 type ColorNumber = keyof typeof colors;
-
-const colorNames = {
-    1: 'White',
-    2: 'Blue',
-    3: 'Green',
-    4: 'Yellow',
-    5: 'Purple',
-    6: 'Pink',
-    7: 'Orange',
-    8: 'Teal',
-    9: 'Indigo',
-} as const;
 
 const ConEvPage: React.FC = () => {
     const [nodes, setNodes] = useState<Node[]>([]);
@@ -52,7 +40,7 @@ const ConEvPage: React.FC = () => {
         const handleKeyPress = (event: KeyboardEvent) => {
             const num = parseInt(event.key);
             if (num >= 1 && num <= 9) {
-                setSelectedColor(num);
+                setSelectedColor(prev => prev === num ? null : num);
             }
         };
 
@@ -84,7 +72,7 @@ const ConEvPage: React.FC = () => {
 
     const handleNodeClick = (nodeId: string) => {
         if (selectedColor !== null) {
-            setNodes(prev => prev.map(node => 
+            setNodes(prev => prev.map(node =>
                 node.id === nodeId ? { ...node, color: selectedColor } : node
             ));
         }
@@ -93,22 +81,22 @@ const ConEvPage: React.FC = () => {
     return (
         <div className="p-6">
             <h1 className="text-2xl font-bold mb-4">ConEv Page</h1>
-            
+
             {/* Color Legend */}
             <div className="bg-white rounded-lg shadow p-4 mb-4">
                 <h2 className="text-lg font-semibold mb-2">Color Legend (Press 1-9)</h2>
                 <div className="flex flex-wrap gap-2">
-                    {(Object.entries(colors) as Array<[string, string]>).map(([numStr, colorClass]) => {
+                    {(Object.entries(colors) as Array<[string, { classes: string, name: string }]>).map(([numStr, color]) => {
                         const num = Number(numStr) as ColorNumber;
                         return (
                             <div
                                 key={num}
-                                className={`${colorClass} px-3 py-2 rounded border cursor-pointer ${
+                                className={`${color.classes} px-3 py-2 rounded border cursor-pointer ${
                                     selectedColor === num ? 'ring-2 ring-blue-500' : ''
                                 }`}
-                                onClick={() => setSelectedColor(num)}
+                                onClick={() => setSelectedColor(prev => prev === num ? null : num)}
                             >
-                                {num}: {colorNames[num]}
+                                {num}: {color.name}
                             </div>
                         );
                     })}
@@ -119,15 +107,15 @@ const ConEvPage: React.FC = () => {
                 <h2 className="text-xl font-semibold mb-4">Nodes</h2>
                 <div className="flex flex-wrap gap-2">
                     {nodes.map((node) => (
-                        <div 
+                        <div
                             key={node.id}
                             onClick={() => handleNodeClick(node.id)}
                             className="cursor-pointer"
                         >
-                            <NodeDisplay 
+                            <NodeDisplay
                                 node={node}
                                 links={links.filter(link => link.sourceId === node.id || link.targetId === node.id)}
-                                colorClass={node.color ? colors[node.color] : undefined}
+                                colorClass={node.color ? colors[node.color].classes : undefined}
                             />
                         </div>
                     ))}
