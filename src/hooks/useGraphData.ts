@@ -12,11 +12,10 @@ export const useGraphData = () => {
         console.log('links', links);
     }, [nodes, links]);
 
-    const addNode = (text: string, type: Node['type']) => {
+    const addNode = (text: string) => {
         const newNode: Node = {
             id: crypto.randomUUID(),
             text,
-            type,
         };
         setNodes(prev => [...prev, newNode]);
     };
@@ -90,7 +89,6 @@ export const useGraphData = () => {
             links: links.map(link => ({
                 source: link.sourceId,
                 target: link.targetId,
-                type: link.type
             }))
         };
     }, [nodes, links]);

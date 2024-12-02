@@ -30,7 +30,7 @@ const ConEvPage: React.FC = () => {
     };
 
     const handleNodeAdd = (text: string) => {
-        addNode(text, 'concept');
+        addNode(text);
     };
 
     return (

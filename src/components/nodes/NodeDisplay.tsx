@@ -1,17 +1,5 @@
 import React from 'react';
-
-interface Node {
-    id: string;
-    text: string;
-    type: 'concept' | 'evidence' | 'question';
-}
-
-interface Link {
-    id: string;
-    sourceId: string;
-    targetId: string;
-    type: 'supports' | 'contradicts' | 'relates';
-}
+import type { Node, Link } from '../../types/graph';
 
 interface NodeDisplayProps {
     node: Node;
@@ -30,7 +18,6 @@ export const NodeDisplay: React.FC<NodeDisplayProps> = ({ node, links, maxLength
     return (
         <div className={`${baseColorClass} px-4 py-2 rounded-lg shadow-sm hover:shadow-md transition-shadow group relative border`}>
             <div className="flex flex-col">
-                <span className="text-xs text-gray-500 mb-1">{node.type}</span>
                 <span className="inline-block max-w-[300px] truncate">{displayText}</span>
                 {links.length > 0 && (
                     <div className="text-xs text-gray-500 mt-1">
