@@ -3,13 +3,13 @@ import { ColorNumber } from '../components/ColorLegend';
 import { GraphView } from '../components/graph/GraphView';
 import { NodesSection } from '../components/nodes/NodesSection';
 import { useGraphData } from '../hooks/useGraphData';
-
+import { Node } from '../types/graph';
 const ConEvPage: React.FC = () => {
     const [selectedColor, setSelectedColor] = useState<ColorNumber | null>(null);
     const { nodes, links, sessionNodes, sessionLinks, setSessionNodes, setSessionLinks, addNode, updateNodeColor, getGraphData } = useGraphData();
 
     // Memoize the graph data
-    const graphData = React.useMemo(() => getGraphData(), [nodes, links, sessionNodes, sessionLinks]);
+    const graphData = React.useMemo(() => getGraphData(), [nodes, links]);
 
     useEffect(() => {
         const handleKeyPress = (event: KeyboardEvent) => {
@@ -33,9 +33,29 @@ const ConEvPage: React.FC = () => {
         addNode(text);
     };
 
-    const handleReset = () => {
+    const handleSessionReset = () => {
         setSessionNodes([]);
         setSessionLinks([]);
+    };
+
+    const handleGraphNodeClick = (node: Node) => {
+        console.log(node);
+        // Check if node already exists in sessionNodes
+        if (!sessionNodes.some(n => n.id === node.id)) {
+            setSessionNodes(prev => [...prev, node]);
+
+            // // Optionally, also add any links connected to this node
+            // const connectedLinks = links.filter(
+            //     link => link.sourceId === node.id || link.targetId === node.id
+            // );
+
+            // setSessionLinks(prev => [
+            //     ...prev,
+            //     ...connectedLinks.filter(newLink =>
+            //         !prev.some(existingLink => existingLink.id === newLink.id)
+            //     )
+            // ]);
+        }
     };
 
     return (
@@ -43,16 +63,16 @@ const ConEvPage: React.FC = () => {
             <h1 className="text-2xl font-bold mb-4">ConEv Page</h1>
 
             <div className="md:flex md:gap-4">
-                <GraphView graphData={graphData} />
-                
+                <GraphView graphData={graphData} onNodeClick={handleGraphNodeClick} />
+
                 <NodesSection
                     nodes={sessionNodes}
-                    links={sessionLinks}
+                    links={links}
                     selectedColor={selectedColor}
                     setSelectedColor={setSelectedColor}
                     onNodeClick={handleNodeClick}
                     onAddNode={handleNodeAdd}
-                    onReset={handleReset}
+                    onReset={handleSessionReset}
                 />
             </div>
         </div>

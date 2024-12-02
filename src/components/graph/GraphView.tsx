@@ -1,12 +1,14 @@
 import React, { useEffect, useRef, useState } from 'react';
 import ForceGraph2D from 'react-force-graph-2d';
 import { GraphData } from '../../types/graph';
+import { Node } from '../../types/graph';
 
 interface GraphViewProps {
     graphData: GraphData;
+    onNodeClick: (node: Node) => void;
 }
 
-export const GraphView: React.FC<GraphViewProps> = ({ graphData }) => {
+export const GraphView: React.FC<GraphViewProps> = ({ graphData, onNodeClick }) => {
     const graphContainerRef = useRef<HTMLDivElement | null>(null);
     const [graphWidth, setGraphWidth] = useState(400);
 
@@ -47,6 +49,7 @@ export const GraphView: React.FC<GraphViewProps> = ({ graphData }) => {
                 linkColor={() => '#999'}
                 width={graphWidth}
                 height={600}
+                onNodeClick={(node) => onNodeClick(node as Node)}
                 nodeCanvasObject={(node, ctx, globalScale) => {
                     const label = (node as any).text;
                     const fontSize = 12 / globalScale;
