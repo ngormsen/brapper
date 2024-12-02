@@ -34,21 +34,28 @@ export const NodesSection: React.FC<NodesSectionProps> = ({
             <div className="bg-white rounded-lg shadow p-6">
                 <h2 className="text-xl font-semibold mb-4">Nodes</h2>
                 <div className="flex flex-wrap gap-2">
-                    {nodes.map((node) => (
-                        <div
-                            key={node.id}
-                            onClick={() => onNodeClick(node.id)}
-                            className="cursor-pointer"
-                        >
-                            <NodeDisplay
-                                node={node}
-                                links={links.filter(link => 
-                                    link.sourceId === node.id || link.targetId === node.id
-                                )}
-                                colorClass={node.color ? colors[node.color].classes : undefined}
-                            />
-                        </div>
-                    ))}
+                    {nodes
+                        .sort((a, b) => {
+                            // Sort by color, handling undefined colors
+                            const colorA = a.color || 0;
+                            const colorB = b.color || 0;
+                            return colorB - colorA;
+                        })
+                        .map((node) => (
+                            <div
+                                key={node.id}
+                                onClick={() => onNodeClick(node.id)}
+                                className="cursor-pointer"
+                            >
+                                <NodeDisplay
+                                    node={node}
+                                    links={links.filter(link => 
+                                        link.sourceId === node.id || link.targetId === node.id
+                                    )}
+                                    colorClass={node.color ? colors[node.color].classes : undefined}
+                                />
+                            </div>
+                        ))}
                 </div>
             </div>
 
