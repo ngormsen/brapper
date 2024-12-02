@@ -109,6 +109,7 @@ export const useGraphData = () => {
                 color: node.color
             })),
             links: links.map(link => ({
+                id: link.id,
                 source: link.sourceId,
                 target: link.targetId,
             }))

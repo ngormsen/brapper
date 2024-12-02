@@ -19,6 +19,7 @@ export interface GraphData {
         color?: ColorNumber;
     }>;
     links: Array<{
+        id: string
         source: string;
         target: string;
     }>;

@@ -49,19 +49,17 @@ export const GraphView: React.FC<GraphViewProps> = ({ graphData, onNodeClick }) 
                 nodeLabel={(node) => (node as any).text}
                 nodeColor={(node) => (node as any).color || '#999'}
                 linkColor={(link) => {
-                    const linkId = `${(link.source as any).id}-${(link.target as any).id}`;
-                    return linkId === hoveredLink ? '#666' : '#ddd';
+                    return (link as any).id === hoveredLink ? '#666' : '#ddd';
                 }}
                 linkWidth={(link) => {
-                    const linkId = `${(link.source as any).id}-${(link.target as any).id}`;
-                    return linkId === hoveredLink ? 2 : 1;
+                    return (link as any).id === hoveredLink ? 2 : 1;
                 }}
                 width={graphWidth}
                 height={600}
                 onNodeClick={(node) => onNodeClick(node as Node)}
                 onNodeHover={(node) => setHoveredNode(node ? (node as any).id : null)}
                 onLinkHover={(link) => {
-                    const linkId = link ? `${(link.source as any).id}-${(link.target as any).id}` : null;
+                    const linkId = link ? (link as any).id : null;
                     console.log('Hover event:', linkId);
                     setHoveredLink(linkId);
                 }}
