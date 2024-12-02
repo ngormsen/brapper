@@ -11,6 +11,8 @@ interface GraphViewProps {
 export const GraphView: React.FC<GraphViewProps> = ({ graphData, onNodeClick }) => {
     const graphContainerRef = useRef<HTMLDivElement | null>(null);
     const [graphWidth, setGraphWidth] = useState(400);
+    const [hoveredNode, setHoveredNode] = useState<string | null>(null);
+    const [hoveredLink, setHoveredLink] = useState<string | null>(null);
 
     useEffect(() => {
         console.log('graphData', graphData);
@@ -46,30 +48,56 @@ export const GraphView: React.FC<GraphViewProps> = ({ graphData, onNodeClick }) 
                 graphData={graphData}
                 nodeLabel={(node) => (node as any).text}
                 nodeColor={(node) => (node as any).color || '#999'}
-                linkColor={() => '#999'}
+                linkColor={(link) => {
+                    const linkId = `${(link.source as any).id}-${(link.target as any).id}`;
+                    return linkId === hoveredLink ? '#666' : '#ddd';
+                }}
+                linkWidth={(link) => {
+                    const linkId = `${(link.source as any).id}-${(link.target as any).id}`;
+                    return linkId === hoveredLink ? 2 : 1;
+                }}
                 width={graphWidth}
                 height={600}
                 onNodeClick={(node) => onNodeClick(node as Node)}
+                onNodeHover={(node) => setHoveredNode(node ? (node as any).id : null)}
+                onLinkHover={(link) => {
+                    const linkId = link ? `${(link.source as any).id}-${(link.target as any).id}` : null;
+                    console.log('Hover event:', linkId);
+                    setHoveredLink(linkId);
+                }}
                 nodeCanvasObject={(node, ctx, globalScale) => {
                     const label = (node as any).text;
                     const fontSize = 12 / globalScale;
                     ctx.font = `${fontSize}px Sans-Serif`;
                     
-                    // Measure text width
                     const textWidth = ctx.measureText(label).width;
                     const padding = 4 / globalScale;
                     
-                    // Ensure colorId is correctly accessed
                     const nodeColorId = (node as any).color;
                     const { bg, border } = nodeColorId && nodeColorId !== 6 ? colors[nodeColorId] : { bg: 'white', border: 'black' };
                     
-                    // Save the current context state
                     ctx.save();
+                    
+                    // Add scale effect and shadow for hovered node
+                    const isHovered = (node as any).id === hoveredNode;
+                    const scale = isHovered ? 1.1 : 1;
+                    
+                    if (isHovered) {
+                        ctx.shadowColor = 'rgba(0, 0, 0, 0.2)';
+                        ctx.shadowBlur = 5;
+                        ctx.shadowOffsetX = 2;
+                        ctx.shadowOffsetY = 2;
+                    }
+                    
+                    // Apply scale transformation
+                    ctx.translate(node.x as number, node.y as number);
+                    ctx.scale(scale, scale);
+                    ctx.translate(-(node.x as number), -(node.y as number));
                     
                     // Draw background
                     ctx.fillStyle = bg;
                     ctx.strokeStyle = border;
-                    ctx.lineWidth = 1 / globalScale;
+                    ctx.lineWidth = (isHovered ? 2 : 1) / globalScale;
                     ctx.beginPath();
                     ctx.roundRect(
                         (node.x as number) - textWidth / 2 - padding,
@@ -81,13 +109,12 @@ export const GraphView: React.FC<GraphViewProps> = ({ graphData, onNodeClick }) 
                     ctx.fill();
                     ctx.stroke();
                     
-                    // Draw text in black
+                    // Draw text
                     ctx.textAlign = 'center';
                     ctx.textBaseline = 'middle';
                     ctx.fillStyle = '#000000';
                     ctx.fillText(label, node.x as number, node.y as number);
                     
-                    // Restore the context to its original state
                     ctx.restore();
                 }}
             />
