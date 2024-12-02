@@ -8,6 +8,9 @@ const ConEvPage: React.FC = () => {
     const [selectedColor, setSelectedColor] = useState<ColorNumber | null>(null);
     const { nodes, links, addNode, updateNodeColor, getGraphData } = useGraphData();
 
+    // Memoize the graph data
+    const graphData = React.useMemo(() => getGraphData(), [nodes, links]);
+
     useEffect(() => {
         const handleKeyPress = (event: KeyboardEvent) => {
             const num = parseInt(event.key) as ColorNumber;
@@ -35,7 +38,7 @@ const ConEvPage: React.FC = () => {
             <h1 className="text-2xl font-bold mb-4">ConEv Page</h1>
 
             <div className="md:flex md:gap-4">
-                <GraphView graphData={getGraphData()} />
+                <GraphView graphData={graphData} />
                 
                 <NodesSection
                     nodes={nodes}

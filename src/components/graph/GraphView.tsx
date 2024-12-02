@@ -23,7 +23,7 @@ export const GraphView: React.FC<GraphViewProps> = ({ graphData }) => {
         updateWidth();
         window.addEventListener('resize', updateWidth);
         return () => window.removeEventListener('resize', updateWidth);
-    }, []);
+    }, [graphData]);
 
     // Define the color mapping
     const colors = {
