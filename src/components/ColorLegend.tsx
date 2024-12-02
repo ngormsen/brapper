@@ -33,7 +33,7 @@ const ColorLegend: React.FC<ColorLegendProps> = ({ selectedColor, setSelectedCol
                                 }`}
                             onClick={() => setSelectedColor(prev => prev === num ? null : num)}
                         >
-                            {num}: {color.name}
+                            {num}
                         </div>
                     );
                 })}
