@@ -1,21 +1,21 @@
 import React, { useEffect, useRef, useState } from 'react';
 import ForceGraph2D from 'react-force-graph-2d';
 import { GraphData } from '../../types/graph';
-import { Node } from '../../types/graph';
+import { Node, Link } from '../../types/graph';
 
 interface GraphViewProps {
     graphData: GraphData;
     onNodeClick: (node: Node) => void;
+    onLinkClick: (link: Link) => void;
 }
 
-export const GraphView: React.FC<GraphViewProps> = ({ graphData, onNodeClick }) => {
+export const GraphView: React.FC<GraphViewProps> = ({ graphData, onNodeClick, onLinkClick }) => {
     const graphContainerRef = useRef<HTMLDivElement | null>(null);
     const [graphWidth, setGraphWidth] = useState(400);
     const [hoveredNode, setHoveredNode] = useState<string | null>(null);
     const [hoveredLink, setHoveredLink] = useState<string | null>(null);
 
     useEffect(() => {
-        console.log('graphData', graphData);
         const updateWidth = () => {
             if (graphContainerRef.current) {
                 const parentWidth = graphContainerRef.current.parentElement?.offsetWidth || 800;
@@ -57,10 +57,17 @@ export const GraphView: React.FC<GraphViewProps> = ({ graphData, onNodeClick }) 
                 width={graphWidth}
                 height={600}
                 onNodeClick={(node) => onNodeClick(node as Node)}
+                onLinkClick={(link) => {
+                    const linkData: Link = {
+                        id: (link as any).id,
+                        sourceId: (link as any).source,
+                        targetId: (link as any).target
+                    };
+                    onLinkClick(linkData);
+                }}
                 onNodeHover={(node) => setHoveredNode(node ? (node as any).id : null)}
                 onLinkHover={(link) => {
                     const linkId = link ? (link as any).id : null;
-                    console.log('Hover event:', linkId);
                     setHoveredLink(linkId);
                 }}
                 nodeCanvasObject={(node, ctx, globalScale) => {

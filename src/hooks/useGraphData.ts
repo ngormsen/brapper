@@ -38,7 +38,7 @@ export const useGraphData = () => {
 
     const removeColorLinks = async (nodeId: string, color: ColorNumber) => {
         const linksToRemove = sessionLinks.filter(link => {
-            const isColorLink = nodes.some(node => 
+            const isColorLink = nodes.some(node =>
                 (node.id === link.sourceId || node.id === link.targetId) &&
                 node.color === color
             );
@@ -54,8 +54,8 @@ export const useGraphData = () => {
     };
 
     const createColorLinks = async (nodeId: string, color: ColorNumber) => {
-        const sameColorNodes = sessionNodes.filter(n => 
-            n.id !== nodeId && 
+        const sameColorNodes = sessionNodes.filter(n =>
+            n.id !== nodeId &&
             n.color === color
         );
 
@@ -82,7 +82,7 @@ export const useGraphData = () => {
 
         const oldColor = node.color;
         const updatedNode = await graphDatabase.updateNode({ ...node, color: selectedColor });
-        
+
         if (updatedNode) {
             setNodes(prev => prev.map(node =>
                 node.id === nodeId ? updatedNode : node
@@ -116,6 +116,36 @@ export const useGraphData = () => {
         };
     }, [nodes, links]);
 
+    const deleteNode = async (nodeId: string) => {
+        console.log('Deleting node:', nodeId);
+
+        // Remove all links connected to this node
+        const connectedLinks = links.filter(
+            link => link.sourceId === nodeId || link.targetId === nodeId
+        );
+
+        for (const link of connectedLinks) {
+            await graphDatabase.deleteLink(link.id);
+        }
+
+        await graphDatabase.deleteNode(nodeId);
+        setNodes(prev => prev.filter(node => node.id !== nodeId));
+        setSessionNodes(prev => prev.filter(node => node.id !== nodeId));
+
+        setLinks(prev => prev.filter(link =>
+            link.sourceId !== nodeId && link.targetId !== nodeId
+        ));
+        setSessionLinks(prev => prev.filter(link =>
+            link.sourceId !== nodeId && link.targetId !== nodeId
+        ));
+    };
+
+    const deleteLink = async (linkId: string) => {
+        await graphDatabase.deleteLink(linkId);
+        setLinks(prev => prev.filter(link => link.id !== linkId));
+        setSessionLinks(prev => prev.filter(link => link.id !== linkId));
+    };
+
     return {
         nodes,
         links,
@@ -125,6 +155,8 @@ export const useGraphData = () => {
         sessionNodes,
         sessionLinks,
         setSessionNodes,
-        setSessionLinks
+        setSessionLinks,
+        deleteNode,
+        deleteLink
     };
 }; 

@@ -13,6 +13,7 @@ interface NodesSectionProps {
     onNodeClick: (nodeId: string) => void;
     onAddNode: (text: string) => void;
     onReset: () => void;
+    isDeleteMode: boolean;
 }
 
 export const NodesSection: React.FC<NodesSectionProps> = ({
@@ -23,6 +24,7 @@ export const NodesSection: React.FC<NodesSectionProps> = ({
     onNodeClick,
     onAddNode,
     onReset,
+    isDeleteMode,
 }) => {
     return (
         <div className="md:w-1/2 space-y-4">
@@ -55,7 +57,9 @@ export const NodesSection: React.FC<NodesSectionProps> = ({
                             <div
                                 key={node.id}
                                 onClick={() => onNodeClick(node.id)}
-                                className="cursor-pointer"
+                                className={`cursor-pointer ${
+                                    isDeleteMode ? 'hover:opacity-50' : ''
+                                }`}
                             >
                                 <NodeDisplay
                                     node={node}
@@ -63,6 +67,7 @@ export const NodesSection: React.FC<NodesSectionProps> = ({
                                         link.sourceId === node.id || link.targetId === node.id
                                     )}
                                     colorClass={node.color ? colors[node.color].classes : undefined}
+                                    isDeleteMode={isDeleteMode}
                                 />
                             </div>
                         ))}
