@@ -76,6 +76,14 @@ export const useGraphData = () => {
         setSessionLinks(prev => [...prev, ...newLinks]);
     };
 
+    const createLinkBetweenNodes = async (sourceId: string, targetId: string) => {
+        const newLink = await graphDatabase.createLink({ sourceId, targetId });
+        if (newLink) {
+            setLinks(prev => [...prev, newLink]);
+            setSessionLinks(prev => [...prev, newLink]);
+        }
+    };
+
     const updateNodeColor = async (nodeId: string, selectedColor: ColorNumber) => {
         const node = sessionNodes.find(n => n.id === nodeId);
         if (!node) return;
@@ -157,6 +165,7 @@ export const useGraphData = () => {
         setSessionNodes,
         setSessionLinks,
         deleteNode,
-        deleteLink
+        deleteLink,
+        createLinkBetweenNodes
     };
 }; 

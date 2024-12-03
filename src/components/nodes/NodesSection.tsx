@@ -14,6 +14,7 @@ interface NodesSectionProps {
     onAddNode: (text: string) => void;
     onClear: () => void;
     isDeleteMode: boolean;
+    isConnectMode: boolean;
 }
 
 export const NodesSection: React.FC<NodesSectionProps> = ({
@@ -25,6 +26,7 @@ export const NodesSection: React.FC<NodesSectionProps> = ({
     onAddNode,
     onClear,
     isDeleteMode,
+    isConnectMode,
 }) => {
     const [sortedNodes, setSortedNodes] = useState(nodes);
 
@@ -53,7 +55,10 @@ export const NodesSection: React.FC<NodesSectionProps> = ({
                 />
             </div>
 
-            <div className={`bg-white rounded-lg shadow p-6 ${isDeleteMode ? 'border-red-500 border-4' : ''}`}>
+            <div className={`bg-white rounded-lg shadow p-6 ${
+                isDeleteMode ? 'border-red-500 border-4' : 
+                isConnectMode ? 'border-blue-500 border-4' : ''
+            }`}>
                 <div className="flex justify-between items-center mb-4">
                     <h2 className="text-xl font-semibold">Nodes</h2>
                     <div className="flex gap-2">
