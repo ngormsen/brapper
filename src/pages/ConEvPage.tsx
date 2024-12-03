@@ -35,6 +35,10 @@ const ConEvPage: React.FC = () => {
             if (event.key.toLowerCase() === 'd') {
                 setIsDeleteMode(prev => !prev);
             }
+
+            if (event.key.toLowerCase() === 'r') {
+                document.getElementById('refresh-button')?.click();
+            }
         };
 
         window.addEventListener('keydown', handleKeyPress);
