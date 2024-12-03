@@ -4,7 +4,7 @@ export interface Node {
     id: string;
     text: string;
     color?: ColorNumber;
-    updatedAt?: Date;
+    updated_at?: Date;
 }
 
 export interface Link {
@@ -18,7 +18,7 @@ export interface GraphData {
         id: string;
         text: string;
         color?: ColorNumber;
-        updatedAt?: Date;
+        updated_at?: Date;
     }>;
     links: Array<{
         id: string

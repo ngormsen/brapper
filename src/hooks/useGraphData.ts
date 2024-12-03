@@ -1,8 +1,7 @@
-import { useState, useCallback, useEffect } from 'react';
-import { Node, Link, GraphData } from '../types/graph';
+import { useCallback, useEffect, useState } from 'react';
 import { ColorNumber } from '../components/ColorLegend';
-import { colors } from '../components/ColorLegend';
 import { graphDatabase } from '../services/graphDatabase';
+import { GraphData, Link, Node } from '../types/graph';
 
 export const useGraphData = () => {
     const [nodes, setNodes] = useState<Node[]>([]);
@@ -114,7 +113,8 @@ export const useGraphData = () => {
             nodes: nodes.map(node => ({
                 id: node.id,
                 text: node.text,
-                color: node.color
+                color: node.color,
+                updated_at: node.updated_at
             })),
             links: links.map(link => ({
                 id: link.id,

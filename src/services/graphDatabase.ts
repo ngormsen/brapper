@@ -15,11 +15,7 @@ if (!supabaseUrl || !supabaseKey) {
 
 const supabase = createClient(supabaseUrl, supabaseKey)
 
-// Types for database responses
-interface DbNode extends Node {
-    created_at: string
-    updated_at: string
-}
+
 
 interface DbLink extends Omit<Link, 'sourceId' | 'targetId'> {
     source_id: string

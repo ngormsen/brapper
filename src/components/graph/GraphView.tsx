@@ -18,6 +18,7 @@ export const GraphView: React.FC<GraphViewProps> = ({ graphData, onNodeClick, on
     const [hoveredLink, setHoveredLink] = useState<string | null>(null);
 
     useEffect(() => {
+        console.log('graphData', graphData);
         const updateWidth = () => {
             if (graphContainerRef.current) {
                 const parentWidth = graphContainerRef.current.parentElement?.offsetWidth || 800;
@@ -43,6 +44,18 @@ export const GraphView: React.FC<GraphViewProps> = ({ graphData, onNodeClick, on
         8: { bg: 'rgba(175, 238, 238, 0.2)', border: 'rgba(0, 128, 128, 1)' }, // Teal
         9: { bg: 'rgba(211, 211, 211, 0.2)', border: 'rgba(75, 0, 130, 1)' }, // Indigo
     } as const;
+
+    const getNodeOpacity = (updated_at: string | Date) => {
+        const today = new Date();
+        const updateDate = new Date(updated_at);
+        const daysDiff = Math.floor((today.getTime() - updateDate.getTime()) / (1000 * 60 * 60 * 24));
+
+        if (daysDiff <= 0) return 1;
+        if (daysDiff <= 5) return 0.7;  // 30% reduction
+        if (daysDiff <= 10) return 0.5; // 50% reduction
+        if (daysDiff <= 20) return 0.3; // 70% reduction
+        return 0.25;                    // 85% reduction
+    };
 
     return (
         <div ref={graphContainerRef} className={`bg-white rounded-lg shadow p-4 mb-4 md:mb-0 md:w-1/2 ${isDeleteMode ? 'border-red-500 border-4' : ''} ${isConnectMode ? 'border-blue-500 border-4' : ''}`}>
@@ -83,6 +96,8 @@ export const GraphView: React.FC<GraphViewProps> = ({ graphData, onNodeClick, on
                     const nodeColorId = (node as any).color;
                     const { bg, border } = nodeColorId && nodeColorId !== 6 ? colors[nodeColorId] : { bg: 'white', border: 'black' };
                     
+                    const opacity = getNodeOpacity((node as any).updated_at);
+                    
                     ctx.save();
                     
                     // Add scale effect and shadow for hovered node
@@ -101,9 +116,9 @@ export const GraphView: React.FC<GraphViewProps> = ({ graphData, onNodeClick, on
                     ctx.scale(scale, scale);
                     ctx.translate(-(node.x as number), -(node.y as number));
                     
-                    // Draw background
-                    ctx.fillStyle = bg;
-                    ctx.strokeStyle = border;
+                    // Draw background with opacity
+                    ctx.fillStyle = bg.replace('0.2', `${opacity * 0.2}`);
+                    ctx.strokeStyle = border.replace('1)', `${opacity})`);
                     ctx.lineWidth = (isHovered ? 2 : 1) / globalScale;
                     ctx.beginPath();
                     ctx.roundRect(
@@ -116,10 +131,10 @@ export const GraphView: React.FC<GraphViewProps> = ({ graphData, onNodeClick, on
                     ctx.fill();
                     ctx.stroke();
                     
-                    // Draw text
+                    // Draw text with opacity
                     ctx.textAlign = 'center';
                     ctx.textBaseline = 'middle';
-                    ctx.fillStyle = '#000000';
+                    ctx.fillStyle = `rgba(0, 0, 0, ${opacity})`;
                     ctx.fillText(label, node.x as number, node.y as number);
                     
                     ctx.restore();
