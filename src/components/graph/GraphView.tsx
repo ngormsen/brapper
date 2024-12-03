@@ -8,9 +8,10 @@ interface GraphViewProps {
     onNodeClick: (node: Node) => void;
     onLinkClick: (link: Link) => void;
     isDeleteMode: boolean;
+    isConnectMode: boolean;
 }
 
-export const GraphView: React.FC<GraphViewProps> = ({ graphData, onNodeClick, onLinkClick, isDeleteMode }) => {
+export const GraphView: React.FC<GraphViewProps> = ({ graphData, onNodeClick, onLinkClick, isDeleteMode, isConnectMode }) => {
     const graphContainerRef = useRef<HTMLDivElement | null>(null);
     const [graphWidth, setGraphWidth] = useState(400);
     const [hoveredNode, setHoveredNode] = useState<string | null>(null);
@@ -44,7 +45,7 @@ export const GraphView: React.FC<GraphViewProps> = ({ graphData, onNodeClick, on
     } as const;
 
     return (
-        <div ref={graphContainerRef} className={`bg-white rounded-lg shadow p-4 mb-4 md:mb-0 md:w-1/2 ${isDeleteMode ? 'border-red-500 border-4' : ''}`}>
+        <div ref={graphContainerRef} className={`bg-white rounded-lg shadow p-4 mb-4 md:mb-0 md:w-1/2 ${isDeleteMode ? 'border-red-500 border-4' : ''} ${isConnectMode ? 'border-blue-500 border-4' : ''}`}>
             <ForceGraph2D
                 graphData={graphData}
                 nodeLabel={(node) => (node as any).text}

@@ -161,6 +161,7 @@ const ConEvPage: React.FC = () => {
                     onNodeClick={handleGraphNodeClick}
                     onLinkClick={handleLinkClick}
                     isDeleteMode={isDeleteMode}
+                    isConnectMode={isConnectMode}
                 />
 
                 <NodesSection
