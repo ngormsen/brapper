@@ -156,6 +156,7 @@ export const graphDatabase = {
 }
 
 export const nodeCandidateDatabase = {
+    
     async createNodeCandidate(nodeCandidate: Omit<NodeCandidate, 'id' | 'createdAt' | 'updatedAt'>): Promise<NodeCandidate | null> {
         const { data, error } = await supabase
             .from(TABLES.NODE_CANDIDATES)
@@ -209,5 +210,24 @@ export const nodeCandidateDatabase = {
             createdAt: new Date(data.created_at),
             updatedAt: new Date(data.updated_at)
         };
+    },
+
+    async getAllNodeCandidates(): Promise<NodeCandidate[]> {
+        const { data, error } = await supabase
+            .from(TABLES.NODE_CANDIDATES)
+            .select('*')
+            .order('created_at', { ascending: false });
+
+        if (error) {
+            console.error('Error fetching node candidates:', error);
+            return [];
+        }
+
+        return data.map(candidate => ({
+            id: candidate.id,
+            text: candidate.text,
+            createdAt: new Date(candidate.created_at),
+            updatedAt: new Date(candidate.updated_at)
+        }));
     }
 };

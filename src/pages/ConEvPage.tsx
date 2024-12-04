@@ -4,7 +4,8 @@ import { GraphView } from '../components/graph/GraphView';
 import { NodesSection } from '../components/nodes/NodesSection';
 import { useGraphData } from '../hooks/useGraphData';
 import { Node, Link } from '../types/graph';
-import { graphDatabase } from '../services/graphDatabase';
+import { graphDatabase, nodeCandidateDatabase } from '../services/graphDatabase';
+import { NodeCandidate } from '../out/db_model';
 
 const ConEvPage: React.FC = () => {
     const [selectedColor, setSelectedColor] = useState<ColorNumber | null>(null);
@@ -25,12 +26,16 @@ const ConEvPage: React.FC = () => {
         deleteLink,
         createLinkBetweenNodes
     } = useGraphData();
-
     // Memoize the graph data
     const graphData = React.useMemo(() => getGraphData(), [nodes, links]);
 
     useEffect(() => {
         const handleKeyPress = (event: KeyboardEvent) => {
+            // Ignore if target is an input or textarea
+            if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement) {
+                return;
+            }
+
             const num = parseInt(event.key) as ColorNumber;
             if (num >= 1 && num <= 9) {
                 setSelectedColor(prev => prev === num ? null : num as ColorNumber);
