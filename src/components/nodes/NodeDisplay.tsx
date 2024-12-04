@@ -1,5 +1,5 @@
 import React from 'react';
-import type { Node, Link } from '../../types/graph';
+import type { Link, Node } from '../../types/graph';
 
 interface NodeDisplayProps {
     node: Node;
@@ -9,10 +9,10 @@ interface NodeDisplayProps {
     isDeleteMode?: boolean;
 }
 
-export const NodeDisplay: React.FC<NodeDisplayProps> = ({ 
-    node, 
-    links, 
-    maxLength = 50, 
+export const NodeDisplay: React.FC<NodeDisplayProps> = ({
+    node,
+    links,
+    maxLength = 50,
     colorClass,
     isDeleteMode = false
 }) => {
@@ -21,7 +21,7 @@ export const NodeDisplay: React.FC<NodeDisplayProps> = ({
     const baseColorClass = colorClass || 'bg-white';
 
     return (
-        <div 
+        <div
             className={`
                 ${baseColorClass} 
                 px-4 py-2 

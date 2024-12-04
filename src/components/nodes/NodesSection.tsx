@@ -140,7 +140,7 @@ export const NodesSection: React.FC<NodesSectionProps> = ({
                     <div className="flex justify-between items-center mb-4">
                         <h2 className="text-xl font-semibold">Candidate Nodes</h2>
                     </div>
-                    <div className="flex flex-wrap gap-2">
+                    <div className="flex flex-wrap gap-2 overflow-y-auto max-h-48">
                         {candidateNodes.map((node) => (
                             <div
                                 key={node.id}
@@ -166,7 +166,7 @@ export const NodesSection: React.FC<NodesSectionProps> = ({
             </div>
 
             <div className="bg-white rounded-lg shadow p-6">
-                <BulkNodeInput onAddNode={onAddNode} />
+                <BulkNodeInput onAddNode={onAddCandidateNode} />
             </div>
         </div>
     );

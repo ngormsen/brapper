@@ -123,7 +123,6 @@ const ConEvPage: React.FC = () => {
         <div className="p-6">
             <div className="flex justify-between items-center mb-4">
                 <div className="flex items-center gap-4">
-                    <h1 className="text-2xl font-bold">ConEv Page</h1>
                     {firstSelectedNode && isConnectMode && (
                         <span className="text-blue-600">
                             Connecting from: {firstSelectedNode.text}

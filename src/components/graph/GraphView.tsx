@@ -58,7 +58,7 @@ export const GraphView: React.FC<GraphViewProps> = ({ graphData, onNodeClick, on
     };
 
     return (
-        <div ref={graphContainerRef} className={`bg-white rounded-lg shadow p-4 mb-4 md:mb-0 md:w-1/2 ${isDeleteMode ? 'border-red-500 border-4' : ''} ${isConnectMode ? 'border-blue-500 border-4' : ''}`}>
+        <div ref={graphContainerRef} className={`bg-white max-h-fit rounded-lg shadow p-4 mb-4 md:mb-0 md:w-1/2 ${isDeleteMode ? 'border-red-500 border-4' : ''} ${isConnectMode ? 'border-blue-500 border-4' : ''}`}>
             <ForceGraph2D
                 graphData={graphData}
                 nodeLabel={(node) => (node as any).text}
@@ -89,33 +89,33 @@ export const GraphView: React.FC<GraphViewProps> = ({ graphData, onNodeClick, on
                     const label = (node as any).text;
                     const fontSize = 12 / globalScale;
                     ctx.font = `${fontSize}px Sans-Serif`;
-                    
+
                     const textWidth = ctx.measureText(label).width;
                     const padding = 4 / globalScale;
-                    
+
                     const nodeColorId = (node as any).color;
                     const { bg, border } = nodeColorId && nodeColorId !== 6 ? colors[nodeColorId] : { bg: 'white', border: 'black' };
-                    
+
                     const opacity = getNodeOpacity((node as any).updated_at);
-                    
+
                     ctx.save();
-                    
+
                     // Add scale effect and shadow for hovered node
                     const isHovered = (node as any).id === hoveredNode;
                     const scale = isHovered ? 1.1 : 1;
-                    
+
                     if (isHovered) {
                         ctx.shadowColor = 'rgba(0, 0, 0, 0.2)';
                         ctx.shadowBlur = 5;
                         ctx.shadowOffsetX = 2;
                         ctx.shadowOffsetY = 2;
                     }
-                    
+
                     // Apply scale transformation
                     ctx.translate(node.x as number, node.y as number);
                     ctx.scale(scale, scale);
                     ctx.translate(-(node.x as number), -(node.y as number));
-                    
+
                     // Draw background with opacity
                     ctx.fillStyle = bg.replace('0.2', `${opacity * 0.2}`);
                     ctx.strokeStyle = border.replace('1)', `${opacity})`);
@@ -130,13 +130,13 @@ export const GraphView: React.FC<GraphViewProps> = ({ graphData, onNodeClick, on
                     );
                     ctx.fill();
                     ctx.stroke();
-                    
+
                     // Draw text with opacity
                     ctx.textAlign = 'center';
                     ctx.textBaseline = 'middle';
                     ctx.fillStyle = `rgba(0, 0, 0, ${opacity})`;
                     ctx.fillText(label, node.x as number, node.y as number);
-                    
+
                     ctx.restore();
                 }}
             />
