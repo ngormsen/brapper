@@ -1,5 +1,6 @@
-import { createClient } from '@supabase/supabase-js'
-import { Link, Node } from '../types/graph'
+import { createClient } from '@supabase/supabase-js';
+import { Link, Node } from '../types/graph';
+import { NodeCandidate } from '../out/db_model';
 
 console.log('supabase', process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
 
@@ -15,7 +16,11 @@ if (!supabaseUrl || !supabaseKey) {
 
 const supabase = createClient(supabaseUrl, supabaseKey)
 
-
+const TABLES = {
+    NODES: 'nodes',
+    LINKS: 'links',
+    NODE_CANDIDATES: 'node_candidates'
+} as const;
 
 interface DbLink extends Omit<Link, 'sourceId' | 'targetId'> {
     source_id: string
@@ -73,7 +78,7 @@ export const graphDatabase = {
 
     async getAllNodes(): Promise<Node[]> {
         const { data, error } = await supabase
-            .from('nodes')
+            .from(TABLES.NODES)
             .select('*')
             .order('created_at')
 
@@ -125,7 +130,7 @@ export const graphDatabase = {
 
     async getAllLinks(): Promise<Link[]> {
         const { data, error } = await supabase
-            .from('links')
+            .from(TABLES.LINKS)
             .select('*')
             .order('created_at')
 
@@ -148,4 +153,61 @@ export const graphDatabase = {
         const links = await this.getAllLinks()
         return { nodes, links }
     }
-} 
+}
+
+export const nodeCandidateDatabase = {
+    async createNodeCandidate(nodeCandidate: Omit<NodeCandidate, 'id' | 'createdAt' | 'updatedAt'>): Promise<NodeCandidate | null> {
+        const { data, error } = await supabase
+            .from(TABLES.NODE_CANDIDATES)
+            .insert({ text: nodeCandidate.text })
+            .select()
+            .single();
+
+        if (error) {
+            console.error('Error creating node candidate:', error);
+            return null;
+        }
+
+        return {
+            id: data.id,
+            text: data.text,
+            createdAt: new Date(data.created_at),
+            updatedAt: new Date(data.updated_at)
+        };
+    },
+
+    async deleteNodeCandidate(id: string): Promise<boolean> {
+        const { error } = await supabase
+            .from(TABLES.NODE_CANDIDATES)
+            .delete()
+            .eq('id', id);
+
+        if (error) {
+            console.error('Error deleting node candidate:', error);
+            return false;
+        }
+
+        return true;
+    },
+
+    async updateNodeCandidate(nodeCandidate: Pick<NodeCandidate, 'id' | 'text'>): Promise<NodeCandidate | null> {
+        const { data, error } = await supabase
+            .from(TABLES.NODE_CANDIDATES)
+            .update({ text: nodeCandidate.text })
+            .eq('id', nodeCandidate.id)
+            .select()
+            .single();
+
+        if (error) {
+            console.error('Error updating node candidate:', error);
+            return null;
+        }
+
+        return {
+            id: data.id,
+            text: data.text,
+            createdAt: new Date(data.created_at),
+            updatedAt: new Date(data.updated_at)
+        };
+    }
+};

@@ -25,4 +25,4 @@ export interface GraphData {
         source: string;
         target: string;
     }>;
-} 
+}
