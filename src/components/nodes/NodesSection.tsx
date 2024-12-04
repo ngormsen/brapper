@@ -48,6 +48,7 @@ export const NodesSection: React.FC<NodesSectionProps> = ({
 
     const onAddCandidateNode = async (text: string) => {
         const newCandidateNode = await nodeCandidateDatabase.createNodeCandidate({ text });
+
         if (newCandidateNode) {
             setCandidateNodes(prev => [...prev, newCandidateNode]);
         }
@@ -64,6 +65,8 @@ export const NodesSection: React.FC<NodesSectionProps> = ({
 
         if (candidateNode) {
             onAddNode(candidateNode.text);
+            await nodeCandidateDatabase.deleteNodeCandidate(candidateNode.id);
+            setCandidateNodes(prev => prev.filter(node => node.id !== candidateNode.id));
         }
     };
 
