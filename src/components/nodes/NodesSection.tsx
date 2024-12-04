@@ -1,18 +1,21 @@
-import React, { useState, useEffect } from 'react';
-import { Node, Link } from '../../types/graph';
-import { NodeDisplay } from './NodeDisplay';
-import { SingleNodeInput } from './SingleNodeInput';
-import { BulkNodeInput } from './BulkNodeInput';
-import ColorLegend, { ColorNumber, colors } from '../ColorLegend';
+import React, { useEffect, useState } from 'react';
 import { NodeCandidate } from '../../out/db_model';
 import { nodeCandidateDatabase } from '../../services/graphDatabase';
+import { Link, Node } from '../../types/graph';
+import ColorLegend, { ColorNumber, colors } from '../ColorLegend';
+import { BulkNodeInput } from './BulkNodeInput';
+import { CandidateNodesSection } from './CandidateNodesSection';
+import { NodeDisplay } from './NodeDisplay';
+import { SingleNodeInput } from './SingleNodeInput';
 
 interface NodesSectionProps {
+    sessionNodes: Node[];
     nodes: Node[];
     links: Link[];
     selectedColor: ColorNumber | null;
     setSelectedColor: (color: ColorNumber | null) => void;
     onNodeClick: (nodeId: string) => void;
+    onOldNodeClick: (nodeId: string) => void;
     onAddNode: (text: string) => void;
     onClear: () => void;
     isDeleteMode: boolean;
@@ -20,22 +23,24 @@ interface NodesSectionProps {
 }
 
 export const NodesSection: React.FC<NodesSectionProps> = ({
+    sessionNodes,
     nodes,
     links,
     selectedColor,
     setSelectedColor,
     onNodeClick,
+    onOldNodeClick,
     onAddNode,
     onClear,
     isDeleteMode,
     isConnectMode,
 }) => {
-    const [sortedNodes, setSortedNodes] = useState(nodes);
+    const [sortedNodes, setSortedNodes] = useState(sessionNodes);
     const [candidateNodes, setCandidateNodes] = useState<NodeCandidate[]>([]);
 
     useEffect(() => {
-        setSortedNodes(nodes);
-    }, [nodes]);
+        setSortedNodes(sessionNodes);
+    }, [sessionNodes]);
 
     useEffect(() => {
         const loadCandidateNodes = async () => {
@@ -80,7 +85,7 @@ export const NodesSection: React.FC<NodesSectionProps> = ({
     };
 
     const onRefresh = () => {
-        setSortedNodes(sortByColor(nodes));
+        setSortedNodes(sortByColor(sessionNodes));
     };
 
     return (
@@ -135,31 +140,14 @@ export const NodesSection: React.FC<NodesSectionProps> = ({
                 </div>
             </div>
             {candidateNodes.length > 0 && (
-                <div className={`bg-white rounded-lg shadow p-6 ${isDeleteMode ? 'border-red-500 border-4' : ''
-                    }`}>
-                    <div className="flex justify-between items-center mb-4">
-                        <h2 className="text-xl font-semibold">Candidate Nodes</h2>
-                    </div>
-                    <div className="flex flex-wrap gap-2 overflow-y-auto max-h-48">
-                        {candidateNodes.map((node) => (
-                            <div
-                                key={node.id}
-                                onClick={() => onCandidateNodeClick(node.id)}
-                                className={`cursor-pointer ${isDeleteMode ? 'hover:opacity-50' : ''
-                                    }`}
-                            >
-                                <NodeDisplay
-                                    node={node}
-                                    links={links.filter(link =>
-                                        link.sourceId === node.id || link.targetId === node.id
-                                    )}
-                                    isDeleteMode={isDeleteMode}
-                                />
-                            </div>
-                        ))}
-
-                    </div>
-                </div>
+                <CandidateNodesSection
+                    candidateNodes={candidateNodes}
+                    nodes={nodes}
+                    links={links}
+                    isDeleteMode={isDeleteMode}
+                    onCandidateNodeClick={onCandidateNodeClick}
+                    onNodeClick={onOldNodeClick}
+                />
             )}
             <div className="bg-white rounded-lg shadow p-6">
                 <SingleNodeInput onAddNode={onAddCandidateNode} />

@@ -3,9 +3,7 @@ import { ColorNumber } from '../components/ColorLegend';
 import { GraphView } from '../components/graph/GraphView';
 import { NodesSection } from '../components/nodes/NodesSection';
 import { useGraphData } from '../hooks/useGraphData';
-import { Node, Link } from '../types/graph';
-import { graphDatabase, nodeCandidateDatabase } from '../services/graphDatabase';
-import { NodeCandidate } from '../out/db_model';
+import { Link, Node } from '../types/graph';
 
 const ConEvPage: React.FC = () => {
     const [selectedColor, setSelectedColor] = useState<ColorNumber | null>(null);
@@ -89,6 +87,13 @@ const ConEvPage: React.FC = () => {
         setSessionLinks([]);
     };
 
+    const handleOldNodeClick = (nodeId: string) => {
+        // Check if node already exists in sessionNodes
+        if (!sessionNodes.some(n => n.id === nodeId)) {
+            setSessionNodes(prev => [...prev, nodes.find(n => n.id === nodeId)]);
+        }
+    };
+
     const handleGraphNodeClick = (node: Node) => {
         console.log('Graph node clicked:', node);
         if (isDeleteMode) {
@@ -169,11 +174,13 @@ const ConEvPage: React.FC = () => {
                 />
 
                 <NodesSection
-                    nodes={sessionNodes}
+                    sessionNodes={sessionNodes}
+                    nodes={nodes}
                     links={links}
                     selectedColor={selectedColor}
                     setSelectedColor={setSelectedColor}
                     onNodeClick={handleNodeClick}
+                    onOldNodeClick={handleOldNodeClick}
                     onAddNode={handleNodeAdd}
                     onClear={handleSessionClear}
                     isDeleteMode={isDeleteMode}
