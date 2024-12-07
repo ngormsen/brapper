@@ -9,6 +9,7 @@ const ConEvPage: React.FC = () => {
     const [selectedColor, setSelectedColor] = useState<ColorNumber | null>(null);
     const [isDeleteMode, setIsDeleteMode] = useState(false);
     const [isConnectMode, setIsConnectMode] = useState(false);
+    const [isEditMode, setIsEditMode] = useState(false);
     const [firstSelectedNode, setFirstSelectedNode] = useState<Node | null>(null);
     const {
         nodes,
@@ -41,11 +42,21 @@ const ConEvPage: React.FC = () => {
 
             if (event.key.toLowerCase() === 'd') {
                 setIsDeleteMode(prev => !prev);
+                setIsEditMode(false);
                 setIsConnectMode(false);
                 setFirstSelectedNode(null);
             }
 
+            if (event.key.toLowerCase() === 'e') {
+                setIsDeleteMode(false);
+                setIsConnectMode(false);
+                setFirstSelectedNode(null);
+                setIsEditMode(prev => !prev);
+            }
+
             if (event.key.toLowerCase() === 'c') {
+                setIsDeleteMode(false);
+                setIsEditMode(false);
                 if (isConnectMode) {
                     if (firstSelectedNode) {
                         setFirstSelectedNode(null);
@@ -81,6 +92,8 @@ const ConEvPage: React.FC = () => {
             }
         } else if (selectedColor !== null) {
             updateNodeColor(nodeId, selectedColor);
+        } else if (isEditMode) {
+            alert('Edit mode is not supported yet');
         }
     };
 
@@ -114,6 +127,9 @@ const ConEvPage: React.FC = () => {
                 console.log('Creating link from', firstSelectedNode.id, 'to', node.id);
                 createLinkBetweenNodes(firstSelectedNode.id, node.id);
             }
+            return;
+        } else if (isEditMode) {
+            alert('Edit mode is not supported yet');
             return;
         }
 
@@ -149,6 +165,15 @@ const ConEvPage: React.FC = () => {
                 </div>
                 <div className="flex gap-2">
                     <button
+                        onClick={() => setIsEditMode(!isEditMode)}
+                        className={`px-4 py-2 rounded-lg transition-colors ${isEditMode
+                            ? 'bg-green-600 text-white hover:bg-green-700'
+                            : 'bg-gray-200 hover:bg-gray-300'
+                            }`}
+                    >
+                        {isEditMode ? 'Exit Edit Mode' : 'Edit Mode'}
+                    </button>
+                    <button
                         onClick={handleConnectModeToggle}
                         className={`px-4 py-2 rounded-lg transition-colors ${isConnectMode
                             ? 'bg-blue-600 text-white hover:bg-blue-700'
@@ -180,6 +205,7 @@ const ConEvPage: React.FC = () => {
                     onLinkClick={handleLinkClick}
                     isDeleteMode={isDeleteMode}
                     isConnectMode={isConnectMode}
+                    isEditMode={isEditMode}
                 />
 
                 <NodesSection
@@ -194,6 +220,7 @@ const ConEvPage: React.FC = () => {
                     onClear={handleSessionClear}
                     isDeleteMode={isDeleteMode}
                     isConnectMode={isConnectMode}
+                    isEditMode={isEditMode}
                 />
             </div>
         </div>
