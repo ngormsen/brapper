@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import ForceGraph2D from 'react-force-graph-2d';
-import { GraphData } from '../../types/graph';
-import { Node, Link } from '../../types/graph';
+import { GraphData, Link, Node } from '../../types/graph';
 
 interface GraphViewProps {
     graphData: GraphData;
@@ -91,13 +90,21 @@ export const GraphView: React.FC<GraphViewProps> = ({ graphData, onNodeClick, on
                 }}
                 nodeCanvasObject={(node, ctx, globalScale) => {
                     const firstLine = (node as any).text.split('\n')[0];
-                    const maxLength = 10; // You can adjust this value or make it a prop
+                    const maxLength = 10;
                     const label = firstLine.length > maxLength ? `${firstLine.slice(0, maxLength)}...` : firstLine;
                     const fontSize = 12 / globalScale;
                     ctx.font = `${fontSize}px Sans-Serif`;
 
                     const textWidth = ctx.measureText(label).width;
                     const padding = 4 / globalScale;
+
+                    // Calculate background dimensions
+                    const width = textWidth + padding * 2;
+                    const height = fontSize + padding * 2;
+                    const bckgDimensions = [width, height];
+                    
+                    // Store dimensions on node for pointer area painting
+                    (node as any).__bckgDimensions = bckgDimensions;
 
                     const nodeColorId = (node as any).color;
                     const { bg, border } = nodeColorId && nodeColorId !== 6 ? colors[nodeColorId] : { bg: 'white', border: 'black' };
@@ -143,7 +150,19 @@ export const GraphView: React.FC<GraphViewProps> = ({ graphData, onNodeClick, on
                     ctx.fillStyle = `rgba(0, 0, 0, ${opacity})`;
                     ctx.fillText(label, node.x as number, node.y as number);
 
-                    ctx.restore();
+                    // ctx.restore();
+                }}
+                nodePointerAreaPaint={(node, color, ctx) => {
+                    const bckgDimensions = (node as any).__bckgDimensions;
+                    if (bckgDimensions) {
+                        ctx.fillStyle = color;
+                        ctx.fillRect(
+                            (node.x as number) - bckgDimensions[0] / 2,
+                            (node.y as number) - bckgDimensions[1] / 2,
+                            bckgDimensions[0],
+                            bckgDimensions[1]
+                        );
+                    }
                 }}
             />
         </div>
