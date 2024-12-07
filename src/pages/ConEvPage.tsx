@@ -46,9 +46,15 @@ const ConEvPage: React.FC = () => {
             }
 
             if (event.key.toLowerCase() === 'c') {
-                setIsConnectMode(prev => !prev);
-                setIsDeleteMode(false);
-                setFirstSelectedNode(null);
+                if (isConnectMode) {
+                    if (firstSelectedNode) {
+                        setFirstSelectedNode(null);
+                    } else {
+                        setIsConnectMode(false);
+                    }
+                } else {
+                    setIsConnectMode(true);
+                }
             }
 
             if (event.key.toLowerCase() === 'r') {
@@ -58,7 +64,7 @@ const ConEvPage: React.FC = () => {
 
         window.addEventListener('keydown', handleKeyPress);
         return () => window.removeEventListener('keydown', handleKeyPress);
-    }, []);
+    }, [isConnectMode, firstSelectedNode]);
 
     const handleNodeClick = (nodeId: string) => {
         const node = nodes.find(n => n.id === nodeId);
@@ -107,7 +113,6 @@ const ConEvPage: React.FC = () => {
             } else if (firstSelectedNode.id !== node.id) {
                 console.log('Creating link from', firstSelectedNode.id, 'to', node.id);
                 createLinkBetweenNodes(firstSelectedNode.id, node.id);
-                setFirstSelectedNode(null);
             }
             return;
         }
@@ -124,6 +129,14 @@ const ConEvPage: React.FC = () => {
         }
     };
 
+    const handleConnectModeToggle = () => {
+        setIsConnectMode(prev => !prev);
+        setIsDeleteMode(false);
+        if (!isConnectMode && !firstSelectedNode) {
+            setFirstSelectedNode(null);
+        }
+    };
+
     return (
         <div className="p-6">
             <div className="flex justify-between items-center mb-4">
@@ -136,11 +149,7 @@ const ConEvPage: React.FC = () => {
                 </div>
                 <div className="flex gap-2">
                     <button
-                        onClick={() => {
-                            setIsConnectMode(!isConnectMode);
-                            setIsDeleteMode(false);
-                            setFirstSelectedNode(null);
-                        }}
+                        onClick={handleConnectModeToggle}
                         className={`px-4 py-2 rounded-lg transition-colors ${isConnectMode
                             ? 'bg-blue-600 text-white hover:bg-blue-700'
                             : 'bg-gray-200 hover:bg-gray-300'
