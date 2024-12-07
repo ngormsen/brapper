@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import ForceGraph2D from 'react-force-graph-2d';
+import ForceGraph2D, { ForceGraphMethods } from 'react-force-graph-2d';
 import { GraphData, Link, Node } from '../../types/graph';
 
 interface GraphViewProps {
@@ -13,12 +13,13 @@ interface GraphViewProps {
 
 export const GraphView: React.FC<GraphViewProps> = ({ graphData, onNodeClick, onLinkClick, isDeleteMode, isConnectMode, isEditMode }) => {
     const graphContainerRef = useRef<HTMLDivElement | null>(null);
+    const fgRef = useRef<ForceGraphMethods>();
     const [graphWidth, setGraphWidth] = useState(400);
     const [hoveredNode, setHoveredNode] = useState<string | null>(null);
     const [hoveredLink, setHoveredLink] = useState<string | null>(null);
+    const [data, setData] = useState<GraphData>({ nodes: [], links: [] });
 
     useEffect(() => {
-        console.log('graphData', graphData);
         const updateWidth = () => {
             if (graphContainerRef.current) {
                 const parentWidth = graphContainerRef.current.parentElement?.offsetWidth || 800;
@@ -30,6 +31,27 @@ export const GraphView: React.FC<GraphViewProps> = ({ graphData, onNodeClick, on
         updateWidth();
         window.addEventListener('resize', updateWidth);
         return () => window.removeEventListener('resize', updateWidth);
+    }, []);
+
+    useEffect(() => {
+        // Preserve existing node positions
+        const existingNodes = new Map<string, Node>();
+        data.nodes.forEach((node) => {
+            existingNodes.set(node.id, node);
+        });
+
+        const updatedNodes = graphData.nodes.map((node) => {
+            const existingNode = existingNodes.get(node.id);
+            return {
+                ...node,
+                x: existingNode?.x ?? undefined,
+                y: existingNode?.y ?? undefined,
+                vx: existingNode?.vx ?? undefined,
+                vy: existingNode?.vy ?? undefined,
+            };
+        });
+
+        setData({ nodes: updatedNodes, links: graphData.links });
     }, [graphData]);
 
     // Define the color mapping
@@ -63,7 +85,8 @@ export const GraphView: React.FC<GraphViewProps> = ({ graphData, onNodeClick, on
         ${isConnectMode ? 'border-blue-500 border-4' : ''} 
         ${isEditMode ? 'border-green-500 border-4' : ''}`}>
             <ForceGraph2D
-                graphData={graphData}
+                ref={fgRef}
+                graphData={data}
                 nodeLabel={(node) => (node as any).text}
                 nodeColor={(node) => (node as any).color || '#999'}
                 linkColor={(link) => {
@@ -90,7 +113,7 @@ export const GraphView: React.FC<GraphViewProps> = ({ graphData, onNodeClick, on
                 }}
                 nodeCanvasObject={(node, ctx, globalScale) => {
                     const firstLine = (node as any).text.split('\n')[0];
-                    const maxLength = 10;
+                    const maxLength = 15;
                     const label = firstLine.length > maxLength ? `${firstLine.slice(0, maxLength)}...` : firstLine;
                     const fontSize = 12 / globalScale;
                     ctx.font = `${fontSize}px Sans-Serif`;
@@ -102,7 +125,7 @@ export const GraphView: React.FC<GraphViewProps> = ({ graphData, onNodeClick, on
                     const width = textWidth + padding * 2;
                     const height = fontSize + padding * 2;
                     const bckgDimensions = [width, height];
-                    
+
                     // Store dimensions on node for pointer area painting
                     (node as any).__bckgDimensions = bckgDimensions;
 
@@ -150,7 +173,7 @@ export const GraphView: React.FC<GraphViewProps> = ({ graphData, onNodeClick, on
                     ctx.fillStyle = `rgba(0, 0, 0, ${opacity})`;
                     ctx.fillText(label, node.x as number, node.y as number);
 
-                    // ctx.restore();
+                    ctx.restore();
                 }}
                 nodePointerAreaPaint={(node, color, ctx) => {
                     const bckgDimensions = (node as any).__bckgDimensions;

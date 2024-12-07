@@ -5,6 +5,10 @@ export interface Node {
     text: string;
     color?: ColorNumber;
     updated_at?: Date;
+    x?: number;
+    y?: number;
+    vx?: number;
+    vy?: number;
 }
 
 export interface Link {
