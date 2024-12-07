@@ -90,7 +90,9 @@ export const GraphView: React.FC<GraphViewProps> = ({ graphData, onNodeClick, on
                     setHoveredLink(linkId);
                 }}
                 nodeCanvasObject={(node, ctx, globalScale) => {
-                    const label = (node as any).text;
+                    const firstLine = (node as any).text.split('\n')[0];
+                    const maxLength = 10; // You can adjust this value or make it a prop
+                    const label = firstLine.length > maxLength ? `${firstLine.slice(0, maxLength)}...` : firstLine;
                     const fontSize = 12 / globalScale;
                     ctx.font = `${fontSize}px Sans-Serif`;
 

@@ -16,8 +16,8 @@ export const NodeDisplay: React.FC<NodeDisplayProps> = ({
     colorClass,
     isDeleteMode = false
 }) => {
-    const isLongText = node.text.length > maxLength;
-    const displayText = isLongText ? `${node.text.slice(0, maxLength)}...` : node.text;
+    const firstLine = node.text.split('\n')[0];
+    const displayText = firstLine.length > maxLength ? `${firstLine.slice(0, maxLength)}...` : firstLine;
     const baseColorClass = colorClass || 'bg-white';
 
     return (
@@ -43,7 +43,7 @@ export const NodeDisplay: React.FC<NodeDisplayProps> = ({
                     </div>
                 )}
             </div>
-            {isLongText && (
+            {firstLine.length > maxLength && (
                 <div className="absolute left-0 top-full mt-2 p-2 bg-gray-800 text-white text-sm rounded-md opacity-0 group-hover:opacity-100 transition-opacity z-10 max-w-[300px] break-words">
                     {node.text}
                 </div>

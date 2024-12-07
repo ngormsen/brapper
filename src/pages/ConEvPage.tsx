@@ -4,6 +4,7 @@ import { GraphView } from '../components/graph/GraphView';
 import { NodesSection } from '../components/nodes/NodesSection';
 import { useGraphData } from '../hooks/useGraphData';
 import { Link, Node } from '../types/graph';
+import { EditNodeModal } from '../components/nodes/EditNodeModal';
 
 const ConEvPage: React.FC = () => {
     const [selectedColor, setSelectedColor] = useState<ColorNumber | null>(null);
@@ -11,6 +12,7 @@ const ConEvPage: React.FC = () => {
     const [isConnectMode, setIsConnectMode] = useState(false);
     const [isEditMode, setIsEditMode] = useState(false);
     const [firstSelectedNode, setFirstSelectedNode] = useState<Node | null>(null);
+    const [editingNode, setEditingNode] = useState<Node | null>(null);
     const {
         nodes,
         links,
@@ -23,7 +25,8 @@ const ConEvPage: React.FC = () => {
         getGraphData,
         deleteNode,
         deleteLink,
-        createLinkBetweenNodes
+        createLinkBetweenNodes,
+        updateNodeText,
     } = useGraphData();
     // Memoize the graph data
     const graphData = React.useMemo(() => getGraphData(), [nodes, links]);
@@ -129,7 +132,7 @@ const ConEvPage: React.FC = () => {
             }
             return;
         } else if (isEditMode) {
-            alert('Edit mode is not supported yet');
+            setEditingNode(node);
             return;
         }
 
@@ -155,6 +158,7 @@ const ConEvPage: React.FC = () => {
 
     return (
         <div className="p-6">
+
             <div className="flex justify-between items-center mb-4">
                 <div className="flex items-center gap-4">
                     {firstSelectedNode && isConnectMode && (
@@ -223,6 +227,17 @@ const ConEvPage: React.FC = () => {
                     isEditMode={isEditMode}
                 />
             </div>
+
+            <EditNodeModal
+                isOpen={editingNode !== null}
+                nodeText={editingNode?.text || ''}
+                onClose={() => setEditingNode(null)}
+                onSave={(newText) => {
+                    if (editingNode) {
+                        updateNodeText(editingNode.id, newText);
+                    }
+                }}
+            />
         </div>
     );
 };

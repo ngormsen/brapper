@@ -101,8 +101,8 @@ export const NodesSection: React.FC<NodesSectionProps> = ({
 
             <div className={`bg-white rounded-lg shadow p-6 
             ${isDeleteMode ? 'border-red-500 border-4' :
-                isConnectMode ? 'border-blue-500 border-4' :
-                    isEditMode ? 'border-green-500 border-4' : ''
+                    isConnectMode ? 'border-blue-500 border-4' :
+                        isEditMode ? 'border-green-500 border-4' : ''
                 }`}>
                 <div className="flex justify-between items-center mb-4">
                     <h2 className="text-xl font-semibold">Nodes</h2>

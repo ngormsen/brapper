@@ -108,6 +108,22 @@ export const useGraphData = () => {
         }
     };
 
+
+    const updateNodeText = async (nodeId: string, newText: string) => {
+        const node = nodes.find(n => n.id === nodeId);
+        if (!node) return;
+
+        const updatedNode = await graphDatabase.updateNode({ ...node, text: newText });
+        if (updatedNode) {
+            setNodes(prev => prev.map(node =>
+                node.id === nodeId ? updatedNode : node
+            ));
+            setSessionNodes(prev => prev.map(node =>
+                node.id === nodeId ? updatedNode : node
+            ));
+        }
+    };
+
     const getGraphData = useCallback((): GraphData => {
         return {
             nodes: nodes.map(node => ({
@@ -166,6 +182,7 @@ export const useGraphData = () => {
         setSessionLinks,
         deleteNode,
         deleteLink,
-        createLinkBetweenNodes
+        createLinkBetweenNodes,
+        updateNodeText
     };
 }; 
