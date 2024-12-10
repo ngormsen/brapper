@@ -7,12 +7,16 @@ import { Link, Node } from '../types/graph';
 import { EditNodeModal } from '../components/nodes/EditNodeModal';
 
 const ConEvPage: React.FC = () => {
-    const [selectedColor, setSelectedColor] = useState<ColorNumber | null>(null);
+    //Modes
     const [isDeleteMode, setIsDeleteMode] = useState(false);
     const [isConnectMode, setIsConnectMode] = useState(false);
     const [isEditMode, setIsEditMode] = useState(false);
+
+    //Nodes
     const [firstSelectedNode, setFirstSelectedNode] = useState<Node | null>(null);
     const [editingNode, setEditingNode] = useState<Node | null>(null);
+    
+    const [selectedColor, setSelectedColor] = useState<ColorNumber | null>(null);
     const {
         nodes,
         links,
@@ -28,7 +32,7 @@ const ConEvPage: React.FC = () => {
         createLinkBetweenNodes,
         updateNodeText,
     } = useGraphData();
-    // Memoize the graph data
+    
     const graphData = React.useMemo(() => getGraphData(), [nodes, links]);
 
     useEffect(() => {
@@ -91,12 +95,11 @@ const ConEvPage: React.FC = () => {
                 setFirstSelectedNode(node);
             } else if (firstSelectedNode.id !== nodeId) {
                 createLinkBetweenNodes(firstSelectedNode.id, nodeId);
-                setFirstSelectedNode(null);
             }
         } else if (selectedColor !== null) {
             updateNodeColor(nodeId, selectedColor);
         } else if (isEditMode) {
-            alert('Edit mode is not supported yet');
+            setEditingNode(node);
         }
     };
 

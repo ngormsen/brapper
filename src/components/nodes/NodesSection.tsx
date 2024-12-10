@@ -41,7 +41,7 @@ export const NodesSection: React.FC<NodesSectionProps> = ({
     const [candidateNodes, setCandidateNodes] = useState<NodeCandidate[]>([]);
 
     useEffect(() => {
-        setSortedNodes(sessionNodes);
+        setSortedNodes(sortByColor(sessionNodes));
     }, [sessionNodes]);
 
     useEffect(() => {

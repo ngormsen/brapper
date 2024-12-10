@@ -12,7 +12,7 @@ interface NodeDisplayProps {
 export const NodeDisplay: React.FC<NodeDisplayProps> = ({
     node,
     links,
-    maxLength = 50,
+    maxLength = 35,
     colorClass,
     isDeleteMode = false
 }) => {
@@ -44,7 +44,7 @@ export const NodeDisplay: React.FC<NodeDisplayProps> = ({
                 )}
             </div>
             {firstLine.length > maxLength && (
-                <div className="absolute left-0 top-full mt-2 p-2 bg-gray-800 text-white text-sm rounded-md opacity-0 group-hover:opacity-100 transition-opacity z-10 max-w-[300px] break-words">
+                <div className="absolute left-0 top-full mt-2 p-2 bg-gray-800 text-white text-sm rounded-md opacity-0 group-hover:opacity-100 transition-opacity z-50 max-w-[300px] break-words shadow-lg pointer-events-none group-hover:pointer-events-auto">
                     {node.text}
                 </div>
             )}

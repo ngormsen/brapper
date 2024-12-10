@@ -31,7 +31,7 @@ export const CandidateNodesSection: React.FC<CandidateNodesSectionProps> = ({
                 <button className={`text-sm text-gray-500 hover:text-gray-700 ${view === 'fewestLinks' ? 'font-bold' : ''}`} onClick={() => setView('fewestLinks')}>Fewest Links</button>
             </div>
             <div className="flex flex-wrap gap-2 overflow-y-auto max-h-48">
-                {view === 'candidates' && candidateNodes.map((node) => (
+                {view === 'candidates' && candidateNodes.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()).map((node) => (
                     <div
                         key={node.id}
                         onClick={() => onCandidateNodeClick(node.id)}
@@ -67,7 +67,11 @@ export const CandidateNodesSection: React.FC<CandidateNodesSectionProps> = ({
                         onClick={() => onNodeClick(node.id)}
                         className={`cursor-pointer ${isDeleteMode ? 'hover:opacity-50' : ''}`}
                     >
-                        <NodeDisplay node={node} links={links.filter(link => link.sourceId === node.id || link.targetId === node.id)} isDeleteMode={isDeleteMode} />
+                        <NodeDisplay
+                            node={node}
+                            links={links.filter(link => link.sourceId === node.id || link.targetId === node.id)}
+                            isDeleteMode={isDeleteMode}
+                        />
                     </div>
                 ))}
             </div>
