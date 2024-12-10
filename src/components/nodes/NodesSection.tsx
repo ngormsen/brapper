@@ -7,6 +7,7 @@ import { BulkNodeInput } from './BulkNodeInput';
 import { CandidateNodesSection } from './CandidateNodesSection';
 import { NodeDisplay } from './NodeDisplay';
 import { SingleNodeInput } from './SingleNodeInput';
+import { EditNodeModal } from './EditNodeModal';
 
 interface NodesSectionProps {
     sessionNodes: Node[];
@@ -39,6 +40,8 @@ export const NodesSection: React.FC<NodesSectionProps> = ({
 }) => {
     const [sortedNodes, setSortedNodes] = useState(sessionNodes);
     const [candidateNodes, setCandidateNodes] = useState<NodeCandidate[]>([]);
+    const [isEditingModalVisible, setIsEditingModalVisible] = useState(false);
+    const [editingCandidateNode, setEditingCandidateNode] = useState<NodeCandidate | null>(null);
 
     useEffect(() => {
         setSortedNodes(sortByColor(sessionNodes));
@@ -61,6 +64,11 @@ export const NodesSection: React.FC<NodesSectionProps> = ({
         }
     };
 
+    const onUpdateCandidateNode = async (nodeId: string, newText: string) => {
+        await nodeCandidateDatabase.updateNodeCandidate({ id: nodeId, text: newText });
+        setCandidateNodes(prev => prev.map(node => node.id === nodeId ? { ...node, text: newText } : node));
+    };
+
     const onCandidateNodeClick = async (nodeId: string) => {
         if (isDeleteMode) {
             await nodeCandidateDatabase.deleteNodeCandidate(nodeId);
@@ -69,6 +77,12 @@ export const NodesSection: React.FC<NodesSectionProps> = ({
         }
 
         const candidateNode = candidateNodes.find(node => node.id === nodeId);
+
+        if (isEditMode) {
+            setIsEditingModalVisible(true);
+            setEditingCandidateNode(candidateNode);
+            return;
+        }
 
         if (candidateNode) {
             onAddNode(candidateNode.text);
@@ -160,6 +174,19 @@ export const NodesSection: React.FC<NodesSectionProps> = ({
             <div className="bg-white rounded-lg shadow p-6">
                 <BulkNodeInput onAddNode={onAddCandidateNode} />
             </div>
+
+            <EditNodeModal
+                isOpen={isEditingModalVisible}
+                nodeText={editingCandidateNode?.text || ''}
+                onClose={() => setIsEditingModalVisible(false)}
+                onSave={(newText) => {
+                    if (editingCandidateNode) {
+                        console.log(newText);
+                        onUpdateCandidateNode(editingCandidateNode.id, newText);
+                    }
+                }}
+            />
+
         </div>
     );
 }; 
