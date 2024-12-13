@@ -80,6 +80,7 @@ const ConEvPage: React.FC = () => {
                     }
                 } else {
                     setIsConnectMode(true);
+                    setFirstSelectedNode(null);
                 }
             }
 
@@ -166,6 +167,9 @@ const ConEvPage: React.FC = () => {
         setIsConnectMode(prev => !prev);
         setIsDeleteMode(false);
         if (!isConnectMode && !firstSelectedNode) {
+            setFirstSelectedNode(null);
+        }
+        if (!isConnectMode) {
             setFirstSelectedNode(null);
         }
     };

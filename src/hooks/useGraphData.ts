@@ -38,6 +38,11 @@ export const useGraphData = () => {
 
     const removeColorLinks = async (nodeId: string, color: ColorNumber) => {
         const linksToRemove = sessionLinks.filter(link => {
+            const isSourceNodeInSession = sessionNodes.some(node => node.id === link.sourceId);
+            if (!isSourceNodeInSession) return false;
+            const isTargetNodeInSession = sessionNodes.some(node => node.id === link.targetId);
+            if (!isTargetNodeInSession) return false;
+
             const isColorLink = nodes.some(node =>
                 (node.id === link.sourceId || node.id === link.targetId) &&
                 node.color === color
@@ -81,6 +86,23 @@ export const useGraphData = () => {
         if (newLink) {
             setLinks(prev => [...prev, newLink]);
             setSessionLinks(prev => [...prev, newLink]);
+            await updateNodeUpdatedAt(sourceId, new Date());
+            await updateNodeUpdatedAt(targetId, new Date());
+        }
+    };
+
+    const updateNodeUpdatedAt = async (nodeId: string, updatedAt: Date) => {
+        const node = nodes.find(n => n.id === nodeId);
+        if (!node) return;
+
+        const updatedNode = await graphDatabase.updateNode({ ...node, updated_at: updatedAt });
+        if (updatedNode) {
+            setNodes(prev => prev.map(node =>
+                node.id === nodeId ? updatedNode : node
+            ));
+            setSessionNodes(prev => prev.map(node =>
+                node.id === nodeId ? updatedNode : node
+            ));
         }
     };
 
