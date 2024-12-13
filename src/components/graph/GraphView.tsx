@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import ForceGraph2D, { ForceGraphMethods } from 'react-force-graph-2d';
 import { GraphData, Link, Node } from '../../types/graph';
+import * as d3 from 'd3';
 
 interface GraphViewProps {
     graphData: GraphData;
@@ -110,6 +111,10 @@ export const GraphView: React.FC<GraphViewProps> = ({ graphData, onNodeClick, on
                 onLinkHover={(link) => {
                     const linkId = link ? (link as any).id : null;
                     setHoveredLink(linkId);
+                }}
+                onNodeDragEnd={(node) => {
+                    node.fx = node.x;
+                    node.fy = node.y;
                 }}
                 nodeCanvasObject={(node, ctx, globalScale) => {
                     const firstLine = (node as any).text.split('\n')[0];
