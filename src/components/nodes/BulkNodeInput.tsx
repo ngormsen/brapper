@@ -8,7 +8,7 @@ export const BulkNodeInput: React.FC<NodeInputProps> = ({ onAddNode }) => {
         const nodes = input
             .split('---')
             .map(text => text.trim())
-            .map(text => text.replace(/[\u0000-\u001F\u007F-\u009F]/g, '')) // Remove control characters
+            .map(text => text.replace(/[\u0000-\u0009\u000B-\u001F\u007F-\u009F]/g, '')) // Remove control characters except \n (\u000A)
             .filter(text => text.length > 0)
 
         nodes.forEach(onAddNode);

@@ -26,6 +26,7 @@ export const NodeDisplay: React.FC<NodeDisplayProps> = ({
                 ${baseColorClass} 
                 px-4 py-2 
                 rounded-lg 
+                w-full
                 shadow-sm 
                 hover:shadow-md 
                 transition-all 
@@ -43,9 +44,11 @@ export const NodeDisplay: React.FC<NodeDisplayProps> = ({
                     </div>
                 )}
             </div>
-            {firstLine.length > maxLength && (
-                <div className="absolute left-0 top-full mt-2 p-2 bg-gray-800 text-white text-sm rounded-md opacity-0 group-hover:opacity-100 transition-opacity z-50 max-w-[300px] break-words shadow-lg pointer-events-none group-hover:pointer-events-auto">
-                    {node.text}
+            {node.text.length > maxLength && (
+                <div className="fixed transform -translate-x-1/2 left-[30%] mt-2 p-2 bg-gray-800 text-white text-sm rounded-md opacity-0 group-hover:opacity-100 transition-opacity z-[9999] w-[500px] break-words shadow-lg pointer-events-none group-hover:pointer-events-auto max-h-[80vh] overflow-y-auto">
+                    <div className="whitespace-pre-wrap">
+                        {node.text}
+                    </div>
                 </div>
             )}
         </div>
