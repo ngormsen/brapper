@@ -18,12 +18,13 @@ export const useGraphData = () => {
         loadGraph();
     }, []);
 
-    const addNode = async (text: string) => {
+    const addNode = async (text: string): Promise<Node | null> => {
         const newNode = await graphDatabase.createNode({ text });
         if (newNode) {
             setNodes(prev => [...prev, newNode]);
             setSessionNodes(prev => [...prev, newNode]);
         }
+        return newNode;
     };
 
     const createLinkId = (node1Id: string, node2Id: string): string => {

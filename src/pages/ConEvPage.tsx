@@ -111,8 +111,11 @@ const ConEvPage: React.FC = () => {
         }
     };
 
-    const handleNodeAdd = (text: string) => {
-        addNode(text);
+    const handleNodeAdd = async (text: string) => {
+        const newNode = await addNode(text);
+        if (newNode && isConnectMode && firstSelectedNode) {
+            createLinkBetweenNodes(firstSelectedNode.id, newNode.id);
+        }
     };
 
     const handleSessionClear = () => {

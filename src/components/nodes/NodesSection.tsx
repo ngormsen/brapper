@@ -42,7 +42,7 @@ export const NodesSection: React.FC<NodesSectionProps> = ({
     const [candidateNodes, setCandidateNodes] = useState<NodeCandidate[]>([]);
     const [isEditingModalVisible, setIsEditingModalVisible] = useState(false);
     const [editingCandidateNode, setEditingCandidateNode] = useState<NodeCandidate | null>(null);
-
+    
     useEffect(() => {
         setSortedNodes(sortByColor(sessionNodes));
     }, [sessionNodes]);
@@ -57,6 +57,12 @@ export const NodesSection: React.FC<NodesSectionProps> = ({
 
 
     const onAddCandidateNode = async (text: string) => {
+        if (isConnectMode){
+            onAddNode(text);
+            return;
+        }
+
+
         const newCandidateNode = await nodeCandidateDatabase.createNodeCandidate({ text });
 
         if (newCandidateNode) {
