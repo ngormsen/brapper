@@ -140,6 +140,22 @@ export const useGraphData = () => {
         };
     }, [nodes, links]);
 
+    const getSessionGraphData = useCallback((): GraphData => {
+        return {
+            nodes: sessionNodes.map(node => ({
+                id: node.id,
+                text: node.text,
+                color: node.color,
+                updated_at: node.updated_at
+            })),
+            links: sessionLinks.map(link => ({
+                id: link.id,
+                source: link.sourceId,
+                target: link.targetId,
+            }))
+        };
+    }, [sessionNodes, sessionLinks]);
+
     const deleteNode = async (nodeId: string) => {
         console.log('Deleting node:', nodeId);
 
@@ -176,6 +192,7 @@ export const useGraphData = () => {
         addNode,
         updateNodeColor,
         getGraphData,
+        getSessionGraphData,
         sessionNodes,
         sessionLinks,
         setSessionNodes,

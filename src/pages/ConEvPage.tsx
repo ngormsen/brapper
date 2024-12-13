@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { ColorNumber } from '../components/ColorLegend';
 import { GraphView } from '../components/graph/GraphView';
+import { EditNodeModal } from '../components/nodes/EditNodeModal';
 import { NodesSection } from '../components/nodes/NodesSection';
 import { useGraphData } from '../hooks/useGraphData';
 import { Link, Node } from '../types/graph';
-import { EditNodeModal } from '../components/nodes/EditNodeModal';
 
 const ConEvPage: React.FC = () => {
     //Modes
@@ -12,10 +12,12 @@ const ConEvPage: React.FC = () => {
     const [isConnectMode, setIsConnectMode] = useState(false);
     const [isEditMode, setIsEditMode] = useState(false);
 
+    const [isContextMode, setIsContextMode] = useState(false);
+
     //Nodes
     const [firstSelectedNode, setFirstSelectedNode] = useState<Node | null>(null);
     const [editingNode, setEditingNode] = useState<Node | null>(null);
-    
+
     const [selectedColor, setSelectedColor] = useState<ColorNumber | null>(null);
     const {
         nodes,
@@ -27,13 +29,19 @@ const ConEvPage: React.FC = () => {
         addNode,
         updateNodeColor,
         getGraphData,
+        getSessionGraphData,
         deleteNode,
         deleteLink,
         createLinkBetweenNodes,
         updateNodeText,
     } = useGraphData();
-    
-    const graphData = React.useMemo(() => getGraphData(), [nodes, links]);
+
+    const graphData = React.useMemo(() => {
+        if (isContextMode) {
+            return getSessionGraphData();
+        }
+        return getGraphData();
+    }, [isContextMode, getGraphData, getSessionGraphData]);
 
     useEffect(() => {
         const handleKeyPress = (event: KeyboardEvent) => {
@@ -171,6 +179,15 @@ const ConEvPage: React.FC = () => {
                     )}
                 </div>
                 <div className="flex gap-2">
+                    <button
+                        onClick={() => setIsContextMode(!isContextMode)}
+                        className={`px-4 py-2 rounded-lg transition-colors ${isContextMode
+                            ? 'bg-purple-600 text-white hover:bg-purple-700'
+                            : 'bg-gray-200 hover:bg-gray-300'
+                            }`}
+                    >
+                        {isContextMode ? 'Exit Context Mode' : 'Context Mode'}
+                    </button>
                     <button
                         onClick={() => setIsEditMode(!isEditMode)}
                         className={`px-4 py-2 rounded-lg transition-colors ${isEditMode
