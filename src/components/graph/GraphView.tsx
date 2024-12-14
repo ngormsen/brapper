@@ -22,6 +22,7 @@ export const GraphView: React.FC<GraphViewProps> = ({ graphData, onNodeClick, on
     const [selecting, setSelecting] = useState(false);
     const [selectionBox, setSelectionBox] = useState({ startX: 0, startY: 0, endX: 0, endY: 0 });
     const [selectedNodes, setSelectedNodes] = useState<Node[]>([]);
+    const [isCmdPressed, setIsCmdPressed] = useState(false);
 
     useEffect(() => {
         const updateWidth = () => {
@@ -57,6 +58,24 @@ export const GraphView: React.FC<GraphViewProps> = ({ graphData, onNodeClick, on
 
         setData({ nodes: updatedNodes, links: graphData.links });
     }, [graphData]);
+
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.metaKey) setIsCmdPressed(true);
+        };
+        
+        const handleKeyUp = (e: KeyboardEvent) => {
+            if (!e.metaKey) setIsCmdPressed(false);
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+        window.addEventListener('keyup', handleKeyUp);
+        
+        return () => {
+            window.removeEventListener('keydown', handleKeyDown);
+            window.removeEventListener('keyup', handleKeyUp);
+        };
+    }, []);
 
     const handleMouseDown = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
         if (event.button === 0) { // Left click only
@@ -165,8 +184,8 @@ export const GraphView: React.FC<GraphViewProps> = ({ graphData, onNodeClick, on
                 }}
                 width={graphWidth}
                 height={600}
-                enablePanInteraction={true}
-                enableZoomInteraction={true}
+                enablePanInteraction={!isCmdPressed}
+                enableZoomInteraction={!isCmdPressed}
                 onNodeClick={(node) => onNodeClick(node as Node)}
                 onLinkClick={(link) => {
                     const linkData: Link = {
