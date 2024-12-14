@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import ForceGraph2D, { ForceGraphMethods } from 'react-force-graph-2d';
 import { GraphData, Link, Node } from '../../types/graph';
-import * as d3 from 'd3';
 
 interface GraphViewProps {
     graphData: GraphData;
@@ -10,20 +9,24 @@ interface GraphViewProps {
     isDeleteMode: boolean;
     isConnectMode: boolean;
     isEditMode: boolean;
+    onNodesSelected?: (nodes: Node[]) => void;
 }
 
-export const GraphView: React.FC<GraphViewProps> = ({ graphData, onNodeClick, onLinkClick, isDeleteMode, isConnectMode, isEditMode }) => {
-    const graphContainerRef = useRef<HTMLDivElement | null>(null);
+export const GraphView: React.FC<GraphViewProps> = ({ graphData, onNodeClick, onLinkClick, isDeleteMode, isConnectMode, isEditMode, onNodesSelected }) => {
+    const containerRef = useRef<HTMLDivElement | null>(null);
     const fgRef = useRef<ForceGraphMethods>();
     const [graphWidth, setGraphWidth] = useState(400);
     const [hoveredNode, setHoveredNode] = useState<string | null>(null);
     const [hoveredLink, setHoveredLink] = useState<string | null>(null);
     const [data, setData] = useState<GraphData>({ nodes: [], links: [] });
+    const [selecting, setSelecting] = useState(false);
+    const [selectionBox, setSelectionBox] = useState({ startX: 0, startY: 0, endX: 0, endY: 0 });
+    const [selectedNodes, setSelectedNodes] = useState<Node[]>([]);
 
     useEffect(() => {
         const updateWidth = () => {
-            if (graphContainerRef.current) {
-                const parentWidth = graphContainerRef.current.parentElement?.offsetWidth || 800;
+            if (containerRef.current) {
+                const parentWidth = containerRef.current.parentElement?.offsetWidth || 800;
                 const isMediumScreen = window.innerWidth >= 768;
                 setGraphWidth(isMediumScreen ? parentWidth / 2 - 32 : parentWidth - 32);
             }
@@ -55,6 +58,64 @@ export const GraphView: React.FC<GraphViewProps> = ({ graphData, onNodeClick, on
         setData({ nodes: updatedNodes, links: graphData.links });
     }, [graphData]);
 
+    const handleMouseDown = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+        if (event.button === 0) { // Left click only
+            const rect = containerRef.current?.getBoundingClientRect();
+            if (rect) {
+                setSelecting(true);
+                setSelectionBox({
+                    startX: event.clientX - rect.left,
+                    startY: event.clientY - rect.top,
+                    endX: event.clientX - rect.left,
+                    endY: event.clientY - rect.top
+                });
+            }
+        }
+    };
+
+    const handleMouseMove = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+        if (selecting) {
+            const rect = containerRef.current?.getBoundingClientRect();
+            if (rect) {
+                setSelectionBox(prev => ({
+                    ...prev,
+                    endX: event.clientX - rect.left,
+                    endY: event.clientY - rect.top
+                }));
+            }
+        }
+    };
+
+    const handleMouseUp = () => {
+        if (selecting) {
+            setSelecting(false);
+            // Find nodes within selection box
+            const minX = Math.min(selectionBox.startX, selectionBox.endX);
+            const maxX = Math.max(selectionBox.startX, selectionBox.endX);
+            const minY = Math.min(selectionBox.startY, selectionBox.endY);
+            const maxY = Math.max(selectionBox.startY, selectionBox.endY);
+
+            const selectedNodes = data.nodes.filter(node => {
+                const screenCoords = fgRef.current?.graph2ScreenCoords(
+                    (node as any).x as number,
+                    (node as any).y as number
+                );
+                if (screenCoords) {
+                    const nodeX = screenCoords.x;
+                    const nodeY = screenCoords.y;
+                    return nodeX >= minX && nodeX <= maxX && nodeY >= minY && nodeY <= maxY;
+                }
+                return false;
+            });
+
+            console.log('selectedNodes', selectedNodes);
+            setSelectedNodes(selectedNodes);
+            if (onNodesSelected) {
+                onNodesSelected(selectedNodes);
+            }
+        }
+    };
+
     // Define the color mapping
     const colors = {
         1: { bg: 'rgba(255, 182, 193, 0.2)', border: 'rgba(255, 105, 180, 1)' }, // Pink
@@ -81,10 +142,16 @@ export const GraphView: React.FC<GraphViewProps> = ({ graphData, onNodeClick, on
     };
 
     return (
-        <div ref={graphContainerRef} className={`bg-white max-h-fit rounded-lg shadow p-4 mb-4 md:mb-0 md:w-1/2 
-        ${isDeleteMode ? 'border-red-500 border-4' : ''} 
-        ${isConnectMode ? 'border-blue-500 border-4' : ''} 
-        ${isEditMode ? 'border-green-500 border-4' : ''}`}>
+        <div
+            ref={containerRef}
+            className={`relative bg-white max-h-fit rounded-lg shadow p-4 mb-4 md:mb-0 md:w-1/2 
+                ${isDeleteMode ? 'border-red-500 border-4' : ''} 
+                ${isConnectMode ? 'border-blue-500 border-4' : ''} 
+                ${isEditMode ? 'border-green-500 border-4' : ''}`}
+            onMouseDown={handleMouseDown}
+            onMouseMove={handleMouseMove}
+            onMouseUp={handleMouseUp}
+        > 
             <ForceGraph2D
                 ref={fgRef}
                 graphData={data}
@@ -98,6 +165,8 @@ export const GraphView: React.FC<GraphViewProps> = ({ graphData, onNodeClick, on
                 }}
                 width={graphWidth}
                 height={600}
+                enablePanInteraction={true}
+                enableZoomInteraction={true}
                 onNodeClick={(node) => onNodeClick(node as Node)}
                 onLinkClick={(link) => {
                     const linkData: Link = {
@@ -190,6 +259,32 @@ export const GraphView: React.FC<GraphViewProps> = ({ graphData, onNodeClick, on
                             bckgDimensions[0],
                             bckgDimensions[1]
                         );
+                    }
+                }}
+                onRenderFramePost={(ctx) => {
+                    // Draw selection box if selecting
+                    if (selecting) {
+                        ctx.save();
+                        ctx.strokeStyle = 'rgba(0, 124, 255, 0.8)';
+                        ctx.fillStyle = 'rgba(0, 124, 255, 0.1)';
+                        ctx.lineWidth = 1;
+
+                        const start = fgRef.current?.screen2GraphCoords(selectionBox.startX, selectionBox.startY);
+                        const end = fgRef.current?.screen2GraphCoords(selectionBox.endX, selectionBox.endY);
+
+                        if (start && end) {
+                            const x = Math.min(start.x, end.x);
+                            const y = Math.min(start.y, end.y);
+                            const width = Math.abs(end.x - start.x);
+                            const height = Math.abs(end.y - start.y);
+
+                            ctx.beginPath();
+                            ctx.rect(x, y, width, height);
+                            ctx.fill();
+                            ctx.stroke();
+                        }
+
+                        ctx.restore();
                     }
                 }}
             />
