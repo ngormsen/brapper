@@ -23,13 +23,14 @@ export const GraphView: React.FC<GraphViewProps> = ({ graphData, onNodeClick, on
     const [selectionBox, setSelectionBox] = useState({ startX: 0, startY: 0, endX: 0, endY: 0 });
     const [selectedNodes, setSelectedNodes] = useState<Node[]>([]);
     const [isCmdPressed, setIsCmdPressed] = useState(false);
+    const [filterSelected, setFilterSelected] = useState(false)
 
     useEffect(() => {
         const updateWidth = () => {
             if (containerRef.current) {
                 const parentWidth = containerRef.current.parentElement?.offsetWidth || 800;
                 const isMediumScreen = window.innerWidth >= 768;
-                setGraphWidth(isMediumScreen ? parentWidth / 2 - 32 : parentWidth - 32);
+                setGraphWidth(isMediumScreen ? parentWidth  - 16 : parentWidth - 16);
             }
         };
 
@@ -45,7 +46,7 @@ export const GraphView: React.FC<GraphViewProps> = ({ graphData, onNodeClick, on
             existingNodes.set(node.id, node);
         });
 
-        const updatedNodes = graphData.nodes.map((node) => {
+        let updatedNodes = graphData.nodes.map((node) => {
             const existingNode = existingNodes.get(node.id);
             return {
                 ...node,
@@ -56,21 +57,32 @@ export const GraphView: React.FC<GraphViewProps> = ({ graphData, onNodeClick, on
             };
         });
 
-        setData({ nodes: updatedNodes, links: graphData.links });
-    }, [graphData]);
+        let updatedLinks = graphData.links
+
+        if (selectedNodes.length > 0 && filterSelected) {
+            updatedNodes = updatedNodes.filter(node => selectedNodes.some(selectedNode => selectedNode.id == node.id))
+            updatedLinks = updatedLinks.filter(link =>
+                selectedNodes.some(n => n.id === link.source) &&
+                selectedNodes.some(n => n.id === link.target)
+            );
+
+        }
+
+        setData({ nodes: updatedNodes, links: updatedLinks });
+    }, [graphData, filterSelected]);
 
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
             if (e.metaKey) setIsCmdPressed(true);
         };
-        
+
         const handleKeyUp = (e: KeyboardEvent) => {
             if (!e.metaKey) setIsCmdPressed(false);
         };
 
         window.addEventListener('keydown', handleKeyDown);
         window.addEventListener('keyup', handleKeyUp);
-        
+
         return () => {
             window.removeEventListener('keydown', handleKeyDown);
             window.removeEventListener('keyup', handleKeyUp);
@@ -161,152 +173,164 @@ export const GraphView: React.FC<GraphViewProps> = ({ graphData, onNodeClick, on
     };
 
     return (
-        <div
-            ref={containerRef}
-            className={`relative bg-white max-h-fit rounded-lg shadow p-4 mb-4 md:mb-0 md:w-1/2 
+        <div className='relative bg-white max-h-fit rounded-lg shadow p-4 mb-4 md:mb-0 md:w-1/2 '>
+            <div className='absolute -top-12 flex flex-row gap-2 m-2'>
+                <button className='bg-slate-200 rounded-lg p-2 hover:bg-slate-400' onClick={() => setSelectedNodes([])}>Clear selected</button>
+                <button className='bg-slate-200 rounded-lg p-2 hover:bg-slate-400' onClick={() => setFilterSelected(!filterSelected)}>Filter selected</button>
+            </div>
+
+            <div
+                ref={containerRef}
+                className={`relative w-full
                 ${isDeleteMode ? 'border-red-500 border-4' : ''} 
                 ${isConnectMode ? 'border-blue-500 border-4' : ''} 
                 ${isEditMode ? 'border-green-500 border-4' : ''}`}
-            onMouseDown={handleMouseDown}
-            onMouseMove={handleMouseMove}
-            onMouseUp={handleMouseUp}
-        > 
-            <ForceGraph2D
-                ref={fgRef}
-                graphData={data}
-                nodeLabel={(node) => (node as any).text}
-                nodeColor={(node) => (node as any).color || '#999'}
-                linkColor={(link) => {
-                    return (link as any).id === hoveredLink ? '#666' : '#ddd';
-                }}
-                linkWidth={(link) => {
-                    return (link as any).id === hoveredLink ? 2 : 1;
-                }}
-                width={graphWidth}
-                height={600}
-                enablePanInteraction={!isCmdPressed}
-                enableZoomInteraction={!isCmdPressed}
-                onNodeClick={(node) => onNodeClick(node as Node)}
-                onLinkClick={(link) => {
-                    const linkData: Link = {
-                        id: (link as any).id,
-                        sourceId: (link as any).source,
-                        targetId: (link as any).target
-                    };
-                    onLinkClick(linkData);
-                }}
-                onNodeHover={(node) => setHoveredNode(node ? (node as any).id : null)}
-                onLinkHover={(link) => {
-                    const linkId = link ? (link as any).id : null;
-                    setHoveredLink(linkId);
-                }}
-                onNodeDragEnd={(node) => {
-                    node.fx = node.x;
-                    node.fy = node.y;
-                }}
-                nodeCanvasObject={(node, ctx, globalScale) => {
-                    const firstLine = (node as any).text.split('\n')[0];
-                    const maxLength = 15;
-                    const label = firstLine.length > maxLength ? `${firstLine.slice(0, maxLength)}...` : firstLine;
-                    const fontSize = 12 / globalScale;
-                    ctx.font = `${fontSize}px Sans-Serif`;
+                onMouseDown={handleMouseDown}
+                onMouseMove={handleMouseMove}
+                onMouseUp={handleMouseUp}
+            >
+                <ForceGraph2D
+                    ref={fgRef}
+                    graphData={data}
+                    nodeLabel={(node) => (node as any).text}
+                    nodeColor={(node) => (node as any).color || '#999'}
+                    linkColor={(link) => {
+                        return (link as any).id === hoveredLink ? '#666' : '#ddd';
+                    }}
+                    linkWidth={(link) => {
+                        return (link as any).id === hoveredLink ? 2 : 1;
+                    }}
+                    width={graphWidth}
+                    height={600}
+                    enablePanInteraction={!isCmdPressed}
+                    enableZoomInteraction={!isCmdPressed}
+                    onNodeClick={(node) => onNodeClick(node as Node)}
+                    onLinkClick={(link) => {
+                        const linkData: Link = {
+                            id: (link as any).id,
+                            sourceId: (link as any).source,
+                            targetId: (link as any).target
+                        };
+                        onLinkClick(linkData);
+                    }}
+                    onNodeHover={(node) => setHoveredNode(node ? (node as any).id : null)}
+                    onLinkHover={(link) => {
+                        const linkId = link ? (link as any).id : null;
+                        setHoveredLink(linkId);
+                    }}
+                    onNodeDragEnd={(node) => {
+                        node.fx = node.x;
+                        node.fy = node.y;
+                    }}
+                    nodeCanvasObject={(node, ctx, globalScale) => {
+                        const firstLine = (node as any).text.split('\n')[0];
+                        const maxLength = 15;
+                        const label = firstLine.length > maxLength ? `${firstLine.slice(0, maxLength)}...` : firstLine;
+                        const fontSize = 12 / globalScale;
+                        ctx.font = `${fontSize}px Sans-Serif`;
 
-                    const textWidth = ctx.measureText(label).width;
-                    const padding = 4 / globalScale;
+                        const textWidth = ctx.measureText(label).width;
+                        const padding = 4 / globalScale;
 
-                    // Calculate background dimensions
-                    const width = textWidth + padding * 2;
-                    const height = fontSize + padding * 2;
-                    const bckgDimensions = [width, height];
+                        // Calculate background dimensions
+                        const width = textWidth + padding * 2;
+                        const height = fontSize + padding * 2;
+                        const bckgDimensions = [width, height];
 
-                    // Store dimensions on node for pointer area painting
-                    (node as any).__bckgDimensions = bckgDimensions;
+                        // Store dimensions on node for pointer area painting
+                        (node as any).__bckgDimensions = bckgDimensions;
 
-                    const nodeColorId = (node as any).color;
-                    const { bg, border } = nodeColorId && nodeColorId !== 6 ? colors[nodeColorId] : { bg: 'white', border: 'black' };
+                        const nodeColorId = (node as any).color;
+                        const { bg, border } = nodeColorId && nodeColorId !== 6 ? colors[nodeColorId] : { bg: 'white', border: 'black' };
 
-                    const opacity = getNodeOpacity((node as any).updated_at);
+                        const opacity = getNodeOpacity((node as any).updated_at);
 
-                    ctx.save();
-
-                    // Add scale effect and shadow for hovered node
-                    const isHovered = (node as any).id === hoveredNode;
-                    const scale = isHovered ? 1.1 : 1;
-
-                    if (isHovered) {
-                        ctx.shadowColor = 'rgba(0, 0, 0, 0.2)';
-                        ctx.shadowBlur = 5;
-                        ctx.shadowOffsetX = 2;
-                        ctx.shadowOffsetY = 2;
-                    }
-
-                    // Apply scale transformation
-                    ctx.translate(node.x as number, node.y as number);
-                    ctx.scale(scale, scale);
-                    ctx.translate(-(node.x as number), -(node.y as number));
-
-                    // Draw background with opacity
-                    ctx.fillStyle = bg.replace('0.2', `${opacity * 0.2}`);
-                    ctx.strokeStyle = border.replace('1)', `${opacity})`);
-                    ctx.lineWidth = (isHovered ? 2 : 1) / globalScale;
-                    ctx.beginPath();
-                    ctx.roundRect(
-                        (node.x as number) - textWidth / 2 - padding,
-                        (node.y as number) - fontSize / 2 - padding,
-                        textWidth + padding * 2,
-                        fontSize + padding * 2,
-                        3 / globalScale
-                    );
-                    ctx.fill();
-                    ctx.stroke();
-
-                    // Draw text with opacity
-                    ctx.textAlign = 'center';
-                    ctx.textBaseline = 'middle';
-                    ctx.fillStyle = `rgba(0, 0, 0, ${opacity})`;
-                    ctx.fillText(label, node.x as number, node.y as number);
-
-                    ctx.restore();
-                }}
-                nodePointerAreaPaint={(node, color, ctx) => {
-                    const bckgDimensions = (node as any).__bckgDimensions;
-                    if (bckgDimensions) {
-                        ctx.fillStyle = color;
-                        ctx.fillRect(
-                            (node.x as number) - bckgDimensions[0] / 2,
-                            (node.y as number) - bckgDimensions[1] / 2,
-                            bckgDimensions[0],
-                            bckgDimensions[1]
-                        );
-                    }
-                }}
-                onRenderFramePost={(ctx) => {
-                    // Draw selection box if selecting
-                    if (selecting) {
                         ctx.save();
-                        ctx.strokeStyle = 'rgba(0, 124, 255, 0.8)';
-                        ctx.fillStyle = 'rgba(0, 124, 255, 0.1)';
-                        ctx.lineWidth = 1;
 
-                        const start = fgRef.current?.screen2GraphCoords(selectionBox.startX, selectionBox.startY);
-                        const end = fgRef.current?.screen2GraphCoords(selectionBox.endX, selectionBox.endY);
+                        // Add scale effect and shadow for hovered node
+                        const isHovered = (node as any).id === hoveredNode;
+                        const scale = isHovered ? 1.1 : 1;
 
-                        if (start && end) {
-                            const x = Math.min(start.x, end.x);
-                            const y = Math.min(start.y, end.y);
-                            const width = Math.abs(end.x - start.x);
-                            const height = Math.abs(end.y - start.y);
-
-                            ctx.beginPath();
-                            ctx.rect(x, y, width, height);
-                            ctx.fill();
-                            ctx.stroke();
+                        if (isHovered) {
+                            ctx.shadowColor = 'rgba(0, 0, 0, 0.2)';
+                            ctx.shadowBlur = 5;
+                            ctx.shadowOffsetX = 2;
+                            ctx.shadowOffsetY = 2;
                         }
 
+                        // Apply scale transformation
+                        ctx.translate(node.x as number, node.y as number);
+                        ctx.scale(scale, scale);
+                        ctx.translate(-(node.x as number), -(node.y as number));
+
+                        // Draw background with opacity
+                        const isSelected = selectedNodes.some(n => n.id === (node as any).id);
+
+                        ctx.fillStyle = bg.replace('0.2', `${opacity * 0.2}`);
+                        ctx.strokeStyle = isSelected
+                            ? 'rgba(59, 130, 246, 1)' // Tailwind blue-500
+                            : border.replace('1)', `${opacity})`);
+                        ctx.lineWidth = (isHovered || isSelected ? 2 : 1) / globalScale;
+                        ctx.beginPath();
+                        ctx.roundRect(
+                            (node.x as number) - textWidth / 2 - padding,
+                            (node.y as number) - fontSize / 2 - padding,
+                            textWidth + padding * 2,
+                            fontSize + padding * 2,
+                            3 / globalScale
+                        );
+                        ctx.fill();
+                        ctx.stroke();
+
+                        // Draw text with opacity
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+                        ctx.fillStyle = `rgba(0, 0, 0, ${opacity})`;
+                        ctx.fillText(label, node.x as number, node.y as number);
+
                         ctx.restore();
-                    }
-                }}
-            />
+                    }}
+                    nodePointerAreaPaint={(node, color, ctx) => {
+                        const bckgDimensions = (node as any).__bckgDimensions;
+                        if (bckgDimensions) {
+                            ctx.fillStyle = color;
+                            ctx.fillRect(
+                                (node.x as number) - bckgDimensions[0] / 2,
+                                (node.y as number) - bckgDimensions[1] / 2,
+                                bckgDimensions[0],
+                                bckgDimensions[1]
+                            );
+                        }
+                    }}
+                    onRenderFramePost={(ctx) => {
+                        // Draw selection box if selecting
+                        if (selecting) {
+                            ctx.save();
+                            ctx.strokeStyle = 'rgba(0, 124, 255, 0.8)';
+                            ctx.fillStyle = 'rgba(0, 124, 255, 0.1)';
+                            ctx.lineWidth = 1;
+
+                            const start = fgRef.current?.screen2GraphCoords(selectionBox.startX, selectionBox.startY);
+                            const end = fgRef.current?.screen2GraphCoords(selectionBox.endX, selectionBox.endY);
+
+                            if (start && end) {
+                                const x = Math.min(start.x, end.x);
+                                const y = Math.min(start.y, end.y);
+                                const width = Math.abs(end.x - start.x);
+                                const height = Math.abs(end.y - start.y);
+
+                                ctx.beginPath();
+                                ctx.rect(x, y, width, height);
+                                ctx.fill();
+                                ctx.stroke();
+                            }
+
+                            ctx.restore();
+                        }
+                    }}
+                />
+            </div>
         </div>
+
     );
 }; 

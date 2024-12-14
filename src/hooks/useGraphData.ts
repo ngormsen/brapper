@@ -171,7 +171,8 @@ export const useGraphData = () => {
                 color: node.color,
                 updated_at: node.updated_at
             })),
-            links: sessionLinks.map(link => ({
+            links: sessionLinks.filter((link) => sessionNodes.some(node => node.id ===link.sourceId) && sessionNodes.some(node => node.id === link.targetId))
+            .map(link => ({
                 id: link.id,
                 source: link.sourceId,
                 target: link.targetId,
