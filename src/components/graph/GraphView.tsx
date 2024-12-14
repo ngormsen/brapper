@@ -61,10 +61,12 @@ export const GraphView: React.FC<GraphViewProps> = ({ graphData, onNodeClick, on
 
         if (selectedNodes.length > 0 && filterSelected) {
             updatedNodes = updatedNodes.filter(node => selectedNodes.some(selectedNode => selectedNode.id == node.id))
+            console.log("before filter", updatedLinks)
             updatedLinks = updatedLinks.filter(link =>
-                selectedNodes.some(n => n.id === link.source) &&
-                selectedNodes.some(n => n.id === link.target)
+                selectedNodes.some(n => n.id === link.source.id) &&
+                selectedNodes.some(n => n.id === link.target.id)
             );
+            console.log("filtered Links", updatedLinks)
 
         }
 
@@ -218,10 +220,10 @@ export const GraphView: React.FC<GraphViewProps> = ({ graphData, onNodeClick, on
                         const linkId = link ? (link as any).id : null;
                         setHoveredLink(linkId);
                     }}
-                    onNodeDragEnd={(node) => {
-                        node.fx = node.x;
-                        node.fy = node.y;
-                    }}
+                    // onNodeDragEnd={(node) => {
+                    //     node.fx = node.x;
+                    //     node.fy = node.y;
+                    // }}
                     nodeCanvasObject={(node, ctx, globalScale) => {
                         const firstLine = (node as any).text.split('\n')[0];
                         const maxLength = 15;

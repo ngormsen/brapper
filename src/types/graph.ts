@@ -26,7 +26,7 @@ export interface GraphData {
     }>;
     links: Array<{
         id: string
-        source: string;
-        target: string;
+        source: any;
+        target: any;
     }>;
 }
