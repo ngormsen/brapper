@@ -57,17 +57,32 @@ export const GraphView: React.FC<GraphViewProps> = ({ graphData, onNodeClick, on
             };
         });
 
-        let updatedLinks = graphData.links
+        let updatedLinks = graphData.links;
 
+        console.log(filterSelected)
         if (selectedNodes.length > 0 && filterSelected) {
-            updatedNodes = updatedNodes.filter(node => selectedNodes.some(selectedNode => selectedNode.id == node.id))
-            console.log("before filter", updatedLinks)
-            updatedLinks = updatedLinks.filter(link =>
-                selectedNodes.some(n => n.id === link.source.id) &&
-                selectedNodes.some(n => n.id === link.target.id)
+            // Filter nodes
+            updatedNodes = updatedNodes.filter(node =>
+                selectedNodes.some(selectedNode => selectedNode.id === node.id)
             );
-            console.log("filtered Links", updatedLinks)
 
+            // Create a map of node IDs to nodes
+            const nodeIdToNodeMap = new Map<string, Node>();
+            updatedNodes.forEach(node => {
+                nodeIdToNodeMap.set(node.id, node);
+            });
+
+            // Filter and update links
+            updatedLinks = updatedLinks
+                .filter(link =>
+                    nodeIdToNodeMap.has(typeof link.source === 'string' ? link.source : (link.source as Node).id) &&
+                    nodeIdToNodeMap.has(typeof link.target === 'string' ? link.target : (link.target as Node).id)
+                )
+                .map(link => ({
+                    ...link,
+                    source: nodeIdToNodeMap.get(typeof link.source === 'string' ? link.source : (link.source as Node).id) as Node,
+                    target: nodeIdToNodeMap.get(typeof link.target === 'string' ? link.target : (link.target as Node).id) as Node,
+                }));
         }
 
         setData({ nodes: updatedNodes, links: updatedLinks });
@@ -266,7 +281,7 @@ export const GraphView: React.FC<GraphViewProps> = ({ graphData, onNodeClick, on
                         ctx.translate(-(node.x as number), -(node.y as number));
 
                         // Draw background with opacity
-                        const isSelected = selectedNodes.some(n => n.id === (node as any).id);
+                        const isSelected = !filterSelected && selectedNodes.some(n => n.id === (node as any).id);
 
                         ctx.fillStyle = bg.replace('0.2', `${opacity * 0.2}`);
                         ctx.strokeStyle = isSelected
