@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { ColorNumber } from '../components/ColorLegend';
 import { GraphView } from '../components/graph/GraphView';
 import { EditNodeModal } from '../components/nodes/EditNodeModal';
@@ -131,7 +131,7 @@ const ConEvPage: React.FC = () => {
         }
     };
 
-    const handleGraphNodeClick = (node: Node) => {
+    const handleGraphNodeClick = useCallback((node: Node) => {
         console.log('Graph node clicked:', node);
         if (isDeleteMode) {
             deleteNode(node.id);
@@ -155,13 +155,13 @@ const ConEvPage: React.FC = () => {
         if (!sessionNodes.some(n => n.id === node.id)) {
             setSessionNodes(prev => [...prev, node]);
         }
-    };
+    }, [isDeleteMode, isConnectMode, isEditMode, firstSelectedNode, sessionNodes, nodes, createLinkBetweenNodes, deleteNode]);
 
-    const handleLinkClick = (link: Link) => {
+    const handleLinkClick = useCallback((link: Link) => {
         if (isDeleteMode) {
             deleteLink(link.id);
         }
-    };
+    }, [isDeleteMode, deleteLink]);
 
     const handleConnectModeToggle = () => {
         setIsConnectMode(prev => !prev);

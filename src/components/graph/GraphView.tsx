@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useMemo, useCallback } from 'react';
 import ForceGraph2D, { ForceGraphMethods } from 'react-force-graph-2d';
 import { GraphData, Link, Node } from '../../types/graph';
 
@@ -12,13 +12,23 @@ interface GraphViewProps {
     onNodesSelected?: (nodes: Node[]) => void;
 }
 
-export const GraphView: React.FC<GraphViewProps> = ({ graphData, onNodeClick, onLinkClick, isDeleteMode, isConnectMode, isEditMode, onNodesSelected }) => {
+const GraphViewComponent: React.FC<GraphViewProps> = ({
+    graphData,
+    onNodeClick,
+    onLinkClick,
+    isDeleteMode,
+    isConnectMode,
+    isEditMode,
+    onNodesSelected,
+}) => {
     const containerRef = useRef<HTMLDivElement | null>(null);
     const fgRef = useRef<ForceGraphMethods>();
+    
     const [graphWidth, setGraphWidth] = useState(400);
     const [hoveredNode, setHoveredNode] = useState<string | null>(null);
     const [hoveredLink, setHoveredLink] = useState<string | null>(null);
     const [data, setData] = useState<GraphData>({ nodes: [], links: [] });
+    
     const [selecting, setSelecting] = useState(false);
     const [selectionBox, setSelectionBox] = useState({ startX: 0, startY: 0, endX: 0, endY: 0 });
     const [selectedNodes, setSelectedNodes] = useState<Node[]>([]);
@@ -106,7 +116,7 @@ export const GraphView: React.FC<GraphViewProps> = ({ graphData, onNodeClick, on
         };
     }, []);
 
-    const handleMouseDown = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+    const handleMouseDown = useCallback((event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
         if (event.button === 0) { // Left click only
             const rect = containerRef.current?.getBoundingClientRect();
             if (rect) {
@@ -119,7 +129,7 @@ export const GraphView: React.FC<GraphViewProps> = ({ graphData, onNodeClick, on
                 });
             }
         }
-    };
+    }, []);
 
     const handleMouseMove = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
         if (selecting) {
@@ -350,4 +360,7 @@ export const GraphView: React.FC<GraphViewProps> = ({ graphData, onNodeClick, on
         </div>
 
     );
-}; 
+};
+
+
+export const GraphView = React.memo(GraphViewComponent); 
