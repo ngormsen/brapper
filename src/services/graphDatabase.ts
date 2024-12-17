@@ -71,7 +71,8 @@ export const graphDatabase = {
                     text: node.text,
                     color: node.color,
                     x: node.x,
-                    y: node.y
+                    y: node.y,
+                    updated_at: node.updated_at
                 }))
             )
             .select()

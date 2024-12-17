@@ -20,16 +20,7 @@ export interface Link {
 }
 
 export interface GraphData {
-    nodes: Array<{
-        id: string;
-        text: string;
-        color?: ColorNumber;
-        updated_at?: Date;
-        x?: number;
-        y?: number;
-        fx?: number;
-        fy?: number;
-    }>;
+    nodes: Node[];
     links: Array<{
         id: string
         source: any;
