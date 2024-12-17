@@ -23,6 +23,8 @@ export interface GraphData {
         text: string;
         color?: ColorNumber;
         updated_at?: Date;
+        x?: number;
+        y?: number;
     }>;
     links: Array<{
         id: string
