@@ -49,13 +49,35 @@ export const graphDatabase = {
     async updateNode(node: Node): Promise<Node | null> {
         const { data, error } = await supabase
             .from('nodes')
-            .update({ text: node.text, color: node.color })
+            .update({ text: node.text, color: node.color, x: node.x, y: node.y })
             .eq('id', node.id)
             .select()
             .single()
 
         if (error) {
             console.error('Error updating node:', error)
+            return null
+        }
+
+        return data
+    },
+
+    async updateNodes(nodes: Node[]): Promise<Node[] | null> {
+        const { data, error } = await supabase
+            .from('nodes')
+            .upsert(
+                nodes.map(node => ({
+                    id: node.id,
+                    text: node.text,
+                    color: node.color,
+                    x: node.x,
+                    y: node.y
+                }))
+            )
+            .select()
+
+        if (error) {
+            console.error('Error batch updating nodes:', error)
             return null
         }
 
@@ -156,7 +178,7 @@ export const graphDatabase = {
 }
 
 export const nodeCandidateDatabase = {
-    
+
     async createNodeCandidate(nodeCandidate: Omit<NodeCandidate, 'id' | 'createdAt' | 'updatedAt'>): Promise<NodeCandidate | null> {
         const { data, error } = await supabase
             .from(TABLES.NODE_CANDIDATES)

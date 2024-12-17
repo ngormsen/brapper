@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState, useMemo, useCallback } from 'react';
 import ForceGraph2D, { ForceGraphMethods } from 'react-force-graph-2d';
 import { GraphData, Link, Node } from '../../types/graph';
+import { graphDatabase } from '../../services/graphDatabase';
 
 interface GraphViewProps {
     graphData: GraphData;
@@ -95,6 +96,7 @@ const GraphViewComponent: React.FC<GraphViewProps> = ({
                 }));
         }
 
+        console.log(updatedNodes);
         setData({ nodes: updatedNodes, links: updatedLinks });
     }, [graphData, filterSelected]);
 
@@ -174,6 +176,12 @@ const GraphViewComponent: React.FC<GraphViewProps> = ({
         }
     };
 
+    const updateNodePositions = async () => {
+        console.log(data.nodes);
+        const updatedNodes = await graphDatabase.updateNodes(data.nodes);
+        console.log(updatedNodes);
+    }
+
     // Define the color mapping
     const colors = {
         1: { bg: 'rgba(255, 182, 193, 0.2)', border: 'rgba(255, 105, 180, 1)' }, // Pink
@@ -201,11 +209,37 @@ const GraphViewComponent: React.FC<GraphViewProps> = ({
         return 0.25;                    // 85% reduction
     };
 
+    const releaseNodePositions = () => {
+        setData(prevData => {
+            // Create a map of node IDs to updated node objects
+            const nodeIdToNodeMap = new Map<string, Node>();
+            const nodes = prevData.nodes.map(node => {
+                const updatedNode = { ...node };
+                // Remove fx and fy to release the node
+                delete updatedNode.fx;
+                delete updatedNode.fy;
+                nodeIdToNodeMap.set(updatedNode.id, updatedNode);
+                return updatedNode;
+            });
+
+            // Update links to point to updated nodes
+            const links = prevData.links.map(link => ({
+                ...link,
+                source: nodeIdToNodeMap.get(typeof link.source === 'string' ? link.source : (link.source as Node).id) as Node,
+                target: nodeIdToNodeMap.get(typeof link.target === 'string' ? link.target : (link.target as Node).id) as Node,
+            }));
+
+            return { nodes, links };
+        });
+    };
+
     return (
         <div className='relative bg-white max-h-fit rounded-lg shadow p-4 mb-4 md:mb-0 md:w-1/2 '>
-            <div className='absolute -top-12 flex flex-row gap-2 m-2'>
+            <div className='absolute -top-8 flex flex-row gap-2 m-2'>
                 <button className='bg-slate-200 rounded-lg p-2 hover:bg-slate-400' onClick={() => setSelectedNodes([])}>Clear selected</button>
                 <button className='bg-slate-200 rounded-lg p-2 hover:bg-slate-400' onClick={() => setFilterSelected(!filterSelected)}>Filter selected</button>
+                <button className='bg-slate-200 rounded-lg p-2 hover:bg-slate-400' onClick={() => updateNodePositions()}>Set positions</button>
+                <button className='bg-slate-200 rounded-lg p-2 hover:bg-slate-400' onClick={releaseNodePositions}>Release nodes</button>
             </div>
 
             <div

@@ -9,6 +9,8 @@ export interface Node {
     y?: number;
     vx?: number;
     vy?: number;
+    fx?: number;
+    fy?: number;
 }
 
 export interface Link {
@@ -25,6 +27,8 @@ export interface GraphData {
         updated_at?: Date;
         x?: number;
         y?: number;
+        fx?: number;
+        fy?: number;
     }>;
     links: Array<{
         id: string

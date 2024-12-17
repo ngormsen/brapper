@@ -12,6 +12,7 @@ export const useGraphData = () => {
     useEffect(() => {
         const loadGraph = async () => {
             const { nodes: dbNodes, links: dbLinks } = await graphDatabase.getFullGraph();
+            
             setNodes(dbNodes);
             setLinks(dbLinks);
         };
@@ -153,7 +154,13 @@ export const useGraphData = () => {
                 id: node.id,
                 text: node.text,
                 color: node.color,
-                updated_at: node.updated_at
+                updated_at: node.updated_at,
+                x: node.x,
+                y: node.y,
+                vx: node.vx,
+                vy: node.vy,
+                fx: node.x,
+                fy: node.y,
             })),
             links: links.map(link => ({
                 id: link.id,
@@ -171,12 +178,12 @@ export const useGraphData = () => {
                 color: node.color,
                 updated_at: node.updated_at
             })),
-            links: sessionLinks.filter((link) => sessionNodes.some(node => node.id ===link.sourceId) && sessionNodes.some(node => node.id === link.targetId))
-            .map(link => ({
-                id: link.id,
-                source: link.sourceId,
-                target: link.targetId,
-            }))
+            links: sessionLinks.filter((link) => sessionNodes.some(node => node.id === link.sourceId) && sessionNodes.some(node => node.id === link.targetId))
+                .map(link => ({
+                    id: link.id,
+                    source: link.sourceId,
+                    target: link.targetId,
+                }))
         };
     }, [sessionNodes, sessionLinks]);
 
