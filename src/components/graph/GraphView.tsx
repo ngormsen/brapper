@@ -201,10 +201,10 @@ const GraphViewComponent: React.FC<GraphViewProps> = ({
         const daysDiff = Math.floor((today.getTime() - updateDate.getTime()) / (1000 * 60 * 60 * 24));
 
         if (daysDiff <= 0) return 1;
-        if (daysDiff <= 2) return 0.8;  // 30% reduction
+        if (daysDiff <= 1) return 0.7;  // 30% reduction
         if (daysDiff <= 3) return 0.6;  // 50% reduction
-        if (daysDiff <= 4) return 0.5;  // 70% reduction
-        if (daysDiff <= 5) return 0.4; // 85% reduction
+        if (daysDiff <= 5) return 0.5;  // 70% reduction
+        if (daysDiff <= 7) return 0.4; // 85% reduction
         if (daysDiff <= 14) return 0.3; // 80% reduction
         return 0.25;                    // 85% reduction
     };
