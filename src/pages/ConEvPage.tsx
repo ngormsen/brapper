@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { ColorNumber } from '../components/ColorLegend';
+import { ColorNumber, colors } from '../components/ColorLegend';
 import { GraphView } from '../components/graph/GraphView';
 import { EditNodeModal } from '../components/nodes/EditNodeModal';
 import { NodesSection } from '../components/nodes/NodesSection';
@@ -127,7 +127,10 @@ const ConEvPage: React.FC = () => {
     const handleOldNodeClick = (nodeId: string) => {
         // Check if node already exists in sessionNodes
         if (!sessionNodes.some(n => n.id === nodeId)) {
-            setSessionNodes(prev => [...prev, nodes.find(n => n.id === nodeId)]);
+            const node = nodes.find(n => n.id === nodeId);
+            if (node) {
+                setSessionNodes(prev => [...prev, {...node, color: undefined}]);
+            }
         }
     };
 

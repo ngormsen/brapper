@@ -1,7 +1,7 @@
-import React, { useEffect, useRef, useState, useMemo, useCallback } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import ForceGraph2D, { ForceGraphMethods } from 'react-force-graph-2d';
-import { GraphData, Link, Node } from '../../types/graph';
 import { graphDatabase } from '../../services/graphDatabase';
+import { GraphData, Link, Node } from '../../types/graph';
 
 interface GraphViewProps {
     graphData: GraphData;
@@ -24,12 +24,12 @@ const GraphViewComponent: React.FC<GraphViewProps> = ({
 }) => {
     const containerRef = useRef<HTMLDivElement | null>(null);
     const fgRef = useRef<ForceGraphMethods>();
-    
+
     const [graphWidth, setGraphWidth] = useState(400);
     const [hoveredNode, setHoveredNode] = useState<string | null>(null);
     const [hoveredLink, setHoveredLink] = useState<string | null>(null);
     const [data, setData] = useState<GraphData>({ nodes: [], links: [] });
-    
+
     const [selecting, setSelecting] = useState(false);
     const [selectionBox, setSelectionBox] = useState({ startX: 0, startY: 0, endX: 0, endY: 0 });
     const [selectedNodes, setSelectedNodes] = useState<Node[]>([]);
@@ -41,7 +41,7 @@ const GraphViewComponent: React.FC<GraphViewProps> = ({
             if (containerRef.current) {
                 const parentWidth = containerRef.current.parentElement?.offsetWidth || 800;
                 const isMediumScreen = window.innerWidth >= 768;
-                setGraphWidth(isMediumScreen ? parentWidth  - 16 : parentWidth - 16);
+                setGraphWidth(isMediumScreen ? parentWidth - 16 : parentWidth - 16);
             }
         };
 
@@ -51,22 +51,29 @@ const GraphViewComponent: React.FC<GraphViewProps> = ({
     }, []);
 
     useEffect(() => {
-        // Preserve existing node positions
+        // Preserve existing node positions and sort nodes by update date
         const existingNodes = new Map<string, Node>();
         data.nodes.forEach((node) => {
             existingNodes.set(node.id, node);
         });
 
-        let updatedNodes = graphData.nodes.map((node) => {
-            const existingNode = existingNodes.get(node.id);
-            return {
-                ...node,
-                x: existingNode?.x ?? undefined,
-                y: existingNode?.y ?? undefined,
-                vx: existingNode?.vx ?? undefined,
-                vy: existingNode?.vy ?? undefined,
-            };
-        });
+        const today = new Date();
+        let updatedNodes = graphData.nodes
+            .map((node) => {
+                const existingNode = existingNodes.get(node.id);
+                return {
+                    ...node,
+                    x: existingNode?.x ?? undefined,
+                    y: existingNode?.y ?? undefined,
+                    vx: existingNode?.vx ?? undefined,
+                    vy: existingNode?.vy ?? undefined,
+                };
+            })
+            .sort((a, b) => {
+                const aUpdatedToday = new Date(a.updated_at).toDateString() === today.toDateString();
+                const bUpdatedToday = new Date(b.updated_at).toDateString() === today.toDateString();
+                return aUpdatedToday === bUpdatedToday ? 0 : aUpdatedToday ? 1 : -1;
+            });
 
         let updatedLinks = graphData.links;
 
@@ -233,6 +240,25 @@ const GraphViewComponent: React.FC<GraphViewProps> = ({
         });
     };
 
+    const getNodeBorderColor = (node: Node, isSelected: boolean, opacity: number) => {
+        // Check if the node was updated today
+        const today = new Date();
+        const updateDate = new Date(node.updated_at);
+        const isUpdatedToday =
+            updateDate.getDate() === today.getDate() &&
+            updateDate.getMonth() === today.getMonth() &&
+            updateDate.getFullYear() === today.getFullYear();
+
+        if (isUpdatedToday) {
+            return `rgba(255, 0, 0, ${opacity})`; // Red border
+        }
+
+        // Return the original border color logic
+        return isSelected
+            ? 'rgba(59, 130, 246, 1)' // Tailwind blue-500
+            : colors[node.color]?.border.replace('1)', `${opacity})`) || `rgba(0, 0, 0, ${opacity})`;
+    };
+
     return (
         <div className='relative bg-white max-h-fit rounded-lg shadow p-4 mb-4 md:mb-0 md:w-1/2 '>
             <div className='absolute -top-8 flex flex-row gap-2 m-2'>
@@ -330,9 +356,7 @@ const GraphViewComponent: React.FC<GraphViewProps> = ({
                         const isSelected = !filterSelected && selectedNodes.some(n => n.id === (node as any).id);
 
                         ctx.fillStyle = bg.replace('0.2', `${opacity * 0.2}`);
-                        ctx.strokeStyle = isSelected
-                            ? 'rgba(59, 130, 246, 1)' // Tailwind blue-500
-                            : border.replace('1)', `${opacity})`);
+                        ctx.strokeStyle = getNodeBorderColor(node as Node, isSelected, opacity);
                         ctx.lineWidth = (isHovered || isSelected ? 2 : 1) / globalScale;
                         ctx.beginPath();
                         ctx.roundRect(
