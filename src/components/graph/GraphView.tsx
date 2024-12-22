@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import ForceGraph2D, { ForceGraphMethods } from 'react-force-graph-2d';
 import { graphDatabase } from '../../services/graphDatabase';
 import { GraphData, Link, Node } from '../../types/graph';
@@ -12,6 +12,9 @@ interface GraphViewProps {
     isEditMode: boolean;
     onNodesSelected?: (nodes: Node[]) => void;
 }
+
+// 1) Define a matching interface or type for bg/border pairs:
+type ColorConfig = { bg: string; border: string };
 
 const GraphViewComponent: React.FC<GraphViewProps> = ({
     graphData,
@@ -204,18 +207,18 @@ const GraphViewComponent: React.FC<GraphViewProps> = ({
         console.log(updatedNodes);
     };
 
-    // Define the color mapping
-    const colors = {
-        1: { bg: 'rgba(255, 182, 193, 0.2)', border: 'rgba(255, 105, 180, 1)' }, // Pink
-        2: { bg: 'rgba(173, 216, 230, 0.2)', border: 'rgba(0, 0, 255, 1)' }, // Blue
-        3: { bg: 'rgba(144, 238, 144, 0.2)', border: 'rgba(0, 128, 0, 1)' }, // Green
-        4: { bg: 'rgba(255, 255, 224, 0.2)', border: 'rgba(255, 255, 0, 1)' }, // Yellow
-        5: { bg: 'rgba(216, 191, 216, 0.2)', border: 'rgba(128, 0, 128, 1)' }, // Purple
-        6: { bg: 'rgba(255, 255, 255, 0.2)', border: 'rgba(169, 169, 169, 1)' }, // White
-        7: { bg: 'rgba(255, 165, 0, 0.2)', border: 'rgba(255, 140, 0, 1)' }, // Orange
-        8: { bg: 'rgba(175, 238, 238, 0.2)', border: 'rgba(0, 128, 128, 1)' }, // Teal
-        9: { bg: 'rgba(211, 211, 211, 0.2)', border: 'rgba(75, 0, 130, 1)' }, // Indigo
-    } as const;
+    // 2) Type your colors object with that interface:
+    const colors: Record<number, ColorConfig> = {
+        1: { bg: 'rgba(255, 182, 193, 0.2)', border: 'rgba(255, 105, 180, 1)' },
+        2: { bg: 'rgba(173, 216, 230, 0.2)', border: 'rgba(0, 0, 255, 1)' },
+        3: { bg: 'rgba(144, 238, 144, 0.2)', border: 'rgba(0, 128, 0, 1)' },
+        4: { bg: 'rgba(255, 255, 224, 0.2)', border: 'rgba(255, 255, 0, 1)' },
+        5: { bg: 'rgba(216, 191, 216, 0.2)', border: 'rgba(128, 0, 128, 1)' },
+        6: { bg: 'rgba(255, 255, 255, 0.2)', border: 'rgba(169, 169, 169, 1)' },
+        7: { bg: 'rgba(255, 165, 0, 0.2)', border: 'rgba(255, 140, 0, 1)' },
+        8: { bg: 'rgba(175, 238, 238, 0.2)', border: 'rgba(0, 128, 128, 1)' },
+        9: { bg: 'rgba(211, 211, 211, 0.2)', border: 'rgba(75, 0, 130, 1)' },
+    };
 
     const getNodeOpacity = (updated_at: string | Date) => {
         const today = new Date();
@@ -262,6 +265,26 @@ const GraphViewComponent: React.FC<GraphViewProps> = ({
             return { nodes, links };
         });
     };
+
+    // Build a set of node IDs connected to hoveredNode:
+    const connectedNodeIds = useMemo(() => {
+        if (!hoveredNode) return new Set<string>();
+        const result = new Set<string>();
+        data.links.forEach(link => {
+            const sourceId = typeof link.source === 'string'
+                ? link.source
+                : (link.source as Node)?.id;
+            const targetId = typeof link.target === 'string'
+                ? link.target
+                : (link.target as Node)?.id;
+            if (sourceId === hoveredNode) {
+                result.add(targetId);
+            } else if (targetId === hoveredNode) {
+                result.add(sourceId);
+            }
+        });
+        return result;
+    }, [data.links, hoveredNode]);
 
     const getNodeBorderColor = (node: Node, isSelected: boolean, opacity: number) => {
         const today = new Date();
@@ -342,7 +365,7 @@ const GraphViewComponent: React.FC<GraphViewProps> = ({
                                 ? link.target
                                 : (link.target as Node)?.id;
                         if (hoveredNode && (sourceId === hoveredNode || targetId === hoveredNode)) {
-                            return '#666'; // same highlight color or something else
+                            return '#666'; // same highlight color
                         }
 
                         // Default link color
@@ -387,6 +410,7 @@ const GraphViewComponent: React.FC<GraphViewProps> = ({
                         setHoveredLink(linkId);
                     }}
                     nodeCanvasObject={(node, ctx, globalScale) => {
+                        // Node text
                         const firstLine = (node as any).text.split('\n')[0];
                         const maxLength = 15;
                         const label = firstLine.length > maxLength
@@ -395,31 +419,33 @@ const GraphViewComponent: React.FC<GraphViewProps> = ({
                         const fontSize = 12 / globalScale;
                         ctx.font = `${fontSize}px Sans-Serif`;
 
+                        // Text + padding
                         const textWidth = ctx.measureText(label).width;
                         const padding = 4 / globalScale;
-
-                        // Calculate background dimensions
                         const width = textWidth + padding * 2;
                         const height = fontSize + padding * 2;
-                        const bckgDimensions = [width, height];
 
-                        // Store dimensions on node for pointer area painting
-                        (node as any).__bckgDimensions = bckgDimensions;
+                        // Store dimensions for pointer-area painting
+                        (node as any).__bckgDimensions = [width, height];
 
                         const nodeColorId = (node as any).color;
-                        const { bg, border } =
+                        // 3) Use the same shape for your fallback:
+                        const colorObj =
                             nodeColorId && nodeColorId !== 6
                                 ? colors[nodeColorId]
                                 : { bg: 'white', border: 'black' };
 
+                        // Fade older nodes
                         const opacity = getNodeOpacity((node as any).updated_at);
 
                         ctx.save();
 
-                        // Add scale effect and shadow for hovered node
+                        // Determine if hovered or connected-to-hovered
                         const isHovered = (node as any).id === hoveredNode;
-                        const scale = isHovered ? 1.1 : 1;
+                        const isConnected = connectedNodeIds.has((node as any).id);
+                        const scale = isHovered || isConnected ? 1.1 : 1;
 
+                        // If hovered, add a light drop shadow
                         if (isHovered) {
                             ctx.shadowColor = 'rgba(0, 0, 0, 0.2)';
                             ctx.shadowBlur = 5;
@@ -427,20 +453,20 @@ const GraphViewComponent: React.FC<GraphViewProps> = ({
                             ctx.shadowOffsetY = 2;
                         }
 
-                        // Apply scale transformation
+                        // Apply scale transform so the node grows slightly
                         ctx.translate(node.x as number, node.y as number);
                         ctx.scale(scale, scale);
                         ctx.translate(-(node.x as number), -(node.y as number));
 
-                        // Check if selected
+                        // Check if selected (for border color)
                         const isSelected =
                             !filterSelected &&
                             selectedNodes.some(n => n.id === (node as any).id);
 
-                        // Draw background
-                        ctx.fillStyle = bg.replace('0.2', `${opacity * 0.2}`);
+                        // Draw background + border
+                        ctx.fillStyle = colorObj.bg.replace('0.2', `${opacity * 0.2}`);
                         ctx.strokeStyle = getNodeBorderColor(node as Node, isSelected, opacity);
-                        ctx.lineWidth = (isHovered || isSelected ? 2 : 1) / globalScale;
+                        ctx.lineWidth = (isHovered || isSelected || isConnected ? 2 : 1) / globalScale;
                         ctx.beginPath();
                         ctx.roundRect(
                             (node.x as number) - textWidth / 2 - padding,
