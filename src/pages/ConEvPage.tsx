@@ -190,6 +190,21 @@ const ConEvPage: React.FC = () => {
                 </div>
                 <div className="flex gap-2">
                     <button
+                        onClick={() => {
+                            console.log("Random nodes");
+                            const fewConnectedNodes = nodes.sort((a, b) => links.filter(link => link.sourceId === a.id || link.targetId === a.id).length - links.filter(link => link.sourceId === b.id || link.targetId === b.id).length).slice(0, 30);
+                            const oldNodes = nodes
+                            .filter(node => !fewConnectedNodes.some(n => n.id === node.id))
+                            .sort((a, b) => new Date(a.updated_at).getTime() - new Date(b.updated_at).getTime())
+                            .slice(0, 30);                            // take randomly 4 old nodes and 6 fewConnectedNodes
+                            const randomNodes = [...oldNodes.slice(0, 4), ...fewConnectedNodes.slice(0, 6)];
+                            setSessionNodes(randomNodes.map(node => ({...node, color: undefined})));
+                        }}
+                        className={`px-4 py-2 rounded-lg transition-colors bg-gray-200 hover:bg-gray-300 active:bg-gray-400`}
+                    >
+                        Randomize
+                    </button>
+                    <button
                         onClick={() => setIsContextMode(!isContextMode)}
                         className={`px-4 py-2 rounded-lg transition-colors ${isContextMode
                             ? 'bg-purple-600 text-white hover:bg-purple-700'
