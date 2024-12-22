@@ -34,7 +34,7 @@ const GraphViewComponent: React.FC<GraphViewProps> = ({
     const [selectionBox, setSelectionBox] = useState({ startX: 0, startY: 0, endX: 0, endY: 0 });
     const [selectedNodes, setSelectedNodes] = useState<Node[]>([]);
     const [isCmdPressed, setIsCmdPressed] = useState(false);
-    const [filterSelected, setFilterSelected] = useState(false)
+    const [filterSelected, setFilterSelected] = useState(false);
 
     useEffect(() => {
         const updateWidth = () => {
@@ -77,7 +77,6 @@ const GraphViewComponent: React.FC<GraphViewProps> = ({
 
         let updatedLinks = graphData.links;
 
-        console.log(filterSelected)
         if (selectedNodes.length > 0 && filterSelected) {
             // Filter nodes
             updatedNodes = updatedNodes.filter(node =>
@@ -93,17 +92,32 @@ const GraphViewComponent: React.FC<GraphViewProps> = ({
             // Filter and update links
             updatedLinks = updatedLinks
                 .filter(link =>
-                    nodeIdToNodeMap.has(typeof link.source === 'string' ? link.source : (link.source as Node).id) &&
-                    nodeIdToNodeMap.has(typeof link.target === 'string' ? link.target : (link.target as Node).id)
+                    nodeIdToNodeMap.has(
+                        typeof link.source === 'string'
+                            ? link.source
+                            : (link.source as Node).id
+                    ) &&
+                    nodeIdToNodeMap.has(
+                        typeof link.target === 'string'
+                            ? link.target
+                            : (link.target as Node).id
+                    )
                 )
                 .map(link => ({
                     ...link,
-                    source: nodeIdToNodeMap.get(typeof link.source === 'string' ? link.source : (link.source as Node).id) as Node,
-                    target: nodeIdToNodeMap.get(typeof link.target === 'string' ? link.target : (link.target as Node).id) as Node,
+                    source: nodeIdToNodeMap.get(
+                        typeof link.source === 'string'
+                            ? link.source
+                            : (link.source as Node).id
+                    ) as Node,
+                    target: nodeIdToNodeMap.get(
+                        typeof link.target === 'string'
+                            ? link.target
+                            : (link.target as Node).id
+                    ) as Node,
                 }));
         }
 
-        console.log(updatedNodes);
         setData({ nodes: updatedNodes, links: updatedLinks });
     }, [graphData, filterSelected]);
 
@@ -168,14 +182,16 @@ const GraphViewComponent: React.FC<GraphViewProps> = ({
                     (node as any).y as number
                 );
                 if (screenCoords) {
-                    const nodeX = screenCoords.x;
-                    const nodeY = screenCoords.y;
-                    return nodeX >= minX && nodeX <= maxX && nodeY >= minY && nodeY <= maxY;
+                    return (
+                        screenCoords.x >= minX &&
+                        screenCoords.x <= maxX &&
+                        screenCoords.y >= minY &&
+                        screenCoords.y <= maxY
+                    );
                 }
                 return false;
             });
 
-            console.log('selectedNodes', selectedNodes);
             setSelectedNodes(selectedNodes);
             if (onNodesSelected) {
                 onNodesSelected(selectedNodes);
@@ -184,10 +200,9 @@ const GraphViewComponent: React.FC<GraphViewProps> = ({
     };
 
     const updateNodePositions = async () => {
-        console.log(data.nodes);
         const updatedNodes = await graphDatabase.updateNodes(data.nodes);
         console.log(updatedNodes);
-    }
+    };
 
     // Define the color mapping
     const colors = {
@@ -211,7 +226,7 @@ const GraphViewComponent: React.FC<GraphViewProps> = ({
         if (daysDiff <= 1) return 0.7;  // 30% reduction
         if (daysDiff <= 3) return 0.6;  // 50% reduction
         if (daysDiff <= 5) return 0.5;  // 70% reduction
-        if (daysDiff <= 7) return 0.4; // 85% reduction
+        if (daysDiff <= 7) return 0.4;  // 85% reduction
         if (daysDiff <= 14) return 0.3; // 80% reduction
         return 0.25;                    // 85% reduction
     };
@@ -232,8 +247,16 @@ const GraphViewComponent: React.FC<GraphViewProps> = ({
             // Update links to point to updated nodes
             const links = prevData.links.map(link => ({
                 ...link,
-                source: nodeIdToNodeMap.get(typeof link.source === 'string' ? link.source : (link.source as Node).id) as Node,
-                target: nodeIdToNodeMap.get(typeof link.target === 'string' ? link.target : (link.target as Node).id) as Node,
+                source: nodeIdToNodeMap.get(
+                    typeof link.source === 'string'
+                        ? link.source
+                        : (link.source as Node).id
+                ) as Node,
+                target: nodeIdToNodeMap.get(
+                    typeof link.target === 'string'
+                        ? link.target
+                        : (link.target as Node).id
+                ) as Node,
             }));
 
             return { nodes, links };
@@ -241,7 +264,6 @@ const GraphViewComponent: React.FC<GraphViewProps> = ({
     };
 
     const getNodeBorderColor = (node: Node, isSelected: boolean, opacity: number) => {
-        // Check if the node was updated today
         const today = new Date();
         const updateDate = new Date(node.updated_at);
         const isUpdatedToday =
@@ -249,23 +271,44 @@ const GraphViewComponent: React.FC<GraphViewProps> = ({
             updateDate.getMonth() === today.getMonth() &&
             updateDate.getFullYear() === today.getFullYear();
 
+        // Red border if updated today
         if (isUpdatedToday) {
-            return `rgba(255, 0, 0, ${opacity})`; // Red border
+            return `rgba(255, 0, 0, ${opacity})`;
         }
 
-        // Return the original border color logic
+        // Otherwise use original logic
         return isSelected
             ? 'rgba(59, 130, 246, 1)' // Tailwind blue-500
             : colors[node.color]?.border.replace('1)', `${opacity})`) || `rgba(0, 0, 0, ${opacity})`;
     };
 
     return (
-        <div className='relative bg-white max-h-fit rounded-lg shadow p-4 mb-4 md:mb-0 md:w-1/2 '>
-            <div className='absolute -top-8 flex flex-row gap-2 m-2'>
-                <button className='bg-slate-200 rounded-lg p-2 hover:bg-slate-400' onClick={() => setSelectedNodes([])}>Clear selected</button>
-                <button className='bg-slate-200 rounded-lg p-2 hover:bg-slate-400' onClick={() => setFilterSelected(!filterSelected)}>Filter selected</button>
-                <button className='bg-slate-200 rounded-lg p-2 hover:bg-slate-400' onClick={() => updateNodePositions()}>Set positions</button>
-                <button className='bg-slate-200 rounded-lg p-2 hover:bg-slate-400' onClick={releaseNodePositions}>Release nodes</button>
+        <div className="relative bg-white max-h-fit rounded-lg shadow p-4 mb-4 md:mb-0 md:w-1/2">
+            <div className="absolute -top-8 flex flex-row gap-2 m-2">
+                <button
+                    className="bg-slate-200 rounded-lg p-2 hover:bg-slate-400"
+                    onClick={() => setSelectedNodes([])}
+                >
+                    Clear selected
+                </button>
+                <button
+                    className="bg-slate-200 rounded-lg p-2 hover:bg-slate-400"
+                    onClick={() => setFilterSelected(!filterSelected)}
+                >
+                    Filter selected
+                </button>
+                <button
+                    className="bg-slate-200 rounded-lg p-2 hover:bg-slate-400"
+                    onClick={() => updateNodePositions()}
+                >
+                    Set positions
+                </button>
+                <button
+                    className="bg-slate-200 rounded-lg p-2 hover:bg-slate-400"
+                    onClick={releaseNodePositions}
+                >
+                    Release nodes
+                </button>
             </div>
 
             <div
@@ -284,10 +327,46 @@ const GraphViewComponent: React.FC<GraphViewProps> = ({
                     nodeLabel={(node) => (node as any).text}
                     nodeColor={(node) => (node as any).color || '#999'}
                     linkColor={(link) => {
-                        return (link as any).id === hoveredLink ? '#666' : '#ddd';
+                        // If we're hovering this link, highlight it:
+                        if ((link as any).id === hoveredLink) {
+                            return '#666';
+                        }
+
+                        // Otherwise, highlight if connected to hoveredNode:
+                        const sourceId =
+                            typeof link.source === 'string'
+                                ? link.source
+                                : (link.source as Node)?.id;
+                        const targetId =
+                            typeof link.target === 'string'
+                                ? link.target
+                                : (link.target as Node)?.id;
+                        if (hoveredNode && (sourceId === hoveredNode || targetId === hoveredNode)) {
+                            return '#666'; // same highlight color or something else
+                        }
+
+                        // Default link color
+                        return '#ddd';
                     }}
                     linkWidth={(link) => {
-                        return (link as any).id === hoveredLink ? 2 : 1;
+                        // If hovered link, make it thicker:
+                        if ((link as any).id === hoveredLink) {
+                            return 2;
+                        }
+                        // If it's connected to hovered node, also make it thicker:
+                        const sourceId =
+                            typeof link.source === 'string'
+                                ? link.source
+                                : (link.source as Node)?.id;
+                        const targetId =
+                            typeof link.target === 'string'
+                                ? link.target
+                                : (link.target as Node)?.id;
+                        if (hoveredNode && (sourceId === hoveredNode || targetId === hoveredNode)) {
+                            return 2;
+                        }
+                        // Default width
+                        return 1;
                     }}
                     width={graphWidth}
                     height={600}
@@ -307,14 +386,12 @@ const GraphViewComponent: React.FC<GraphViewProps> = ({
                         const linkId = link ? (link as any).id : null;
                         setHoveredLink(linkId);
                     }}
-                    // onNodeDragEnd={(node) => {
-                    //     node.fx = node.x;
-                    //     node.fy = node.y;
-                    // }}
                     nodeCanvasObject={(node, ctx, globalScale) => {
                         const firstLine = (node as any).text.split('\n')[0];
                         const maxLength = 15;
-                        const label = firstLine.length > maxLength ? `${firstLine.slice(0, maxLength)}...` : firstLine;
+                        const label = firstLine.length > maxLength
+                            ? `${firstLine.slice(0, maxLength)}...`
+                            : firstLine;
                         const fontSize = 12 / globalScale;
                         ctx.font = `${fontSize}px Sans-Serif`;
 
@@ -330,7 +407,10 @@ const GraphViewComponent: React.FC<GraphViewProps> = ({
                         (node as any).__bckgDimensions = bckgDimensions;
 
                         const nodeColorId = (node as any).color;
-                        const { bg, border } = nodeColorId && nodeColorId !== 6 ? colors[nodeColorId] : { bg: 'white', border: 'black' };
+                        const { bg, border } =
+                            nodeColorId && nodeColorId !== 6
+                                ? colors[nodeColorId]
+                                : { bg: 'white', border: 'black' };
 
                         const opacity = getNodeOpacity((node as any).updated_at);
 
@@ -352,9 +432,12 @@ const GraphViewComponent: React.FC<GraphViewProps> = ({
                         ctx.scale(scale, scale);
                         ctx.translate(-(node.x as number), -(node.y as number));
 
-                        // Draw background with opacity
-                        const isSelected = !filterSelected && selectedNodes.some(n => n.id === (node as any).id);
+                        // Check if selected
+                        const isSelected =
+                            !filterSelected &&
+                            selectedNodes.some(n => n.id === (node as any).id);
 
+                        // Draw background
                         ctx.fillStyle = bg.replace('0.2', `${opacity * 0.2}`);
                         ctx.strokeStyle = getNodeBorderColor(node as Node, isSelected, opacity);
                         ctx.lineWidth = (isHovered || isSelected ? 2 : 1) / globalScale;
@@ -369,7 +452,7 @@ const GraphViewComponent: React.FC<GraphViewProps> = ({
                         ctx.fill();
                         ctx.stroke();
 
-                        // Draw text with opacity
+                        // Draw text
                         ctx.textAlign = 'center';
                         ctx.textBaseline = 'middle';
                         ctx.fillStyle = `rgba(0, 0, 0, ${opacity})`;
@@ -397,8 +480,14 @@ const GraphViewComponent: React.FC<GraphViewProps> = ({
                             ctx.fillStyle = 'rgba(0, 124, 255, 0.1)';
                             ctx.lineWidth = 1;
 
-                            const start = fgRef.current?.screen2GraphCoords(selectionBox.startX, selectionBox.startY);
-                            const end = fgRef.current?.screen2GraphCoords(selectionBox.endX, selectionBox.endY);
+                            const start = fgRef.current?.screen2GraphCoords(
+                                selectionBox.startX,
+                                selectionBox.startY
+                            );
+                            const end = fgRef.current?.screen2GraphCoords(
+                                selectionBox.endX,
+                                selectionBox.endY
+                            );
 
                             if (start && end) {
                                 const x = Math.min(start.x, end.x);
@@ -418,9 +507,7 @@ const GraphViewComponent: React.FC<GraphViewProps> = ({
                 />
             </div>
         </div>
-
     );
 };
-
 
 export const GraphView = React.memo(GraphViewComponent); 
