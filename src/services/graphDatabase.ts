@@ -49,7 +49,7 @@ export const graphDatabase = {
     async updateNode(node: Node): Promise<Node | null> {
         const { data, error } = await supabase
             .from('nodes')
-            .update({ text: node.text, color: node.color, x: node.x, y: node.y })
+            .update({ text: node.text, color: node.color, x: node.x, y: node.y, updated_at: node.updated_at })
             .eq('id', node.id)
             .select()
             .single()

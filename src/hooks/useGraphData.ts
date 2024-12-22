@@ -112,7 +112,7 @@ export const useGraphData = () => {
         if (!node) return;
 
         const oldColor = node.color;
-        const updatedNode = await graphDatabase.updateNode({ ...node, color: selectedColor });
+        const updatedNode = await graphDatabase.updateNode({ ...node, color: selectedColor, updated_at: new Date() });
 
         if (updatedNode) {
             setNodes(prev => prev.map(node =>
@@ -137,7 +137,7 @@ export const useGraphData = () => {
         const node = nodes.find(n => n.id === nodeId);
         if (!node) return;
 
-        const updatedNode = await graphDatabase.updateNode({ ...node, text: newText });
+        const updatedNode = await graphDatabase.updateNode({ ...node, text: newText, updated_at: new Date() });
         if (updatedNode) {
             setNodes(prev => prev.map(node =>
                 node.id === nodeId ? updatedNode : node

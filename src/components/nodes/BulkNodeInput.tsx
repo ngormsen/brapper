@@ -1,4 +1,4 @@
-import React, { KeyboardEvent, useState } from 'react';
+import React, { useState } from 'react';
 import type { NodeInputProps } from './types';
 
 export const BulkNodeInput: React.FC<NodeInputProps> = ({ onAddNode }) => {
@@ -6,9 +6,9 @@ export const BulkNodeInput: React.FC<NodeInputProps> = ({ onAddNode }) => {
 
     const handleSubmit = (e: React.MouseEvent) => {
         const nodes = input
-            .split('---')
+            .split('\n\n')
             .map(text => text.trim())
-            .map(text => text.replace(/[\u0000-\u0009\u000B-\u001F\u007F-\u009F]/g, '')) // Remove control characters except \n (\u000A)
+            .map(text => text.replace(/[\u0000-\u0009\u000B-\u001F\u007F-\u009F]/g, ''))
             .filter(text => text.length > 0)
 
         nodes.forEach(onAddNode);
