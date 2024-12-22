@@ -1,5 +1,5 @@
-import React, { useEffect, useState, useCallback } from 'react';
-import { ColorNumber, colors } from '../components/ColorLegend';
+import React, { useCallback, useEffect, useState } from 'react';
+import { ColorNumber } from '../components/ColorLegend';
 import { GraphView } from '../components/graph/GraphView';
 import { EditNodeModal } from '../components/nodes/EditNodeModal';
 import { NodesSection } from '../components/nodes/NodesSection';
@@ -129,7 +129,7 @@ const ConEvPage: React.FC = () => {
         if (!sessionNodes.some(n => n.id === nodeId)) {
             const node = nodes.find(n => n.id === nodeId);
             if (node) {
-                setSessionNodes(prev => [...prev, {...node, color: undefined}]);
+                setSessionNodes(prev => [...prev, { ...node, color: undefined }]);
             }
         }
     };
@@ -192,13 +192,41 @@ const ConEvPage: React.FC = () => {
                     <button
                         onClick={() => {
                             console.log("Random nodes");
-                            const fewConnectedNodes = nodes.sort((a, b) => links.filter(link => link.sourceId === a.id || link.targetId === a.id).length - links.filter(link => link.sourceId === b.id || link.targetId === b.id).length).slice(0, 30);
+
+                            // 1) Identify nodes with fewest links (up to 30).
+                            const fewConnectedNodes = [...nodes]
+                                .sort((a, b) =>
+                                    links.filter(link => link.sourceId === a.id || link.targetId === a.id).length
+                                    - links.filter(link => link.sourceId === b.id || link.targetId === b.id).length
+                                )
+                                .slice(0, 40);
+                            console.log("fewConnectedNodes", fewConnectedNodes);
+                            // 2) Find older nodes not in those “fewConnectedNodes,” sort ascending by updated date (oldest first).
                             const oldNodes = nodes
-                            .filter(node => !fewConnectedNodes.some(n => n.id === node.id))
-                            .sort((a, b) => new Date(a.updated_at).getTime() - new Date(b.updated_at).getTime())
-                            .slice(0, 30);                            // take randomly 4 old nodes and 6 fewConnectedNodes
-                            const randomNodes = [...oldNodes.slice(0, 4), ...fewConnectedNodes.slice(0, 6)];
-                            setSessionNodes(randomNodes.map(node => ({...node, color: undefined})));
+                                .filter(node => !fewConnectedNodes.some(n => n.id === node.id))
+                                .sort((a, b) => new Date(a.updated_at).getTime() - new Date(b.updated_at).getTime())
+                                .slice(0, 40);
+                            console.log("oldNodes", oldNodes);
+
+                            // 3) Get 4 random nodes from the entire “nodes” array.
+                            const pickRandom = (arr: typeof nodes, count: number) => {
+                                const shuffled = [...arr];
+                                for (let i = shuffled.length - 1; i > 0; i--) {
+                                    const j = Math.floor(Math.random() * (i + 1));
+                                    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+                                }
+                                return shuffled.slice(0, count);
+                            };
+                            const randomNodesFromAll = pickRandom(nodes, 4);
+
+                            // 4) Combine results: 4 oldest, 6 fewConnectedNodes, and 4 random from all.
+                            const finalNodes = [
+                                ...pickRandom(oldNodes, 4),
+                                ...pickRandom(fewConnectedNodes, 6),
+                                ...pickRandom(nodes, 4)
+                            ];
+
+                            setSessionNodes(finalNodes.map(node => ({ ...node, color: undefined })));
                         }}
                         className={`px-4 py-2 rounded-lg transition-colors bg-gray-200 hover:bg-gray-300 active:bg-gray-400`}
                     >
