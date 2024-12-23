@@ -1,6 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
-import { Link, Node } from '../types/graph';
 import { NodeCandidate } from '../out/db_model';
+import { Link, Node } from '../types/graph';
 
 console.log('supabase', process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
 
@@ -39,11 +39,18 @@ interface DbLink extends Omit<Link, 'sourceId' | 'targetId'> {
     updated_at: string
 }
 
+const getTableNames = (isBackupMode: boolean) => ({
+    NODES: isBackupMode ? NODES_TABLE_NAMES.BACKUP : NODES_TABLE_NAMES.ORIGINAL,
+    LINKS: isBackupMode ? LINKS_TABLE_NAMES.BACKUP : LINKS_TABLE_NAMES.ORIGINAL,
+    NODE_CANDIDATES: TABLES.NODE_CANDIDATES
+});
+
 export const graphDatabase = {
     // Node operations
-    async createNode(node: Omit<Node, 'id'>): Promise<Node | null> {
+    async createNode(node: Omit<Node, 'id'>, isBackupMode: boolean = false): Promise<Node | null> {
+        const tables = getTableNames(isBackupMode);
         const { data, error } = await supabase
-            .from(TABLES.NODES)
+            .from(tables.NODES)
             .insert({ text: node.text, color: node.color })
             .select()
             .single()
@@ -56,9 +63,10 @@ export const graphDatabase = {
         return data
     },
 
-    async updateNode(node: Node): Promise<Node | null> {
+    async updateNode(node: Node, isBackupMode: boolean = false): Promise<Node | null> {
+        const tables = getTableNames(isBackupMode);
         const { data, error } = await supabase
-            .from(TABLES.NODES)
+            .from(tables.NODES)
             .update({ text: node.text, color: node.color, x: node.x, y: node.y, updated_at: node.updated_at })
             .eq('id', node.id)
             .select()
@@ -72,9 +80,10 @@ export const graphDatabase = {
         return data
     },
 
-    async updateNodes(nodes: Node[]): Promise<Node[] | null> {
+    async updateNodes(nodes: Node[], isBackupMode: boolean = false): Promise<Node[] | null> {
+        const tables = getTableNames(isBackupMode);
         const { data, error } = await supabase
-            .from(TABLES.NODES)
+            .from(tables.NODES)
             .upsert(
                 nodes.map(node => ({
                     id: node.id,
@@ -95,9 +104,10 @@ export const graphDatabase = {
         return data
     },
 
-    async deleteNode(nodeId: string): Promise<boolean> {
+    async deleteNode(nodeId: string, isBackupMode: boolean = false): Promise<boolean> {
+        const tables = getTableNames(isBackupMode);
         const { error } = await supabase
-            .from(TABLES.NODES)
+            .from(tables.NODES)
             .delete()
             .eq('id', nodeId)
 
@@ -109,9 +119,10 @@ export const graphDatabase = {
         return true
     },
 
-    async getAllNodes(): Promise<Node[]> {
+    async getAllNodes(isBackupMode: boolean = false): Promise<Node[]> {
+        const tables = getTableNames(isBackupMode);
         const { data, error } = await supabase
-            .from(TABLES.NODES)
+            .from(tables.NODES)
             .select('*')
             .order('created_at')
 
@@ -124,9 +135,10 @@ export const graphDatabase = {
     },
 
     // Link operations
-    async createLink(link: Omit<Link, 'id'>): Promise<Link | null> {
+    async createLink(link: Omit<Link, 'id'>, isBackupMode: boolean = false): Promise<Link | null> {
+        const tables = getTableNames(isBackupMode);
         const { data, error } = await supabase
-            .from(TABLES.LINKS)
+            .from(tables.LINKS)
             .insert({
                 source_id: link.sourceId,
                 target_id: link.targetId
@@ -147,9 +159,10 @@ export const graphDatabase = {
         }
     },
 
-    async deleteLink(linkId: string): Promise<boolean> {
+    async deleteLink(linkId: string, isBackupMode: boolean = false): Promise<boolean> {
+        const tables = getTableNames(isBackupMode);
         const { error } = await supabase
-            .from(TABLES.LINKS)
+            .from(tables.LINKS)
             .delete()
             .eq('id', linkId)
 
@@ -161,9 +174,10 @@ export const graphDatabase = {
         return true
     },
 
-    async getAllLinks(): Promise<Link[]> {
+    async getAllLinks(isBackupMode: boolean = false): Promise<Link[]> {
+        const tables = getTableNames(isBackupMode);
         const { data, error } = await supabase
-            .from(TABLES.LINKS)
+            .from(tables.LINKS)
             .select('*')
             .order('created_at')
 
@@ -181,9 +195,9 @@ export const graphDatabase = {
     },
 
     // Fetch entire graph
-    async getFullGraph(): Promise<{ nodes: Node[], links: Link[] }> {
-        const nodes = await this.getAllNodes()
-        const links = await this.getAllLinks()
+    async getFullGraph(isBackupMode: boolean = false): Promise<{ nodes: Node[], links: Link[] }> {
+        const nodes = await this.getAllNodes(isBackupMode)
+        const links = await this.getAllLinks(isBackupMode)
         return { nodes, links }
     }
 }

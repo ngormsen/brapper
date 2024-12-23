@@ -12,6 +12,7 @@ const MainPage: React.FC = () => {
     const [isConnectMode, setIsConnectMode] = useState(false);
     const [isSelectMode, setIsSelectMode] = useState(false);
     const [isContextMode, setIsContextMode] = useState(false);
+    const [isBackupMode, setIsBackupMode] = useState(false);
     const [hoveredNode, setHoveredNode] = useState<string | null>(null);
 
     //Nodes
@@ -34,7 +35,7 @@ const MainPage: React.FC = () => {
         deleteLink,
         createLinkBetweenNodes,
         updateNodeText,
-    } = useGraphData();
+    } = useGraphData(isBackupMode);
 
     const graphData = React.useMemo(() => {
         if (isContextMode) {
@@ -202,6 +203,15 @@ const MainPage: React.FC = () => {
                     )}
                 </div>
                 <div className="flex gap-2">
+                    <button
+                        onClick={() => setIsBackupMode(!isBackupMode)}
+                        className={`px-4 py-2 rounded-lg transition-colors ${isBackupMode
+                            ? 'bg-yellow-600 text-white hover:bg-yellow-700'
+                            : 'bg-gray-200 hover:bg-gray-300'
+                            }`}
+                    >
+                        {isBackupMode ? 'Using Backup' : 'Use Backup'}
+                    </button>
                     <button
                         onClick={() => {
                             console.log("Random nodes");

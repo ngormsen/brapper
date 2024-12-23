@@ -3,7 +3,7 @@ import { ColorNumber } from '../components/ColorLegend';
 import { graphDatabase } from '../services/graphDatabase';
 import { GraphData, Link, Node } from '../types/graph';
 
-export const useGraphData = () => {
+export const useGraphData = (isBackupMode: boolean = false) => {
     const [nodes, setNodes] = useState<Node[]>([]);
     const [links, setLinks] = useState<Link[]>([]);
     const [sessionNodes, setSessionNodes] = useState<Node[]>([]);
@@ -11,16 +11,16 @@ export const useGraphData = () => {
 
     useEffect(() => {
         const loadGraph = async () => {
-            const { nodes: dbNodes, links: dbLinks } = await graphDatabase.getFullGraph();
-            
+            const { nodes: dbNodes, links: dbLinks } = await graphDatabase.getFullGraph(isBackupMode);
+
             setNodes(dbNodes);
             setLinks(dbLinks);
         };
         loadGraph();
-    }, []);
+    }, [isBackupMode]);
 
     const addNode = async (text: string): Promise<Node | null> => {
-        const newNode = await graphDatabase.createNode({ text });
+        const newNode = await graphDatabase.createNode({ text }, isBackupMode);
         if (newNode) {
             setNodes(prev => [...prev, newNode]);
             setSessionNodes(prev => [...prev, newNode]);
@@ -53,7 +53,7 @@ export const useGraphData = () => {
         });
 
         for (const link of linksToRemove) {
-            await graphDatabase.deleteLink(link.id);
+            await graphDatabase.deleteLink(link.id, isBackupMode);
         }
         setLinks(prev => prev.filter(link => !linksToRemove.includes(link)));
         setSessionLinks(prev => prev.filter(link => !linksToRemove.includes(link)));
@@ -71,7 +71,7 @@ export const useGraphData = () => {
                 const newLink = await graphDatabase.createLink({
                     sourceId: nodeId,
                     targetId: targetNode.id,
-                });
+                }, isBackupMode);
                 if (newLink) {
                     newLinks.push(newLink);
                 }
@@ -83,7 +83,7 @@ export const useGraphData = () => {
     };
 
     const createLinkBetweenNodes = async (sourceId: string, targetId: string) => {
-        const newLink = await graphDatabase.createLink({ sourceId, targetId });
+        const newLink = await graphDatabase.createLink({ sourceId, targetId }, isBackupMode);
         if (newLink) {
             setLinks(prev => [...prev, newLink]);
             setSessionLinks(prev => [...prev, newLink]);
@@ -96,7 +96,7 @@ export const useGraphData = () => {
         const node = nodes.find(n => n.id === nodeId);
         if (!node) return;
 
-        const updatedNode = await graphDatabase.updateNode({ ...node, updated_at: updatedAt });
+        const updatedNode = await graphDatabase.updateNode({ ...node, updated_at: updatedAt }, isBackupMode);
         if (updatedNode) {
             setNodes(prev => prev.map(node =>
                 node.id === nodeId ? updatedNode : node
@@ -112,7 +112,7 @@ export const useGraphData = () => {
         if (!node) return;
 
         const oldColor = node.color;
-        const updatedNode = await graphDatabase.updateNode({ ...node, color: selectedColor, updated_at: new Date() });
+        const updatedNode = await graphDatabase.updateNode({ ...node, color: selectedColor, updated_at: new Date() }, isBackupMode);
 
         if (updatedNode) {
             setNodes(prev => prev.map(node =>
@@ -132,12 +132,11 @@ export const useGraphData = () => {
         }
     };
 
-
     const updateNodeText = async (nodeId: string, newText: string) => {
         const node = nodes.find(n => n.id === nodeId);
         if (!node) return;
 
-        const updatedNode = await graphDatabase.updateNode({ ...node, text: newText, updated_at: new Date() });
+        const updatedNode = await graphDatabase.updateNode({ ...node, text: newText, updated_at: new Date() }, isBackupMode);
         if (updatedNode) {
             setNodes(prev => prev.map(node =>
                 node.id === nodeId ? updatedNode : node
@@ -196,10 +195,10 @@ export const useGraphData = () => {
         );
 
         for (const link of connectedLinks) {
-            await graphDatabase.deleteLink(link.id);
+            await graphDatabase.deleteLink(link.id, isBackupMode);
         }
 
-        await graphDatabase.deleteNode(nodeId);
+        await graphDatabase.deleteNode(nodeId, isBackupMode);
         setNodes(prev => prev.filter(node => node.id !== nodeId));
         setSessionNodes(prev => prev.filter(node => node.id !== nodeId));
 
@@ -212,7 +211,7 @@ export const useGraphData = () => {
     };
 
     const deleteLink = async (linkId: string) => {
-        await graphDatabase.deleteLink(linkId);
+        await graphDatabase.deleteLink(linkId, isBackupMode);
         setLinks(prev => prev.filter(link => link.id !== linkId));
         setSessionLinks(prev => prev.filter(link => link.id !== linkId));
     };
