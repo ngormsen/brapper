@@ -1,5 +1,4 @@
 import { BrowserRouter, Link, Route, Routes } from "react-router-dom";
-import MainPage from "./MainPage";
 import ConEvPage from "./pages/ConEvPage";
 
 const App = () => {
@@ -10,8 +9,7 @@ const App = () => {
         <Link to="/conev" className="hover:underline">ConEv Page</Link>
       </nav>
       <Routes>
-        <Route path="/" element={<MainPage />} />
-        <Route path="/conev" element={<ConEvPage />} />
+        <Route path="/" element={<ConEvPage />} />
       </Routes>
     </BrowserRouter>
   );
