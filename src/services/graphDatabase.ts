@@ -16,9 +16,19 @@ if (!supabaseUrl || !supabaseKey) {
 
 const supabase = createClient(supabaseUrl, supabaseKey)
 
+const NODES_TABLE_NAMES = {
+    ORIGINAL: 'nodes',
+    BACKUP: 'nodes_backup'
+}
+
+const LINKS_TABLE_NAMES = {
+    ORIGINAL: 'links',
+    BACKUP: 'links_backup'
+}
+
 const TABLES = {
-    NODES: 'nodes',
-    LINKS: 'links',
+    NODES: NODES_TABLE_NAMES.BACKUP,
+    LINKS: LINKS_TABLE_NAMES.BACKUP,
     NODE_CANDIDATES: 'node_candidates'
 } as const;
 
@@ -33,7 +43,7 @@ export const graphDatabase = {
     // Node operations
     async createNode(node: Omit<Node, 'id'>): Promise<Node | null> {
         const { data, error } = await supabase
-            .from('nodes')
+            .from(TABLES.NODES)
             .insert({ text: node.text, color: node.color })
             .select()
             .single()
@@ -48,7 +58,7 @@ export const graphDatabase = {
 
     async updateNode(node: Node): Promise<Node | null> {
         const { data, error } = await supabase
-            .from('nodes')
+            .from(TABLES.NODES)
             .update({ text: node.text, color: node.color, x: node.x, y: node.y, updated_at: node.updated_at })
             .eq('id', node.id)
             .select()
@@ -64,7 +74,7 @@ export const graphDatabase = {
 
     async updateNodes(nodes: Node[]): Promise<Node[] | null> {
         const { data, error } = await supabase
-            .from('nodes')
+            .from(TABLES.NODES)
             .upsert(
                 nodes.map(node => ({
                     id: node.id,
@@ -87,7 +97,7 @@ export const graphDatabase = {
 
     async deleteNode(nodeId: string): Promise<boolean> {
         const { error } = await supabase
-            .from('nodes')
+            .from(TABLES.NODES)
             .delete()
             .eq('id', nodeId)
 
@@ -116,7 +126,7 @@ export const graphDatabase = {
     // Link operations
     async createLink(link: Omit<Link, 'id'>): Promise<Link | null> {
         const { data, error } = await supabase
-            .from('links')
+            .from(TABLES.LINKS)
             .insert({
                 source_id: link.sourceId,
                 target_id: link.targetId
@@ -139,7 +149,7 @@ export const graphDatabase = {
 
     async deleteLink(linkId: string): Promise<boolean> {
         const { error } = await supabase
-            .from('links')
+            .from(TABLES.LINKS)
             .delete()
             .eq('id', linkId)
 
