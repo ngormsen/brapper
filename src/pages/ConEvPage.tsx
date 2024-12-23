@@ -10,7 +10,7 @@ const ConEvPage: React.FC = () => {
     //Modes
     const [isDeleteMode, setIsDeleteMode] = useState(false);
     const [isConnectMode, setIsConnectMode] = useState(false);
-    const [isEditMode, setIsEditMode] = useState(false);
+    const [isSelectMode, setIsSelectMode] = useState(false);
 
     const [isContextMode, setIsContextMode] = useState(false);
 
@@ -57,21 +57,21 @@ const ConEvPage: React.FC = () => {
 
             if (event.key.toLowerCase() === 'd') {
                 setIsDeleteMode(prev => !prev);
-                setIsEditMode(false);
+                setIsSelectMode(false);
                 setIsConnectMode(false);
                 setFirstSelectedNode(null);
             }
 
-            if (event.key.toLowerCase() === 'e') {
+            if (event.key.toLowerCase() === 's') {
                 setIsDeleteMode(false);
                 setIsConnectMode(false);
                 setFirstSelectedNode(null);
-                setIsEditMode(prev => !prev);
+                setIsSelectMode(prev => !prev);
             }
 
             if (event.key.toLowerCase() === 'c') {
                 setIsDeleteMode(false);
-                setIsEditMode(false);
+                setIsSelectMode(false);
                 if (isConnectMode) {
                     if (firstSelectedNode) {
                         setFirstSelectedNode(null);
@@ -107,7 +107,13 @@ const ConEvPage: React.FC = () => {
             }
         } else if (selectedColor !== null) {
             updateNodeColor(nodeId, selectedColor);
-        } else if (isEditMode) {
+        } else if (isSelectMode) {
+            // In select mode, add to session if not already there
+            if (!sessionNodes.some(n => n.id === nodeId)) {
+                setSessionNodes(prev => [...prev, { ...node, color: undefined }]);
+            }
+        } else {
+            // Default behavior: open edit modal
             setEditingNode(node);
         }
     };
@@ -117,7 +123,7 @@ const ConEvPage: React.FC = () => {
         if (newNode && isConnectMode && firstSelectedNode) {
             createLinkBetweenNodes(firstSelectedNode.id, newNode.id);
         }
-    };
+    };  
 
     const handleSessionClear = () => {
         setSessionNodes([]);
@@ -149,16 +155,18 @@ const ConEvPage: React.FC = () => {
                 createLinkBetweenNodes(firstSelectedNode.id, node.id);
             }
             return;
-        } else if (isEditMode) {
-            setEditingNode(node);
-            return;
         }
 
-        // Check if node already exists in sessionNodes
-        if (!sessionNodes.some(n => n.id === node.id)) {
-            setSessionNodes(prev => [...prev, node]);
+        if (isSelectMode) {
+            // In select mode, add to session if not already there
+            if (!sessionNodes.some(n => n.id === node.id)) {
+                setSessionNodes(prev => [...prev, node]);
+            }
+        } else {
+            // Default behavior: open edit modal
+            setEditingNode(node);
         }
-    }, [isDeleteMode, isConnectMode, isEditMode, firstSelectedNode, sessionNodes, nodes, createLinkBetweenNodes, deleteNode]);
+    }, [isDeleteMode, isConnectMode, isSelectMode, firstSelectedNode, sessionNodes, nodes, createLinkBetweenNodes, deleteNode]);
 
     const handleLinkClick = useCallback((link: Link) => {
         if (isDeleteMode) {
@@ -179,7 +187,6 @@ const ConEvPage: React.FC = () => {
 
     return (
         <div className="p-6">
-
             <div className="flex justify-between items-center mb-4">
                 <div className="flex items-center gap-4">
                     {firstSelectedNode && isConnectMode && (
@@ -242,13 +249,13 @@ const ConEvPage: React.FC = () => {
                         {isContextMode ? 'Exit Context Mode' : 'Context Mode'}
                     </button>
                     <button
-                        onClick={() => setIsEditMode(!isEditMode)}
-                        className={`px-4 py-2 rounded-lg transition-colors ${isEditMode
+                        onClick={() => setIsSelectMode(!isSelectMode)}
+                        className={`px-4 py-2 rounded-lg transition-colors ${isSelectMode
                             ? 'bg-green-600 text-white hover:bg-green-700'
                             : 'bg-gray-200 hover:bg-gray-300'
                             }`}
                     >
-                        {isEditMode ? 'Exit Edit Mode' : 'Edit Mode'}
+                        {isSelectMode ? 'Exit Select Mode' : 'Select Mode'}
                     </button>
                     <button
                         onClick={handleConnectModeToggle}
@@ -282,7 +289,7 @@ const ConEvPage: React.FC = () => {
                     onLinkClick={handleLinkClick}
                     isDeleteMode={isDeleteMode}
                     isConnectMode={isConnectMode}
-                    isEditMode={isEditMode}
+                    isSelectMode={isSelectMode}
                 />
 
                 <NodesSection
@@ -297,7 +304,7 @@ const ConEvPage: React.FC = () => {
                     onClear={handleSessionClear}
                     isDeleteMode={isDeleteMode}
                     isConnectMode={isConnectMode}
-                    isEditMode={isEditMode}
+                    isSelectMode={isSelectMode}
                 />
             </div>
 
@@ -308,6 +315,7 @@ const ConEvPage: React.FC = () => {
                 onSave={(newText) => {
                     if (editingNode) {
                         updateNodeText(editingNode.id, newText);
+                        setEditingNode(null);
                     }
                 }}
             />

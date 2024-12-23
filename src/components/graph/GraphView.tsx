@@ -9,7 +9,7 @@ interface GraphViewProps {
     onLinkClick: (link: Link) => void;
     isDeleteMode: boolean;
     isConnectMode: boolean;
-    isEditMode: boolean;
+    isSelectMode: boolean;
     onNodesSelected?: (nodes: Node[]) => void;
 }
 
@@ -22,7 +22,7 @@ const GraphViewComponent: React.FC<GraphViewProps> = ({
     onLinkClick,
     isDeleteMode,
     isConnectMode,
-    isEditMode,
+    isSelectMode,
     onNodesSelected,
 }) => {
     const containerRef = useRef<HTMLDivElement | null>(null);
@@ -339,7 +339,7 @@ const GraphViewComponent: React.FC<GraphViewProps> = ({
                 className={`relative w-full
                 ${isDeleteMode ? 'border-red-500 border-4' : ''} 
                 ${isConnectMode ? 'border-blue-500 border-4' : ''} 
-                ${isEditMode ? 'border-green-500 border-4' : ''}`}
+                ${isSelectMode ? 'border-green-500 border-4' : ''}`}
                 onMouseDown={handleMouseDown}
                 onMouseMove={handleMouseMove}
                 onMouseUp={handleMouseUp}

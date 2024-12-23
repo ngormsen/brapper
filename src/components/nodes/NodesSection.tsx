@@ -5,9 +5,9 @@ import { Link, Node } from '../../types/graph';
 import ColorLegend, { ColorNumber, colors } from '../ColorLegend';
 import { BulkNodeInput } from './BulkNodeInput';
 import { CandidateNodesSection } from './CandidateNodesSection';
+import { EditNodeModal } from './EditNodeModal';
 import { NodeDisplay } from './NodeDisplay';
 import { SingleNodeInput } from './SingleNodeInput';
-import { EditNodeModal } from './EditNodeModal';
 
 interface NodesSectionProps {
     sessionNodes: Node[];
@@ -21,7 +21,7 @@ interface NodesSectionProps {
     onClear: () => void;
     isDeleteMode: boolean;
     isConnectMode: boolean;
-    isEditMode: boolean;
+    isSelectMode: boolean;
 }
 
 export const NodesSection: React.FC<NodesSectionProps> = ({
@@ -36,13 +36,13 @@ export const NodesSection: React.FC<NodesSectionProps> = ({
     onClear,
     isDeleteMode,
     isConnectMode,
-    isEditMode,
+    isSelectMode,
 }) => {
     const [sortedNodes, setSortedNodes] = useState(sessionNodes);
     const [candidateNodes, setCandidateNodes] = useState<NodeCandidate[]>([]);
     const [isEditingModalVisible, setIsEditingModalVisible] = useState(false);
     const [editingCandidateNode, setEditingCandidateNode] = useState<NodeCandidate | null>(null);
-    
+
     useEffect(() => {
         setSortedNodes(sortByColor(sessionNodes));
     }, [sessionNodes]);
@@ -57,7 +57,7 @@ export const NodesSection: React.FC<NodesSectionProps> = ({
 
 
     const onAddCandidateNode = async (text: string) => {
-        if (isConnectMode){
+        if (isConnectMode) {
             onAddNode(text);
             return;
         }
@@ -84,7 +84,7 @@ export const NodesSection: React.FC<NodesSectionProps> = ({
 
         const candidateNode = candidateNodes.find(node => node.id === nodeId);
 
-        if (isEditMode) {
+        if (isSelectMode) {
             setIsEditingModalVisible(true);
             setEditingCandidateNode(candidateNode);
             return;
@@ -122,7 +122,7 @@ export const NodesSection: React.FC<NodesSectionProps> = ({
             <div className={`bg-white rounded-lg shadow p-6 
             ${isDeleteMode ? 'border-red-500 border-4' :
                     isConnectMode ? 'border-blue-500 border-4' :
-                        isEditMode ? 'border-green-500 border-4' : ''
+                        isSelectMode ? 'border-green-500 border-4' : ''
                 }`}>
                 <div className="flex justify-between items-center mb-4">
                     <h2 className="text-xl font-semibold">Nodes</h2>
