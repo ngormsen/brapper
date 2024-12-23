@@ -11,6 +11,8 @@ interface GraphViewProps {
     isConnectMode: boolean;
     isSelectMode: boolean;
     onNodesSelected?: (nodes: Node[]) => void;
+    hoveredNode: string | null;
+    setHoveredNode: (nodeId: string | null) => void;
 }
 
 // 1) Define a matching interface or type for bg/border pairs:
@@ -24,12 +26,13 @@ const GraphViewComponent: React.FC<GraphViewProps> = ({
     isConnectMode,
     isSelectMode,
     onNodesSelected,
+    hoveredNode,
+    setHoveredNode,
 }) => {
     const containerRef = useRef<HTMLDivElement | null>(null);
     const fgRef = useRef<ForceGraphMethods>();
 
     const [graphWidth, setGraphWidth] = useState(400);
-    const [hoveredNode, setHoveredNode] = useState<string | null>(null);
     const [hoveredLink, setHoveredLink] = useState<string | null>(null);
     const [data, setData] = useState<GraphData>({ nodes: [], links: [] });
 

@@ -11,8 +11,8 @@ const ConEvPage: React.FC = () => {
     const [isDeleteMode, setIsDeleteMode] = useState(false);
     const [isConnectMode, setIsConnectMode] = useState(false);
     const [isSelectMode, setIsSelectMode] = useState(false);
-
     const [isContextMode, setIsContextMode] = useState(false);
+    const [hoveredNode, setHoveredNode] = useState<string | null>(null);
 
     //Nodes
     const [firstSelectedNode, setFirstSelectedNode] = useState<Node | null>(null);
@@ -42,6 +42,10 @@ const ConEvPage: React.FC = () => {
         }
         return getGraphData();
     }, [isContextMode, getGraphData, getSessionGraphData]);
+
+    const handleNodesSelected = useCallback((nodes: Node[]) => {
+        setSessionNodes(nodes);
+    }, [setSessionNodes]);
 
     useEffect(() => {
         const handleKeyPress = (event: KeyboardEvent) => {
@@ -292,6 +296,9 @@ const ConEvPage: React.FC = () => {
                     isDeleteMode={isDeleteMode}
                     isConnectMode={isConnectMode}
                     isSelectMode={isSelectMode}
+                    onNodesSelected={handleNodesSelected}
+                    hoveredNode={hoveredNode}
+                    setHoveredNode={setHoveredNode}
                 />
 
                 <NodesSection
@@ -307,6 +314,8 @@ const ConEvPage: React.FC = () => {
                     isDeleteMode={isDeleteMode}
                     isConnectMode={isConnectMode}
                     isSelectMode={isSelectMode}
+                    hoveredNode={hoveredNode}
+                    setHoveredNode={setHoveredNode}
                 />
             </div>
 

@@ -22,6 +22,8 @@ interface NodesSectionProps {
     isDeleteMode: boolean;
     isConnectMode: boolean;
     isSelectMode: boolean;
+    hoveredNode: string | null;
+    setHoveredNode: (nodeId: string | null) => void;
 }
 
 export const NodesSection: React.FC<NodesSectionProps> = ({
@@ -37,6 +39,8 @@ export const NodesSection: React.FC<NodesSectionProps> = ({
     isDeleteMode,
     isConnectMode,
     isSelectMode,
+    hoveredNode,
+    setHoveredNode,
 }) => {
     const [sortedNodes, setSortedNodes] = useState(sessionNodes);
     const [candidateNodes, setCandidateNodes] = useState<NodeCandidate[]>([]);
@@ -147,6 +151,8 @@ export const NodesSection: React.FC<NodesSectionProps> = ({
                         <div
                             key={node.id}
                             onClick={() => onNodeClick(node.id)}
+                            onMouseEnter={() => setHoveredNode(node.id)}
+                            onMouseLeave={() => setHoveredNode(null)}
                             className={`cursor-pointer ${isDeleteMode ? 'hover:opacity-50' : ''
                                 }`}
                         >
@@ -157,6 +163,7 @@ export const NodesSection: React.FC<NodesSectionProps> = ({
                                 )}
                                 colorClass={node.color ? colors[node.color].classes : undefined}
                                 isDeleteMode={isDeleteMode}
+                                isHovered={hoveredNode === node.id}
                             />
                         </div>
                     ))}
@@ -171,6 +178,8 @@ export const NodesSection: React.FC<NodesSectionProps> = ({
                     isDeleteMode={isDeleteMode}
                     onCandidateNodeClick={onCandidateNodeClick}
                     onNodeClick={onOldNodeClick}
+                    hoveredNode={hoveredNode}
+                    setHoveredNode={setHoveredNode}
                 />
             )}
             <div className="bg-white rounded-lg shadow p-6">

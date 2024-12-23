@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
+import { NodeCandidate } from '../../out/db_model';
 import { Link, Node } from '../../types/graph';
 import { NodeDisplay } from './NodeDisplay';
-import { NodeCandidate } from '../../out/db_model';
 
 interface CandidateNodesSectionProps {
     candidateNodes: NodeCandidate[];
@@ -10,6 +10,8 @@ interface CandidateNodesSectionProps {
     isDeleteMode: boolean;
     onCandidateNodeClick: (nodeId: string) => void;
     onNodeClick: (nodeId: string) => void;
+    hoveredNode: string | null;
+    setHoveredNode: (nodeId: string | null) => void;
 }
 
 export const CandidateNodesSection: React.FC<CandidateNodesSectionProps> = ({
@@ -18,7 +20,9 @@ export const CandidateNodesSection: React.FC<CandidateNodesSectionProps> = ({
     links,
     isDeleteMode,
     onCandidateNodeClick,
-    onNodeClick
+    onNodeClick,
+    hoveredNode,
+    setHoveredNode
 }) => {
     const [view, setView] = useState<'candidates' | 'oldNodes' | 'fewestLinks'>('candidates');
 
@@ -35,6 +39,8 @@ export const CandidateNodesSection: React.FC<CandidateNodesSectionProps> = ({
                     <div
                         key={node.id}
                         onClick={() => onCandidateNodeClick(node.id)}
+                        onMouseEnter={() => setHoveredNode(node.id)}
+                        onMouseLeave={() => setHoveredNode(null)}
                         className={`cursor-pointer ${isDeleteMode ? 'hover:opacity-50' : ''}`}
                     >
                         <NodeDisplay
@@ -43,6 +49,7 @@ export const CandidateNodesSection: React.FC<CandidateNodesSectionProps> = ({
                                 link.sourceId === node.id || link.targetId === node.id
                             )}
                             isDeleteMode={isDeleteMode}
+                            isHovered={hoveredNode === node.id}
                         />
                     </div>
                 ))}
@@ -50,6 +57,8 @@ export const CandidateNodesSection: React.FC<CandidateNodesSectionProps> = ({
                     <div
                         key={node.id}
                         onClick={() => onNodeClick(node.id)}
+                        onMouseEnter={() => setHoveredNode(node.id)}
+                        onMouseLeave={() => setHoveredNode(null)}
                         className={`cursor-pointer ${isDeleteMode ? 'hover:opacity-50' : ''}`}
                     >
                         <NodeDisplay
@@ -58,6 +67,7 @@ export const CandidateNodesSection: React.FC<CandidateNodesSectionProps> = ({
                                 link.sourceId === node.id || link.targetId === node.id
                             )}
                             isDeleteMode={isDeleteMode}
+                            isHovered={hoveredNode === node.id}
                         />
                     </div>
                 ))}
@@ -65,12 +75,15 @@ export const CandidateNodesSection: React.FC<CandidateNodesSectionProps> = ({
                     <div
                         key={node.id}
                         onClick={() => onNodeClick(node.id)}
+                        onMouseEnter={() => setHoveredNode(node.id)}
+                        onMouseLeave={() => setHoveredNode(null)}
                         className={`cursor-pointer ${isDeleteMode ? 'hover:opacity-50' : ''}`}
                     >
                         <NodeDisplay
                             node={node}
                             links={links.filter(link => link.sourceId === node.id || link.targetId === node.id)}
                             isDeleteMode={isDeleteMode}
+                            isHovered={hoveredNode === node.id}
                         />
                     </div>
                 ))}

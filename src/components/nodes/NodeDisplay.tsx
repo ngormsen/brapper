@@ -7,6 +7,7 @@ interface NodeDisplayProps {
     maxLength?: number;
     colorClass?: string;
     isDeleteMode?: boolean;
+    isHovered?: boolean;
 }
 
 export const NodeDisplay: React.FC<NodeDisplayProps> = ({
@@ -14,7 +15,8 @@ export const NodeDisplay: React.FC<NodeDisplayProps> = ({
     links,
     maxLength = 35,
     colorClass,
-    isDeleteMode = false
+    isDeleteMode = false,
+    isHovered = false
 }) => {
     const firstLine = node.text.split('\n')[0];
     const displayText = firstLine.length > maxLength ? `${firstLine.slice(0, maxLength)}...` : firstLine;
@@ -28,12 +30,13 @@ export const NodeDisplay: React.FC<NodeDisplayProps> = ({
                 rounded-lg 
                 w-full
                 shadow-sm 
-                hover:shadow-md 
+                ${isHovered ? 'shadow-lg scale-105' : 'hover:shadow-md'} 
                 transition-all 
                 group 
                 relative 
                 border
                 ${isDeleteMode ? 'hover:border-red-500 hover:text-red-500' : ''}
+                ${isHovered ? 'border-gray-400' : ''}
             `}
         >
             <div className="flex flex-col">
