@@ -36,9 +36,3 @@ export interface NodeDisplayConfig {
     isHovered?: boolean;
 }
 
-// Domain events/actions
-export interface NodeAction {
-    type: 'add' | 'update' | 'delete' | 'connect';
-    nodeId: string;
-    data?: Partial<Node>;
-} 

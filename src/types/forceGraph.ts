@@ -22,27 +22,3 @@ export interface ForceGraphData {
     nodes: ForceGraphNode[];
     links: ForceGraphLink[];
 }
-
-// Force Graph Event Handlers
-export interface ForceGraphEvents {
-    onNodeClick?: (node: ForceGraphNode) => void;
-    onLinkClick?: (link: ForceGraphLink) => void;
-    onNodeHover?: (node: ForceGraphNode | null) => void;
-    onLinkHover?: (link: ForceGraphLink | null) => void;
-}
-
-// Force Graph Rendering Config
-export interface ForceGraphConfig {
-    nodeRelSize?: number;
-    nodeId?: string;
-    nodeVal?: (node: ForceGraphNode) => number;
-    nodeLabel?: string | ((node: ForceGraphNode) => string);
-    nodeAutoColorBy?: string;
-    linkDirectionalParticles?: number;
-    linkDirectionalParticleWidth?: number;
-    dagMode?: 'td' | 'bu' | 'lr' | 'rl' | 'radialout' | 'radialin' | null;
-    dagLevelDistance?: number;
-    backgroundColor?: string;
-    width?: number;
-    height?: number;
-} 
