@@ -6,7 +6,7 @@ import { NodesSection } from '../components/nodes/NodesSection';
 import { useGraphData } from '../hooks/useGraphData';
 import { Link, Node } from '../types/graph';
 
-const ConEvPage: React.FC = () => {
+const MainPage: React.FC = () => {
     //Modes
     const [isDeleteMode, setIsDeleteMode] = useState(false);
     const [isConnectMode, setIsConnectMode] = useState(false);
@@ -334,4 +334,4 @@ const ConEvPage: React.FC = () => {
     );
 };
 
-export default ConEvPage; 
+export default MainPage; 

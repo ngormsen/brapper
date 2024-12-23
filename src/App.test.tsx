@@ -1,5 +1,5 @@
 import { render, screen } from '@testing-library/react';
-import MainPage from './MainPage';
+import MainPage from './pages/MainPage';
 
 test('renders learn react link', () => {
   render(<MainPage />);
