@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
 import { ColorNumber } from '../components/ColorLegend';
 import { graphDatabase } from '../services/graphDatabase';
-import { GraphData, Link, Node } from '../types/graph';
+import { Link, Node } from '../types/domain';
+import { ForceGraphData, ForceGraphLink, ForceGraphNode } from '../types/forceGraph';
 
 export const useGraphData = (isBackupMode: boolean = false) => {
     const [nodes, setNodes] = useState<Node[]>([]);
@@ -12,7 +13,6 @@ export const useGraphData = (isBackupMode: boolean = false) => {
     useEffect(() => {
         const loadGraph = async () => {
             const { nodes: dbNodes, links: dbLinks } = await graphDatabase.getFullGraph(isBackupMode);
-
             setNodes(dbNodes);
             setLinks(dbLinks);
         };
@@ -147,42 +147,42 @@ export const useGraphData = (isBackupMode: boolean = false) => {
         }
     };
 
-    const getGraphData = useCallback((): GraphData => {
+    const getGraphData = useCallback((): ForceGraphData => {
         return {
             nodes: nodes.map(node => ({
-                id: node.id,
-                text: node.text,
-                color: node.color,
-                updated_at: node.updated_at,
-                x: node.x,
-                y: node.y,
-                vx: node.vx,
-                vy: node.vy,
-                fx: node.x,
-                fy: node.y,
-            })),
+                ...node,
+                x: (node as ForceGraphNode).x,
+                y: (node as ForceGraphNode).y,
+                vx: (node as ForceGraphNode).vx,
+                vy: (node as ForceGraphNode).vy,
+                fx: (node as ForceGraphNode).x,
+                fy: (node as ForceGraphNode).y,
+            })) as ForceGraphNode[],
             links: links.map(link => ({
                 id: link.id,
                 source: link.sourceId,
                 target: link.targetId,
-            }))
+            })) as ForceGraphLink[]
         };
     }, [nodes, links]);
 
-    const getSessionGraphData = useCallback((): GraphData => {
+    const getSessionGraphData = useCallback((): ForceGraphData => {
         return {
             nodes: sessionNodes.map(node => ({
-                id: node.id,
-                text: node.text,
-                color: node.color,
-                updated_at: node.updated_at
-            })),
-            links: sessionLinks.filter((link) => sessionNodes.some(node => node.id === link.sourceId) && sessionNodes.some(node => node.id === link.targetId))
+                ...node,
+                x: (node as ForceGraphNode).x,
+                y: (node as ForceGraphNode).y,
+            })) as ForceGraphNode[],
+            links: sessionLinks
+                .filter((link) =>
+                    sessionNodes.some(node => node.id === link.sourceId) &&
+                    sessionNodes.some(node => node.id === link.targetId)
+                )
                 .map(link => ({
                     id: link.id,
                     source: link.sourceId,
                     target: link.targetId,
-                }))
+                })) as ForceGraphLink[]
         };
     }, [sessionNodes, sessionLinks]);
 

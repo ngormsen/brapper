@@ -1,10 +1,11 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import ForceGraph2D, { ForceGraphMethods } from 'react-force-graph-2d';
 import { graphDatabase } from '../../services/graphDatabase';
-import { GraphData, Link, Node } from '../../types/graph';
+import { ColorConfig, Link, Node } from '../../types/domain';
+import { ForceGraphData, ForceGraphLink, ForceGraphNode } from '../../types/forceGraph';
 
 interface GraphViewProps {
-    graphData: GraphData;
+    graphData: ForceGraphData;
     onNodeClick: (node: Node) => void;
     onLinkClick: (link: Link) => void;
     isDeleteMode: boolean;
@@ -13,10 +14,8 @@ interface GraphViewProps {
     onNodesSelected?: (nodes: Node[]) => void;
     hoveredNode: string | null;
     setHoveredNode: (nodeId: string | null) => void;
+    isBackupMode: boolean;
 }
-
-// 1) Define a matching interface or type for bg/border pairs:
-type ColorConfig = { bg: string; border: string };
 
 const GraphViewComponent: React.FC<GraphViewProps> = ({
     graphData,
@@ -28,17 +27,18 @@ const GraphViewComponent: React.FC<GraphViewProps> = ({
     onNodesSelected,
     hoveredNode,
     setHoveredNode,
+    isBackupMode,
 }) => {
     const containerRef = useRef<HTMLDivElement | null>(null);
     const fgRef = useRef<ForceGraphMethods>();
 
     const [graphWidth, setGraphWidth] = useState(400);
     const [hoveredLink, setHoveredLink] = useState<string | null>(null);
-    const [data, setData] = useState<GraphData>({ nodes: [], links: [] });
+    const [data, setData] = useState<ForceGraphData>({ nodes: [], links: [] });
 
     const [selecting, setSelecting] = useState(false);
     const [selectionBox, setSelectionBox] = useState({ startX: 0, startY: 0, endX: 0, endY: 0 });
-    const [selectedNodes, setSelectedNodes] = useState<Node[]>([]);
+    const [selectedNodes, setSelectedNodes] = useState<ForceGraphNode[]>([]);
     const [isCmdPressed, setIsCmdPressed] = useState(false);
     const [filterSelected, setFilterSelected] = useState(false);
 
@@ -58,7 +58,7 @@ const GraphViewComponent: React.FC<GraphViewProps> = ({
 
     useEffect(() => {
         // Preserve existing node positions and sort nodes by update date
-        const existingNodes = new Map<string, Node>();
+        const existingNodes = new Map<string, ForceGraphNode>();
         data.nodes.forEach((node) => {
             existingNodes.set(node.id, node);
         });
@@ -69,11 +69,11 @@ const GraphViewComponent: React.FC<GraphViewProps> = ({
                 const existingNode = existingNodes.get(node.id);
                 return {
                     ...node,
-                    x: existingNode?.x ?? undefined,
-                    y: existingNode?.y ?? undefined,
-                    vx: existingNode?.vx ?? undefined,
-                    vy: existingNode?.vy ?? undefined,
-                };
+                    x: existingNode?.x,
+                    y: existingNode?.y,
+                    vx: existingNode?.vx,
+                    vy: existingNode?.vy,
+                } as ForceGraphNode;
             })
             .sort((a, b) => {
                 const aUpdatedToday = new Date(a.updated_at).toDateString() === today.toDateString();
@@ -81,7 +81,7 @@ const GraphViewComponent: React.FC<GraphViewProps> = ({
                 return aUpdatedToday === bUpdatedToday ? 0 : aUpdatedToday ? 1 : -1;
             });
 
-        let updatedLinks = graphData.links;
+        let updatedLinks = graphData.links as ForceGraphLink[];
 
         if (selectedNodes.length > 0 && filterSelected) {
             // Filter nodes
@@ -90,7 +90,7 @@ const GraphViewComponent: React.FC<GraphViewProps> = ({
             );
 
             // Create a map of node IDs to nodes
-            const nodeIdToNodeMap = new Map<string, Node>();
+            const nodeIdToNodeMap = new Map<string, ForceGraphNode>();
             updatedNodes.forEach(node => {
                 nodeIdToNodeMap.set(node.id, node);
             });
@@ -101,12 +101,12 @@ const GraphViewComponent: React.FC<GraphViewProps> = ({
                     nodeIdToNodeMap.has(
                         typeof link.source === 'string'
                             ? link.source
-                            : (link.source as Node).id
+                            : (link.source as ForceGraphNode).id
                     ) &&
                     nodeIdToNodeMap.has(
                         typeof link.target === 'string'
                             ? link.target
-                            : (link.target as Node).id
+                            : (link.target as ForceGraphNode).id
                     )
                 )
                 .map(link => ({
@@ -114,13 +114,13 @@ const GraphViewComponent: React.FC<GraphViewProps> = ({
                     source: nodeIdToNodeMap.get(
                         typeof link.source === 'string'
                             ? link.source
-                            : (link.source as Node).id
-                    ) as Node,
+                            : (link.source as ForceGraphNode).id
+                    ) as ForceGraphNode,
                     target: nodeIdToNodeMap.get(
                         typeof link.target === 'string'
                             ? link.target
-                            : (link.target as Node).id
-                    ) as Node,
+                            : (link.target as ForceGraphNode).id
+                    ) as ForceGraphNode,
                 }));
         }
 
@@ -206,7 +206,7 @@ const GraphViewComponent: React.FC<GraphViewProps> = ({
     };
 
     const updateNodePositions = async () => {
-        const updatedNodes = await graphDatabase.updateNodes(data.nodes);
+        const updatedNodes = await graphDatabase.updateNodes(data.nodes, isBackupMode);
         console.log(updatedNodes);
     };
 
@@ -539,4 +539,4 @@ const GraphViewComponent: React.FC<GraphViewProps> = ({
     );
 };
 
-export const GraphView = React.memo(GraphViewComponent); 
+export default GraphViewComponent; 

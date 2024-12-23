@@ -1,10 +1,10 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { ColorNumber } from '../components/ColorLegend';
-import { GraphView } from '../components/graph/GraphView';
 import { EditNodeModal } from '../components/nodes/EditNodeModal';
 import { NodesSection } from '../components/nodes/NodesSection';
 import { useGraphData } from '../hooks/useGraphData';
-import { Link, Node } from '../types/graph';
+import { Link, Node } from '../types/domain';
+import GraphView from '../components/graph/GraphView';
 
 const MainPage: React.FC = () => {
     //Modes
@@ -309,6 +309,7 @@ const MainPage: React.FC = () => {
                     onNodesSelected={handleNodesSelected}
                     hoveredNode={hoveredNode}
                     setHoveredNode={setHoveredNode}
+                    isBackupMode={isBackupMode}
                 />
 
                 <NodesSection

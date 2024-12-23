@@ -1,11 +1,9 @@
 import { createClient } from '@supabase/supabase-js';
 import { NodeCandidate } from '../out/db_model';
-import { Link, Node } from '../types/graph';
+import { DBLink, DBNode } from '../types/database';
+import { Link, Node } from '../types/domain';
 
 console.log('supabase', process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
-
-// const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-// const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
 const supabaseUrl = "https://qvpvnkgypvwwattunflc.supabase.co"
 const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF2cHZua2d5cHZ3d2F0dHVuZmxjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzMxNDQ5MjYsImV4cCI6MjA0ODcyMDkyNn0.8BK4z6zlMjE8ouDozJbVCr_1nWXJgpL2Nshi4o9ioCg"
@@ -19,12 +17,12 @@ const supabase = createClient(supabaseUrl, supabaseKey)
 const NODES_TABLE_NAMES = {
     ORIGINAL: 'nodes',
     BACKUP: 'nodes_backup'
-}
+} as const;
 
 const LINKS_TABLE_NAMES = {
     ORIGINAL: 'links',
     BACKUP: 'links_backup'
-}
+} as const;
 
 const TABLES = {
     NODES: NODES_TABLE_NAMES.BACKUP,
@@ -32,17 +30,34 @@ const TABLES = {
     NODE_CANDIDATES: 'node_candidates'
 } as const;
 
-interface DbLink extends Omit<Link, 'sourceId' | 'targetId'> {
-    source_id: string
-    target_id: string
-    created_at: string
-    updated_at: string
+// Database-specific type for links as they appear in the DB
+interface RawDBLink extends Omit<DBLink, 'sourceId' | 'targetId'> {
+    source_id: string;
+    target_id: string;
+    created_at: string;
+    updated_at: string;
 }
 
 const getTableNames = (isBackupMode: boolean) => ({
     NODES: isBackupMode ? NODES_TABLE_NAMES.BACKUP : NODES_TABLE_NAMES.ORIGINAL,
     LINKS: isBackupMode ? LINKS_TABLE_NAMES.BACKUP : LINKS_TABLE_NAMES.ORIGINAL,
     NODE_CANDIDATES: TABLES.NODE_CANDIDATES
+});
+
+// Convert database types to domain types
+const mapDBNodeToDomain = (dbNode: DBNode): Node => ({
+    id: dbNode.id,
+    text: dbNode.text,
+    color: dbNode.color,
+    updated_at: dbNode.updated_at,
+    x: dbNode.x,
+    y: dbNode.y
+});
+
+const mapDBLinkToDomain = (dbLink: RawDBLink): Link => ({
+    id: dbLink.id,
+    sourceId: dbLink.source_id,
+    targetId: dbLink.target_id
 });
 
 export const graphDatabase = {
@@ -53,14 +68,14 @@ export const graphDatabase = {
             .from(tables.NODES)
             .insert({ text: node.text, color: node.color })
             .select()
-            .single()
+            .single();
 
         if (error) {
-            console.error('Error creating node:', error)
-            return null
+            console.error('Error creating node:', error);
+            return null;
         }
 
-        return data
+        return mapDBNodeToDomain(data);
     },
 
     async updateNode(node: Node, isBackupMode: boolean = false): Promise<Node | null> {
@@ -70,14 +85,14 @@ export const graphDatabase = {
             .update({ text: node.text, color: node.color, x: node.x, y: node.y, updated_at: node.updated_at })
             .eq('id', node.id)
             .select()
-            .single()
+            .single();
 
         if (error) {
-            console.error('Error updating node:', error)
-            return null
+            console.error('Error updating node:', error);
+            return null;
         }
 
-        return data
+        return mapDBNodeToDomain(data);
     },
 
     async updateNodes(nodes: Node[], isBackupMode: boolean = false): Promise<Node[] | null> {
@@ -94,14 +109,14 @@ export const graphDatabase = {
                     updated_at: node.updated_at
                 }))
             )
-            .select()
+            .select();
 
         if (error) {
-            console.error('Error batch updating nodes:', error)
-            return null
+            console.error('Error batch updating nodes:', error);
+            return null;
         }
 
-        return data
+        return data.map(mapDBNodeToDomain);
     },
 
     async deleteNode(nodeId: string, isBackupMode: boolean = false): Promise<boolean> {
@@ -109,14 +124,14 @@ export const graphDatabase = {
         const { error } = await supabase
             .from(tables.NODES)
             .delete()
-            .eq('id', nodeId)
+            .eq('id', nodeId);
 
         if (error) {
-            console.error('Error deleting node:', error)
-            return false
+            console.error('Error deleting node:', error);
+            return false;
         }
 
-        return true
+        return true;
     },
 
     async getAllNodes(isBackupMode: boolean = false): Promise<Node[]> {
@@ -124,14 +139,14 @@ export const graphDatabase = {
         const { data, error } = await supabase
             .from(tables.NODES)
             .select('*')
-            .order('created_at')
+            .order('created_at');
 
         if (error) {
-            console.error('Error fetching nodes:', error)
-            return []
+            console.error('Error fetching nodes:', error);
+            return [];
         }
 
-        return data
+        return data.map(mapDBNodeToDomain);
     },
 
     // Link operations
@@ -144,19 +159,14 @@ export const graphDatabase = {
                 target_id: link.targetId
             })
             .select()
-            .single()
+            .single();
 
         if (error) {
-            console.error('Error creating link:', error)
-            return null
+            console.error('Error creating link:', error);
+            return null;
         }
 
-        // Transform the response to match our Link interface
-        return {
-            id: data.id,
-            sourceId: data.source_id,
-            targetId: data.target_id
-        }
+        return mapDBLinkToDomain(data);
     },
 
     async deleteLink(linkId: string, isBackupMode: boolean = false): Promise<boolean> {
@@ -164,14 +174,14 @@ export const graphDatabase = {
         const { error } = await supabase
             .from(tables.LINKS)
             .delete()
-            .eq('id', linkId)
+            .eq('id', linkId);
 
         if (error) {
-            console.error('Error deleting link:', error)
-            return false
+            console.error('Error deleting link:', error);
+            return false;
         }
 
-        return true
+        return true;
     },
 
     async getAllLinks(isBackupMode: boolean = false): Promise<Link[]> {
@@ -179,28 +189,23 @@ export const graphDatabase = {
         const { data, error } = await supabase
             .from(tables.LINKS)
             .select('*')
-            .order('created_at')
+            .order('created_at');
 
         if (error) {
-            console.error('Error fetching links:', error)
-            return []
+            console.error('Error fetching links:', error);
+            return [];
         }
 
-        // Transform the response to match our Link interface
-        return data.map((link: DbLink) => ({
-            id: link.id,
-            sourceId: link.source_id,
-            targetId: link.target_id
-        }))
+        return data.map(mapDBLinkToDomain);
     },
 
     // Fetch entire graph
     async getFullGraph(isBackupMode: boolean = false): Promise<{ nodes: Node[], links: Link[] }> {
-        const nodes = await this.getAllNodes(isBackupMode)
-        const links = await this.getAllLinks(isBackupMode)
-        return { nodes, links }
+        const nodes = await this.getAllNodes(isBackupMode);
+        const links = await this.getAllLinks(isBackupMode);
+        return { nodes, links };
     }
-}
+};
 
 export const nodeCandidateDatabase = {
 

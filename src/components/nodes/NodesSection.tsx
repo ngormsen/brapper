@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { NodeCandidate } from '../../out/db_model';
 import { nodeCandidateDatabase } from '../../services/graphDatabase';
-import { Link, Node } from '../../types/graph';
+import { Link, Node } from '../../types/domain';
 import ColorLegend, { ColorNumber, colors } from '../ColorLegend';
 import { BulkNodeInput } from './BulkNodeInput';
 import { CandidateNodesSection } from './CandidateNodesSection';
@@ -153,11 +153,11 @@ export const NodesSection: React.FC<NodesSectionProps> = ({
                             onClick={() => onNodeClick(node.id)}
                             onMouseEnter={() => setHoveredNode(node.id)}
                             onMouseLeave={() => setHoveredNode(null)}
-                            className={`cursor-pointer ${isDeleteMode ? 'hover:opacity-50' : ''
-                                }`}
+                            className={`cursor-pointer ${isDeleteMode ? 'hover:opacity-50' : ''}`}
                         >
                             <NodeDisplay
                                 node={node}
+                                text={node.text}
                                 links={links.filter(link =>
                                     link.sourceId === node.id || link.targetId === node.id
                                 )}

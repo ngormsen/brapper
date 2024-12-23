@@ -1,13 +1,9 @@
 import React from 'react';
-import type { Link, Node } from '../../types/graph';
+import { Link, Node, NodeDisplayConfig } from '../../types/domain';
 
-interface NodeDisplayProps {
+interface NodeDisplayProps extends NodeDisplayConfig {
     node: Node;
     links: Link[];
-    maxLength?: number;
-    colorClass?: string;
-    isDeleteMode?: boolean;
-    isHovered?: boolean;
 }
 
 export const NodeDisplay: React.FC<NodeDisplayProps> = ({
