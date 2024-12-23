@@ -108,8 +108,10 @@ const ConEvPage: React.FC = () => {
         } else if (selectedColor !== null) {
             updateNodeColor(nodeId, selectedColor);
         } else if (isSelectMode) {
-            // In select mode, add to session if not already there
-            if (!sessionNodes.some(n => n.id === nodeId)) {
+            // In select mode, toggle node in/out of session
+            if (sessionNodes.some(n => n.id === nodeId)) {
+                setSessionNodes(prev => prev.filter(n => n.id !== nodeId));
+            } else {
                 setSessionNodes(prev => [...prev, { ...node, color: undefined }]);
             }
         } else {
@@ -123,7 +125,7 @@ const ConEvPage: React.FC = () => {
         if (newNode && isConnectMode && firstSelectedNode) {
             createLinkBetweenNodes(firstSelectedNode.id, newNode.id);
         }
-    };  
+    };
 
     const handleSessionClear = () => {
         setSessionNodes([]);
