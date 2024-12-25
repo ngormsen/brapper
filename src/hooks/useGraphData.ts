@@ -102,7 +102,7 @@ export const useGraphData = (isBackupMode: boolean = false) => {
                 node.id === nodeId ? updatedNode : node
             ));
             setSessionNodes(prev => prev.map(node =>
-                node.id === nodeId ? {updatedNode : node
+                node.id === nodeId ? { ...updatedNode, color: node.color } : node
             ));
         }
     };
@@ -142,7 +142,7 @@ export const useGraphData = (isBackupMode: boolean = false) => {
                 node.id === nodeId ? updatedNode : node
             ));
             setSessionNodes(prev => prev.map(node =>
-                node.id === nodeId ? { ...updatedNode, color: undefined } : node
+                node.id === nodeId ? { ...updatedNode, color: node.color } : node
             ));
         }
     };
