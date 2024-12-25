@@ -29,12 +29,19 @@ export const NodeDisplay: React.FC<NodeDisplayProps> = ({
                 ${isHovered ? 'shadow-lg scale-105' : 'hover:shadow-md'} 
                 transition-all 
                 group 
-                relative 
                 border
                 ${isDeleteMode ? 'hover:border-red-500 hover:text-red-500' : ''}
                 ${isHovered ? 'border-gray-400' : ''}
             `}
         >
+            {node.text.length > maxLength && (
+                <div className="fixed transform -translate-x-1/2 left-[30%] mt-2 p-2 bg-gray-800 text-white text-sm rounded-md opacity-0 group-hover:opacity-100 transition-opacity z-[9999] w-[500px] break-words shadow-lg pointer-events-none group-hover:pointer-events-auto max-h-[80vh] overflow-y-auto">
+                    <div className="whitespace-pre-wrap">
+                        {node.text}
+                    </div>
+                </div>
+            )}
+
             <div className="flex flex-col">
                 <span className="inline-block max-w-[300px] truncate">{displayText}</span>
                 {links.length > 0 && (
@@ -43,13 +50,6 @@ export const NodeDisplay: React.FC<NodeDisplayProps> = ({
                     </div>
                 )}
             </div>
-            {node.text.length > maxLength && (
-                <div className="fixed transform -translate-x-1/2 left-[30%] mt-2 p-2 bg-gray-800 text-white text-sm rounded-md opacity-0 group-hover:opacity-100 transition-opacity z-[9999] w-[500px] break-words shadow-lg pointer-events-none group-hover:pointer-events-auto max-h-[80vh] overflow-y-auto">
-                    <div className="whitespace-pre-wrap">
-                        {node.text}
-                    </div>
-                </div>
-            )}
         </div>
     );
 }; 
