@@ -240,13 +240,17 @@ const MainPage: React.FC = () => {
                                 }
                                 return shuffled.slice(0, count);
                             };
-                            const randomNodesFromAll = pickRandom(nodes, 4);
+                            const remainingNodes = nodes.filter(node =>
+                                !fewConnectedNodes.some(n => n.id === node.id) &&
+                                !oldNodes.some(n => n.id === node.id)
+                            );
+                            const randomNodesFromAll = pickRandom(remainingNodes, 4);
 
                             // 4) Combine results: 4 oldest, 6 fewConnectedNodes, and 4 random from all.
                             const finalNodes = [
                                 ...pickRandom(oldNodes, 4),
                                 ...pickRandom(fewConnectedNodes, 6),
-                                ...pickRandom(nodes, 4)
+                                ...pickRandom(randomNodesFromAll, 4)
                             ];
 
                             setSessionNodes(finalNodes.map(node => ({ ...node, color: undefined })));
