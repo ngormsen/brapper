@@ -8,6 +8,7 @@ import { CandidateNodesSection } from './CandidateNodesSection';
 import { EditNodeModal } from './EditNodeModal';
 import { NodeDisplay } from './NodeDisplay';
 import { SingleNodeInput } from './SingleNodeInput';
+import { LongTextDisplay } from './LongTextDisplay';
 
 interface NodesSectionProps {
     sessionNodes: Node[];
@@ -46,6 +47,7 @@ export const NodesSection: React.FC<NodesSectionProps> = ({
     const [candidateNodes, setCandidateNodes] = useState<NodeCandidate[]>([]);
     const [isEditingModalVisible, setIsEditingModalVisible] = useState(false);
     const [editingCandidateNode, setEditingCandidateNode] = useState<NodeCandidate | null>(null);
+    const [tooltipText, setTooltipText] = useState('');
 
     useEffect(() => {
         setSortedNodes(sortByColor(sessionNodes));
@@ -164,6 +166,7 @@ export const NodesSection: React.FC<NodesSectionProps> = ({
                                 colorClass={node.color ? colors[node.color].classes : undefined}
                                 isDeleteMode={isDeleteMode}
                                 isHovered={hoveredNode === node.id}
+                                setTooltipText={setTooltipText}
                             />
                         </div>
                     ))}
@@ -182,6 +185,10 @@ export const NodesSection: React.FC<NodesSectionProps> = ({
                     setHoveredNode={setHoveredNode}
                 />
             )}
+            <LongTextDisplay
+                textToDisplay={tooltipText}
+            ></LongTextDisplay>
+      
             <div className="bg-white rounded-lg shadow p-6">
                 <SingleNodeInput onAddNode={onAddCandidateNode} />
             </div>

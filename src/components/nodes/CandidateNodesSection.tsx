@@ -42,6 +42,7 @@ export const CandidateNodesSection: React.FC<CandidateNodesSectionProps> = ({
                 )}
                 isDeleteMode={isDeleteMode}
                 isHovered={hoveredNode === node.id}
+                setTooltipText={() => { }}
             />
         </div>
     );
