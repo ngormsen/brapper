@@ -173,6 +173,10 @@ export const NodesSection: React.FC<NodesSectionProps> = ({
 
                 </div>
             </div>
+            <LongTextDisplay
+                textToDisplay={tooltipText}
+            ></LongTextDisplay>
+
             {candidateNodes.length > 0 && (
                 <CandidateNodesSection
                     candidateNodes={candidateNodes}
@@ -185,10 +189,7 @@ export const NodesSection: React.FC<NodesSectionProps> = ({
                     setHoveredNode={setHoveredNode}
                 />
             )}
-            <LongTextDisplay
-                textToDisplay={tooltipText}
-            ></LongTextDisplay>
-      
+
             <div className="bg-white rounded-lg shadow p-6">
                 <SingleNodeInput onAddNode={onAddCandidateNode} />
             </div>
