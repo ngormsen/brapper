@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { NodeCandidate } from '../../out/db_model';
 import { nodeCandidateDatabase } from '../../services/graphDatabase';
 import { Link, Node } from '../../types/domain';
@@ -45,34 +45,45 @@ export const NodesSection: React.FC<NodesSectionProps> = ({
     setHoveredNode,
     setSessionNodes
 }) => {
-    const [sortedNodes, setSortedNodes] = useState(sessionNodes);
     const [candidateNodes, setCandidateNodes] = useState<NodeCandidate[]>([]);
     const [isEditingModalVisible, setIsEditingModalVisible] = useState(false);
     const [editingCandidateNode, setEditingCandidateNode] = useState<NodeCandidate | null>(null);
     const [tooltipText, setTooltipText] = useState('');
 
-    useEffect(() => {
-        setSortedNodes(sessionNodes);
-    }, [sessionNodes]);
+    // Track whether we're currently sorted or unsorted
+    const [isSorted, setIsSorted] = useState(false);
+
+    const sortByColor = (nodes: Node[]) => {
+        return [...nodes].sort((a, b) => {
+            const colorA = a.color || 0;
+            const colorB = b.color || 0;
+            return colorB - colorA;
+        });
+    };
+
+    // Conditionally memoize the displayed nodes
+    const displayedNodes = useMemo(() => {
+        if (isSorted) {
+            return sortByColor(sessionNodes);
+        }
+        // Otherwise, show them in the original/unsorted order
+        return sessionNodes;
+    }, [sessionNodes, isSorted]);
 
     useEffect(() => {
         const loadCandidateNodes = async () => {
-            const candidateNodes = await nodeCandidateDatabase.getAllNodeCandidates();
-            setCandidateNodes(candidateNodes);
+            const allCandidateNodes = await nodeCandidateDatabase.getAllNodeCandidates();
+            setCandidateNodes(allCandidateNodes);
         };
         loadCandidateNodes();
     }, []);
-
 
     const onAddCandidateNode = async (text: string) => {
         if (isConnectMode) {
             onAddNode(text);
             return;
         }
-
-
         const newCandidateNode = await nodeCandidateDatabase.createNodeCandidate({ text });
-
         if (newCandidateNode) {
             setCandidateNodes(prev => [...prev, newCandidateNode]);
         }
@@ -80,7 +91,9 @@ export const NodesSection: React.FC<NodesSectionProps> = ({
 
     const onUpdateCandidateNode = async (nodeId: string, newText: string) => {
         await nodeCandidateDatabase.updateNodeCandidate({ id: nodeId, text: newText });
-        setCandidateNodes(prev => prev.map(node => node.id === nodeId ? { ...node, text: newText } : node));
+        setCandidateNodes(prev =>
+            prev.map(node => (node.id === nodeId ? { ...node, text: newText } : node))
+        );
     };
 
     const onCandidateNodeClick = async (nodeId: string) => {
@@ -94,7 +107,7 @@ export const NodesSection: React.FC<NodesSectionProps> = ({
 
         if (isSelectMode) {
             setIsEditingModalVisible(true);
-            setEditingCandidateNode(candidateNode);
+            setEditingCandidateNode(candidateNode || null);
             return;
         }
 
@@ -105,20 +118,15 @@ export const NodesSection: React.FC<NodesSectionProps> = ({
         }
     };
 
-
-    const sortByColor = (nodes: Node[]) => {
-        return [...nodes].sort((a, b) => {
-            const colorA = a.color || 0;
-            const colorB = b.color || 0;
-            return colorB - colorA;
-        });
-    };
-
+    // Toggle or enable sorting when the user hits "Refresh"
     const onRefresh = () => {
-        setSortedNodes(sortByColor(sessionNodes));
+        // If you'd like to always sort on refresh, just set `isSorted(true)`
+        // If you'd like to toggle, do setIsSorted(!isSorted)
+        setIsSorted(true);
     };
 
     const onSelectExistingNode = (node: Node) => {
+        // Add an existing node to the session
         setSessionNodes([...sessionNodes, node]);
     };
 
@@ -131,11 +139,17 @@ export const NodesSection: React.FC<NodesSectionProps> = ({
                 />
             </div>
 
-            <div className={`bg-white rounded-lg shadow p-6 
-            ${isDeleteMode ? 'border-red-500 border-4' :
-                    isConnectMode ? 'border-blue-500 border-4' :
-                        isSelectMode ? 'border-green-500 border-4' : ''
-                }`}>
+            <div
+                className={`bg-white rounded-lg shadow p-6 
+                ${isDeleteMode
+                        ? 'border-red-500 border-4'
+                        : isConnectMode
+                            ? 'border-blue-500 border-4'
+                            : isSelectMode
+                                ? 'border-green-500 border-4'
+                                : ''
+                    }`}
+            >
                 <div className="flex justify-between items-center mb-4">
                     <h2 className="text-xl font-semibold">Nodes</h2>
                     <div className="flex gap-2">
@@ -155,7 +169,7 @@ export const NodesSection: React.FC<NodesSectionProps> = ({
                     </div>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                    {sortedNodes.map((node) => (
+                    {displayedNodes.map(node => (
                         <div
                             key={node.id}
                             onClick={() => onNodeClick(node.id)}
@@ -166,8 +180,8 @@ export const NodesSection: React.FC<NodesSectionProps> = ({
                             <NodeDisplay
                                 node={node}
                                 text={node.text}
-                                links={links.filter(link =>
-                                    link.sourceId === node.id || link.targetId === node.id
+                                links={links.filter(
+                                    link => link.sourceId === node.id || link.targetId === node.id
                                 )}
                                 colorClass={node.color ? colors[node.color].classes : undefined}
                                 isDeleteMode={isDeleteMode}
@@ -176,13 +190,11 @@ export const NodesSection: React.FC<NodesSectionProps> = ({
                             />
                         </div>
                     ))}
-
                 </div>
             </div>
+
             {(tooltipText.split('\n')[0].length > 10 || tooltipText.split('\n').length > 1) && (
-                <LongTextDisplay
-                    textToDisplay={tooltipText}
-                />
+                <LongTextDisplay textToDisplay={tooltipText} />
             )}
 
             {candidateNodes.length > 0 && (
@@ -215,14 +227,12 @@ export const NodesSection: React.FC<NodesSectionProps> = ({
                 isOpen={isEditingModalVisible}
                 nodeText={editingCandidateNode?.text || ''}
                 onClose={() => setIsEditingModalVisible(false)}
-                onSave={(newText) => {
+                onSave={newText => {
                     if (editingCandidateNode) {
-                        console.log(newText);
                         onUpdateCandidateNode(editingCandidateNode.id, newText);
                     }
                 }}
             />
-
         </div>
     );
 }; 
