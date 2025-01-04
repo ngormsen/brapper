@@ -169,7 +169,7 @@ const MainPage: React.FC = () => {
         if (isSelectMode) {
             // In select mode, add to session if not already there
             if (!sessionNodes.some(n => n.id === node.id)) {
-                setSessionNodes(prev => [...prev, node]);
+                setSessionNodes(prev => [...prev, { ...node, color: undefined }]);
             }
         } else {
             // Default behavior: open edit modal

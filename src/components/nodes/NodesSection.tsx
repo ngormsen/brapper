@@ -52,7 +52,7 @@ export const NodesSection: React.FC<NodesSectionProps> = ({
     const [tooltipText, setTooltipText] = useState('');
 
     useEffect(() => {
-        setSortedNodes(sortByColor(sessionNodes));
+        setSortedNodes(sessionNodes);
     }, [sessionNodes]);
 
     useEffect(() => {
