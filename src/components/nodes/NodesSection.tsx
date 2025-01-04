@@ -6,9 +6,9 @@ import ColorLegend, { ColorNumber, colors } from '../ColorLegend';
 import { BulkNodeInput } from './BulkNodeInput';
 import { CandidateNodesSection } from './CandidateNodesSection';
 import { EditNodeModal } from './EditNodeModal';
+import { LongTextDisplay } from './LongTextDisplay';
 import { NodeDisplay } from './NodeDisplay';
 import { SingleNodeInput } from './SingleNodeInput';
-import { LongTextDisplay } from './LongTextDisplay';
 
 interface NodesSectionProps {
     sessionNodes: Node[];
@@ -25,6 +25,7 @@ interface NodesSectionProps {
     isSelectMode: boolean;
     hoveredNode: string | null;
     setHoveredNode: (nodeId: string | null) => void;
+    setSessionNodes: (nodes: Node[]) => void;
 }
 
 export const NodesSection: React.FC<NodesSectionProps> = ({
@@ -42,6 +43,7 @@ export const NodesSection: React.FC<NodesSectionProps> = ({
     isSelectMode,
     hoveredNode,
     setHoveredNode,
+    setSessionNodes
 }) => {
     const [sortedNodes, setSortedNodes] = useState(sessionNodes);
     const [candidateNodes, setCandidateNodes] = useState<NodeCandidate[]>([]);
@@ -114,6 +116,10 @@ export const NodesSection: React.FC<NodesSectionProps> = ({
 
     const onRefresh = () => {
         setSortedNodes(sortByColor(sessionNodes));
+    };
+
+    const onSelectExistingNode = (node: Node) => {
+        setSessionNodes([...sessionNodes, node]);
     };
 
     return (
@@ -194,7 +200,11 @@ export const NodesSection: React.FC<NodesSectionProps> = ({
             )}
 
             <div className="bg-white rounded-lg shadow p-6">
-                <SingleNodeInput onAddNode={onAddCandidateNode} />
+                <SingleNodeInput
+                    onAddNode={onAddCandidateNode}
+                    onSelectExistingNode={onSelectExistingNode}
+                    allNodes={nodes}
+                />
             </div>
 
             <div className="bg-white rounded-lg shadow p-6">

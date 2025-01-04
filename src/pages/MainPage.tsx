@@ -323,6 +323,7 @@ const MainPage: React.FC = () => {
 
                 <NodesSection
                     sessionNodes={sessionNodes}
+                    setSessionNodes={setSessionNodes}
                     nodes={nodes}
                     links={links}
                     selectedColor={selectedColor}

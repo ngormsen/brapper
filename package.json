@@ -12,6 +12,7 @@
     "@types/react-dom": "^18.3.1",
     "d3": "^7.9.0",
     "dotenv": "^16.4.5",
+    "fuzzysort": "^3.1.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-force-graph-2d": "^1.25.8",
