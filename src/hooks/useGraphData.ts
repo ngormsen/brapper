@@ -14,6 +14,10 @@ export const useGraphData = (isBackupMode: boolean = false) => {
     useEffect(() => {
         const loadGraph = async () => {
             const { nodes: dbNodes, links: dbLinks } = await graphDatabase.getFullGraph(isBackupMode);
+            console.log(isBackupMode)
+            console.log("dbLinks length: ", dbLinks.length)
+            console.log(dbNodes.filter(node => node.id === '41100945-2e8d-420e-8487-37387d601f75'))
+            console.log(dbLinks.filter(link => link.sourceId === '41100945-2e8d-420e-8487-37387d601f75' || link.targetId === '41100945-2e8d-420e-8487-37387d601f75'))
             setNodes(dbNodes);
             setLinks(dbLinks);
         };

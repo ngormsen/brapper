@@ -217,9 +217,10 @@ const MainPage: React.FC = () => {
                     <button
                         onClick={() => {
                             console.log("Random nodes");
+                            let nodesToChooseFrom = selectedNodes.length > 0 ? selectedNodes : nodes;
 
                             // 1) Identify nodes with fewest links (up to 30).
-                            const fewConnectedNodes = [...nodes]
+                            const fewConnectedNodes = [...nodesToChooseFrom]
                                 .sort((a, b) =>
                                     links.filter(link => link.sourceId === a.id || link.targetId === a.id).length
                                     - links.filter(link => link.sourceId === b.id || link.targetId === b.id).length
@@ -227,14 +228,14 @@ const MainPage: React.FC = () => {
                                 .slice(0, 40);
                             console.log("fewConnectedNodes", fewConnectedNodes);
                             // 2) Find older nodes not in those “fewConnectedNodes,” sort ascending by updated date (oldest first).
-                            const oldNodes = nodes
+                            const oldNodes = nodesToChooseFrom
                                 .filter(node => !fewConnectedNodes.some(n => n.id === node.id))
                                 .sort((a, b) => new Date(a.updated_at).getTime() - new Date(b.updated_at).getTime())
                                 .slice(0, 40);
                             console.log("oldNodes", oldNodes);
 
                             // 3) Get 4 random nodes from the entire “nodes” array.
-                            const pickRandom = (arr: typeof nodes, count: number) => {
+                            const pickRandom = (arr: typeof nodesToChooseFrom, count: number) => {
                                 const shuffled = [...arr];
                                 for (let i = shuffled.length - 1; i > 0; i--) {
                                     const j = Math.floor(Math.random() * (i + 1));
@@ -242,7 +243,7 @@ const MainPage: React.FC = () => {
                                 }
                                 return shuffled.slice(0, count);
                             };
-                            const remainingNodes = nodes.filter(node =>
+                            const remainingNodes = nodesToChooseFrom.filter(node =>
                                 !fewConnectedNodes.some(n => n.id === node.id) &&
                                 !oldNodes.some(n => n.id === node.id)
                             );

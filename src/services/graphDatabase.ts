@@ -134,17 +134,29 @@ export const graphDatabase = {
 
     async getAllNodes(isBackupMode: boolean = false): Promise<Node[]> {
         const tables = getTableNames(isBackupMode);
-        const { data, error } = await supabase
-            .from(tables.NODES)
-            .select('*')
-            .order('created_at');
+        let allNodes: DBNode[] = [];
+        let page = 0;
+        const pageSize = 1000;
 
-        if (error) {
-            console.error('Error fetching nodes:', error);
-            return [];
+        while (true) {
+            const { data, error } = await supabase
+                .from(tables.NODES)
+                .select('*')
+                .order('created_at')
+                .range(page * pageSize, (page + 1) * pageSize - 1);
+
+            if (error) {
+                console.error('Error fetching nodes:', error);
+                return [];
+            }
+
+            if (data.length === 0) break;
+
+            allNodes = [...allNodes, ...data];
+            page++;
         }
 
-        return data.map(mapDBNodeToDomain);
+        return allNodes.map(mapDBNodeToDomain);
     },
 
     // Link operations
@@ -184,17 +196,29 @@ export const graphDatabase = {
 
     async getAllLinks(isBackupMode: boolean = false): Promise<Link[]> {
         const tables = getTableNames(isBackupMode);
-        const { data, error } = await supabase
-            .from(tables.LINKS)
-            .select('*')
-            .order('created_at');
+        let allLinks: RawDBLink[] = [];
+        let page = 0;
+        const pageSize = 1000;
 
-        if (error) {
-            console.error('Error fetching links:', error);
-            return [];
+        while (true) {
+            const { data, error } = await supabase
+                .from(tables.LINKS)
+                .select('*')
+                .order('created_at')
+                .range(page * pageSize, (page + 1) * pageSize - 1);
+
+            if (error) {
+                console.error('Error fetching links:', error);
+                return [];
+            }
+
+            if (data.length === 0) break;
+
+            allLinks = [...allLinks, ...data];
+            page++;
         }
 
-        return data.map(mapDBLinkToDomain);
+        return allLinks.map(mapDBLinkToDomain);
     },
 
     // Fetch entire graph
