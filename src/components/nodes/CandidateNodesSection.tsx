@@ -12,6 +12,7 @@ interface CandidateNodesSectionProps {
     onNodeClick: (nodeId: string) => void;
     hoveredNode: string | null;
     setHoveredNode: (nodeId: string | null) => void;
+    setTooltipText: (text: string) => void;
 }
 
 export const CandidateNodesSection: React.FC<CandidateNodesSectionProps> = ({
@@ -22,11 +23,12 @@ export const CandidateNodesSection: React.FC<CandidateNodesSectionProps> = ({
     onCandidateNodeClick,
     onNodeClick,
     hoveredNode,
-    setHoveredNode
+    setHoveredNode,
+    setTooltipText
 }) => {
     const [view, setView] = useState<'candidates' | 'oldNodes' | 'fewestLinks'>('candidates');
 
-    const renderNodeDisplay = (node: Node | NodeCandidate, onClick: (id: string) => void) => (
+    const renderNodeDisplay = (node: Node | NodeCandidate, onClick: (id: string) => void,) => (
         <div
             key={node.id}
             onClick={() => onClick(node.id)}
@@ -42,7 +44,7 @@ export const CandidateNodesSection: React.FC<CandidateNodesSectionProps> = ({
                 )}
                 isDeleteMode={isDeleteMode}
                 isHovered={hoveredNode === node.id}
-                setTooltipText={() => { }}
+                setTooltipText={setTooltipText}
             />
         </div>
     );

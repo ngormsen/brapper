@@ -173,9 +173,11 @@ export const NodesSection: React.FC<NodesSectionProps> = ({
 
                 </div>
             </div>
-            <LongTextDisplay
-                textToDisplay={tooltipText}
-            ></LongTextDisplay>
+            {(tooltipText.split('\n')[0].length > 10 || tooltipText.split('\n').length > 1) && (
+                <LongTextDisplay
+                    textToDisplay={tooltipText}
+                />
+            )}
 
             {candidateNodes.length > 0 && (
                 <CandidateNodesSection
@@ -187,6 +189,7 @@ export const NodesSection: React.FC<NodesSectionProps> = ({
                     onNodeClick={onOldNodeClick}
                     hoveredNode={hoveredNode}
                     setHoveredNode={setHoveredNode}
+                    setTooltipText={setTooltipText}
                 />
             )}
 
