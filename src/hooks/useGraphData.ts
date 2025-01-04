@@ -9,6 +9,7 @@ export const useGraphData = (isBackupMode: boolean = false) => {
     const [links, setLinks] = useState<Link[]>([]);
     const [sessionNodes, setSessionNodes] = useState<Node[]>([]);
     const [sessionLinks, setSessionLinks] = useState<Link[]>([]);
+    const [selectedNodes, setSelectedNodes] = useState<Node[]>([]);
 
     useEffect(() => {
         const loadGraph = async () => {
@@ -230,6 +231,8 @@ export const useGraphData = (isBackupMode: boolean = false) => {
         deleteNode,
         deleteLink,
         createLinkBetweenNodes,
-        updateNodeText
+        updateNodeText,
+        selectedNodes,
+        setSelectedNodes
     };
 }; 

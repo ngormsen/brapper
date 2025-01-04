@@ -35,6 +35,8 @@ const MainPage: React.FC = () => {
         deleteLink,
         createLinkBetweenNodes,
         updateNodeText,
+        selectedNodes,
+        setSelectedNodes
     } = useGraphData(isBackupMode);
 
     const graphData = React.useMemo(() => {
@@ -45,8 +47,8 @@ const MainPage: React.FC = () => {
     }, [isContextMode, getGraphData, getSessionGraphData]);
 
     const handleNodesSelected = useCallback((nodes: Node[]) => {
-        setSessionNodes(nodes);
-    }, [setSessionNodes]);
+        setSelectedNodes(prev => [...prev, ...nodes]);
+    }, [setSelectedNodes]);
 
     useEffect(() => {
         const handleKeyPress = (event: KeyboardEvent) => {
@@ -314,6 +316,8 @@ const MainPage: React.FC = () => {
                     hoveredNode={hoveredNode}
                     setHoveredNode={setHoveredNode}
                     isBackupMode={isBackupMode}
+                    selectedNodes={selectedNodes}
+                    setSelectedNodes={setSelectedNodes}
                 />
 
                 <NodesSection

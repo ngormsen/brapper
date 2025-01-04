@@ -15,6 +15,8 @@ interface GraphViewProps {
     hoveredNode: string | null;
     setHoveredNode: (nodeId: string | null) => void;
     isBackupMode: boolean;
+    selectedNodes: ForceGraphNode[];
+    setSelectedNodes: (nodes: ForceGraphNode[]) => void;
 }
 
 const GraphViewComponent: React.FC<GraphViewProps> = ({
@@ -28,6 +30,8 @@ const GraphViewComponent: React.FC<GraphViewProps> = ({
     hoveredNode,
     setHoveredNode,
     isBackupMode,
+    selectedNodes,
+    setSelectedNodes
 }) => {
     const containerRef = useRef<HTMLDivElement | null>(null);
     const fgRef = useRef<ForceGraphMethods>();
@@ -38,7 +42,6 @@ const GraphViewComponent: React.FC<GraphViewProps> = ({
 
     const [selecting, setSelecting] = useState(false);
     const [selectionBox, setSelectionBox] = useState({ startX: 0, startY: 0, endX: 0, endY: 0 });
-    const [selectedNodes, setSelectedNodes] = useState<ForceGraphNode[]>([]);
     const [isCmdPressed, setIsCmdPressed] = useState(false);
     const [filterSelected, setFilterSelected] = useState(false);
 
@@ -198,7 +201,7 @@ const GraphViewComponent: React.FC<GraphViewProps> = ({
                 return false;
             });
 
-            setSelectedNodes(selectedNodes);
+            // setSelectedNodes(selectedNodes);
             if (onNodesSelected) {
                 onNodesSelected(selectedNodes);
             }
