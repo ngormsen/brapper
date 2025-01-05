@@ -194,6 +194,69 @@ const MainPage: React.FC = () => {
         }
     };
 
+    const pickRandom = (arr: Node[], count: number) => {
+        const shuffled = [...arr];
+        for (let i = shuffled.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        }
+        return shuffled.slice(0, count);
+    };
+
+
+    const selectRandomNodes = (amountOldNodes: number, amountFewConnectedNodes: number, amountRandomNodes: number, integrate: boolean = false) => {
+        let nodesToChooseFrom = integrate ? nodes :  selectedNodes.length > 0 ? selectedNodes : nodes;
+
+        // 1) Identify nodes with fewest links (up to 30).
+        const fewConnectedNodes = [...nodesToChooseFrom]
+            .sort((a, b) =>
+                links.filter(link => link.sourceId === a.id || link.targetId === a.id).length
+                - links.filter(link => link.sourceId === b.id || link.targetId === b.id).length
+            )
+            .slice(0, 40);
+        console.log("fewConnectedNodes", fewConnectedNodes);
+        // 2) Find older nodes not in those “fewConnectedNodes,” sort ascending by updated date (oldest first).
+        const oldNodes = nodesToChooseFrom
+            .filter(node => !fewConnectedNodes.some(n => n.id === node.id))
+            .sort((a, b) => new Date(a.updated_at).getTime() - new Date(b.updated_at).getTime())
+            .slice(0, 40);
+        console.log("oldNodes", oldNodes);
+
+        // 3) Get 4 random nodes from the entire “nodes” array.
+        const remainingNodes = nodesToChooseFrom.filter(node =>
+            !fewConnectedNodes.some(n => n.id === node.id) &&
+            !oldNodes.some(n => n.id === node.id)
+        );
+        const randomNodesFromAll = pickRandom(remainingNodes, amountRandomNodes);
+
+        // 4) Combine results: 4 oldest, 6 fewConnectedNodes, and 4 random from all.
+        const finalNodes = [
+            ...pickRandom(oldNodes, amountOldNodes),
+            ...pickRandom(fewConnectedNodes, amountFewConnectedNodes),
+            ...pickRandom(randomNodesFromAll, amountRandomNodes)
+        ];
+
+        return finalNodes;
+    }
+
+    const handleRandomize = () => {
+        const randomNodes = selectRandomNodes(4, 6, 4, false);
+        setSessionNodes(randomNodes.map(node => ({ ...node, color: undefined })));
+    }
+
+    const handleIntegrate = () => {
+        const randomNodes = selectRandomNodes(0, 0, 6, true);
+        console.log("randomNodes", randomNodes);
+        if (selectedNodes.length > 0) {
+            const randomSelectedNodes = pickRandom(selectedNodes, 6);
+            const combinedNodes = [...randomNodes.filter(node => !randomSelectedNodes.some(n => n.id === node.id)), ...randomSelectedNodes];
+            setSessionNodes(combinedNodes.map(node => ({ ...node, color: undefined })));
+        }else{
+            setSessionNodes(randomNodes.map(node => ({ ...node, color: undefined })));
+        }
+        console.log("Integrate");
+    }
+
     return (
         <div className="p-6">
             <div className="flex justify-between items-center mb-4">
@@ -215,49 +278,13 @@ const MainPage: React.FC = () => {
                         {isBackupMode ? 'Using Backup' : 'Use Backup'}
                     </button>
                     <button
-                        onClick={() => {
-                            console.log("Random nodes");
-                            let nodesToChooseFrom = selectedNodes.length > 0 ? selectedNodes : nodes;
-
-                            // 1) Identify nodes with fewest links (up to 30).
-                            const fewConnectedNodes = [...nodesToChooseFrom]
-                                .sort((a, b) =>
-                                    links.filter(link => link.sourceId === a.id || link.targetId === a.id).length
-                                    - links.filter(link => link.sourceId === b.id || link.targetId === b.id).length
-                                )
-                                .slice(0, 40);
-                            console.log("fewConnectedNodes", fewConnectedNodes);
-                            // 2) Find older nodes not in those “fewConnectedNodes,” sort ascending by updated date (oldest first).
-                            const oldNodes = nodesToChooseFrom
-                                .filter(node => !fewConnectedNodes.some(n => n.id === node.id))
-                                .sort((a, b) => new Date(a.updated_at).getTime() - new Date(b.updated_at).getTime())
-                                .slice(0, 40);
-                            console.log("oldNodes", oldNodes);
-
-                            // 3) Get 4 random nodes from the entire “nodes” array.
-                            const pickRandom = (arr: typeof nodesToChooseFrom, count: number) => {
-                                const shuffled = [...arr];
-                                for (let i = shuffled.length - 1; i > 0; i--) {
-                                    const j = Math.floor(Math.random() * (i + 1));
-                                    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-                                }
-                                return shuffled.slice(0, count);
-                            };
-                            const remainingNodes = nodesToChooseFrom.filter(node =>
-                                !fewConnectedNodes.some(n => n.id === node.id) &&
-                                !oldNodes.some(n => n.id === node.id)
-                            );
-                            const randomNodesFromAll = pickRandom(remainingNodes, 4);
-
-                            // 4) Combine results: 4 oldest, 6 fewConnectedNodes, and 4 random from all.
-                            const finalNodes = [
-                                ...pickRandom(oldNodes, 4),
-                                ...pickRandom(fewConnectedNodes, 6),
-                                ...pickRandom(randomNodesFromAll, 4)
-                            ];
-
-                            setSessionNodes(finalNodes.map(node => ({ ...node, color: undefined })));
-                        }}
+                        onClick={handleIntegrate}
+                        className={`px-4 py-2 rounded-lg transition-colors bg-gray-200 hover:bg-gray-300 active:bg-gray-400`}
+                    >
+                        Integrate
+                    </button>
+                    <button
+                        onClick={handleRandomize}
                         className={`px-4 py-2 rounded-lg transition-colors bg-gray-200 hover:bg-gray-300 active:bg-gray-400`}
                     >
                         Randomize
