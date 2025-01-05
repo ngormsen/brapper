@@ -269,7 +269,7 @@ const MainPage: React.FC = () => {
                             : 'bg-gray-200 hover:bg-gray-300'
                             }`}
                     >
-                        {isContextMode ? 'Exit Context Mode' : 'Context Mode'}
+                        {isContextMode ? 'Exit CM' : 'CM'}
                     </button>
                     <button
                         onClick={() => setIsSelectMode(!isSelectMode)}
@@ -278,7 +278,7 @@ const MainPage: React.FC = () => {
                             : 'bg-gray-200 hover:bg-gray-300'
                             }`}
                     >
-                        {isSelectMode ? 'Exit Select Mode' : 'Select Mode'}
+                        {isSelectMode ? 'Exit SM' : 'SM'}
                     </button>
                     <button
                         onClick={handleConnectModeToggle}
@@ -287,7 +287,7 @@ const MainPage: React.FC = () => {
                             : 'bg-gray-200 hover:bg-gray-300'
                             }`}
                     >
-                        {isConnectMode ? 'Exit Connect Mode' : 'Connect Mode'}
+                        {isConnectMode ? 'Exit CM' : 'CM'}
                     </button>
                     <button
                         onClick={() => {
@@ -300,7 +300,7 @@ const MainPage: React.FC = () => {
                             : 'bg-gray-200 hover:bg-gray-300'
                             }`}
                     >
-                        {isDeleteMode ? 'Exit Delete Mode' : 'Delete Mode'}
+                        {isDeleteMode ? 'Exit DM' : 'DM'}
                     </button>
                 </div>
             </div>
