@@ -31,7 +31,7 @@ export const SingleNodeInput: React.FC<SingleNodeInputProps> = ({
     setInput(value);
 
     // Only search if 4 or more characters
-    if (value.trim().length >= 4) {
+    if (value.trim().length >= 3) {
       // Example using fuzzysort
       const results = fuzzysort.go(value, allNodes, { key: 'text', limit: 3 });
       const topMatches = results.map(r => r.obj);

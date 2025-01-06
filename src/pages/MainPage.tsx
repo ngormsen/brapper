@@ -228,7 +228,9 @@ const MainPage: React.FC = () => {
             !oldNodes.some(n => n.id === node.id)
         );
         const randomNodesFromAll = pickRandom(remainingNodes, amountRandomNodes);
-
+        console.log("randomNodesFromAll", randomNodesFromAll);
+        console.log("oldNodes", oldNodes);
+        console.log("fewConnectedNodes", fewConnectedNodes);
         // 4) Combine results: 4 oldest, 6 fewConnectedNodes, and 4 random from all.
         const finalNodes = [
             ...pickRandom(oldNodes, amountOldNodes),
@@ -240,7 +242,9 @@ const MainPage: React.FC = () => {
     }
 
     const handleRandomize = () => {
+        console.log("Randomize");
         const randomNodes = selectRandomNodes(4, 6, 4, false);
+        console.log("randomNodes", randomNodes);
         setSessionNodes(randomNodes.map(node => ({ ...node, color: undefined })));
     }
 
@@ -249,7 +253,7 @@ const MainPage: React.FC = () => {
         console.log("randomNodes", randomNodes);
         if (selectedNodes.length > 0) {
             const randomSelectedNodes = pickRandom(selectedNodes, 6);
-            const combinedNodes = [...randomNodes.filter(node => !randomSelectedNodes.some(n => n.id === node.id)), ...randomSelectedNodes];
+            const combinedNodes = [...randomSelectedNodes, ...randomNodes.filter(node => !randomSelectedNodes.some(n => n.text === node.text))];
             setSessionNodes(combinedNodes.map(node => ({ ...node, color: undefined })));
         }else{
             setSessionNodes(randomNodes.map(node => ({ ...node, color: undefined })));
